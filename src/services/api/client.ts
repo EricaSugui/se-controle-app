@@ -1,4 +1,4 @@
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://se-controle-backend-production.up.railway.app';
+const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
