@@ -58,3 +58,8 @@ frontend/
 ├── package.json
 ├── babel.config.js
 └── metro.config.js     (pode ignorar para web)
+
+Cuidados com Expo na Vercel
+⚠️ Dependências nativas: Se seu Expo usa bibliotecas nativas (câmera, localização, etc), certifique que funcionam no web também
+⚠️ Assets: Caminho de imagens/fontes — use paths relativos ou imports
+⚠️ Tempo de build: Expo pode demorar um pouco (2-3 min), fique atento ao timeout Vercel
