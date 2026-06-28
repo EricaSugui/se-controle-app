@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npx expo export -p web",
+  "outputDirectory": "dist",
+  "env": {
+    "REACT_APP_API_URL": "@react_app_api_url"
+  }
+}
