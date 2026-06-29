@@ -34,6 +34,10 @@ export default function DashboardScreen() {
 
   const { data } = state;
 
+  const receitas_total = data.casas.reduce((acc, c) => acc + c.receitas_total, 0);
+  const gastos_total = data.casas.reduce((acc, c) => acc + c.gastos_total, 0);
+  const saldo = data.casas.reduce((acc, c) => acc + c.saldo_casa, 0);
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
@@ -43,17 +47,19 @@ export default function DashboardScreen() {
         </Pressable>
 
         <View style={styles.resumo}>
-          <ResumoItem label="Receitas" valor={data.receitas_total} cor="#2e7d32" />
-          <ResumoItem label="Gastos" valor={data.gastos_total} cor="#c62828" />
+          <ResumoItem label="Receitas" valor={receitas_total} cor="#2e7d32" />
+          <ResumoItem label="Gastos" valor={gastos_total} cor="#c62828" />
           <ResumoItem label="Minha parte" valor={data.minha_parte_total} cor="#e65100" />
-          <ResumoItem label="Saldo" valor={data.saldo} cor={data.saldo >= 0 ? '#2e7d32' : '#c62828'} />
+          <ResumoItem label="Saldo" valor={saldo} cor={saldo >= 0 ? '#2e7d32' : '#c62828'} />
         </View>
 
         <Text style={styles.secao}>Casas</Text>
         {data.casas.map((casa) => (
           <View key={casa.id} style={styles.casa}>
             <Text style={styles.casaNome}>{casa.nome}</Text>
+            <Text>Receitas: {formatCurrency(casa.receitas_total)}</Text>
             <Text>Gastos: {formatCurrency(casa.gastos_total)}</Text>
+            <Text>Saldo: {formatCurrency(casa.saldo_casa)}</Text>
             <Text>Minha parte: {formatCurrency(casa.minha_parte)}</Text>
             <Text>Custeio: {casa.percentual_custeio}%</Text>
           </View>
