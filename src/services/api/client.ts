@@ -1,9 +1,22 @@
-const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
+// const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: { ...headers, ...(options?.headers as Record<string, string>) },
   });
 
   if (!response.ok) {

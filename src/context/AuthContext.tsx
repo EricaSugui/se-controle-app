@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import { supabaseSignIn } from '../services/supabase/auth';
+import { getMe } from '../services/api/auth';
+import { setAuthToken } from '../services/api/client';
 import type { Usuario } from '../types';
 
 type AuthContextValue = {
@@ -13,10 +16,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Usuario | null>(null);
 
   async function signIn(email: string, password: string) {
-    // TODO: integrar com supabase/api
+    const { access_token } = await supabaseSignIn(email, password);
+    setAuthToken(access_token);
+    const me = await getMe();
+    setUser(me);
   }
 
   function signOut() {
+    setAuthToken(null);
     setUser(null);
   }
 
