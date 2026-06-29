@@ -30,16 +30,15 @@ export type Usuario = {
 export type CasaDashboard = {
   id: number;
   nome: string;
+  receitas_total: number;
   gastos_total: number;
+  saldo_casa: number;
   percentual_custeio: number;
   minha_parte: number;
 };
 
 export type Dashboard = {
   competencia: string;
-  receitas_total: number;
-  gastos_total: number;
   minha_parte_total: number;
-  saldo: number;
   casas: CasaDashboard[];
 };
