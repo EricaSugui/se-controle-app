@@ -1,5 +1,5 @@
-// const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
+// const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 let authToken: string | null = null;
 
