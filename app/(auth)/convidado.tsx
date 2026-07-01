@@ -1,17 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
-import { criarPessoa, vincularConta } from '@/src/services/api/convite';
+import { aceitarConvite } from '@/src/services/api/convite';
 import { supabaseUpdatePassword } from '@/src/services/supabase/auth';
 
-function emailDoToken(token: string): string {
+type ConviteContexto = {
+  email: string;
+  casaNome?: string;
+  papel?: string;
+  convidadoPorNome?: string;
+};
+
+function parseHash(hash: string): Record<string, string> {
+  return Object.fromEntries(
+    hash.replace(/^#/, '').split('&').filter(Boolean).map((p) => {
+      const [k, ...v] = p.split('=');
+      return [k, decodeURIComponent(v.join('='))];
+    })
+  );
+}
+
+function contextoDoAccessToken(accessToken: string): ConviteContexto {
   try {
-    const payload = token.split('.')[1];
+    const payload = accessToken.split('.')[1];
     const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return (JSON.parse(decoded) as { email?: string }).email ?? '';
+    const { email, user_metadata } = JSON.parse(decoded) as {
+      email?: string;
+      user_metadata?: { casa_nome?: string; papel?: string; convidado_por_nome?: string };
+    };
+    return {
+      email: email ?? '',
+      casaNome: user_metadata?.casa_nome,
+      papel: user_metadata?.papel,
+      convidadoPorNome: user_metadata?.convidado_por_nome,
+    };
   } catch {
-    return '';
+    return { email: '' };
   }
 }
 
@@ -19,7 +44,17 @@ export default function ConvidadoScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const router = useRouter();
 
-  const email = token ? emailDoToken(token) : '';
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [hashChecado, setHashChecado] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') { setHashChecado(true); return; }
+    const params = parseHash(window.location.hash);
+    setAccessToken(params.access_token ?? null);
+    setHashChecado(true);
+  }, []);
+
+  const contexto = accessToken ? contextoDoAccessToken(accessToken) : null;
 
   const [nome, setNome] = useState('');
   const [senha, setSenha] = useState('');
@@ -31,15 +66,14 @@ export default function ConvidadoScreen() {
     if (!nome.trim()) { setErro('Informe seu nome.'); return; }
     if (senha.length < 6) { setErro('A senha deve ter ao menos 6 caracteres.'); return; }
     if (senha !== confirmarSenha) { setErro('As senhas não coincidem.'); return; }
-    if (!token) { setErro('Link de convite inválido.'); return; }
+    if (!token || !accessToken) { setErro('Link de convite inválido.'); return; }
 
     setErro(null);
     setLoading(true);
 
     try {
-      await supabaseUpdatePassword(senha, token);
-      const pessoa = await criarPessoa(nome.trim(), email, token);
-      await vincularConta(pessoa.id, token);
+      await supabaseUpdatePassword(senha, accessToken);
+      await aceitarConvite(token, nome.trim(), accessToken);
       router.replace('/(auth)/login');
     } catch (e: unknown) {
       setErro(e instanceof Error ? e.message : 'Erro ao confirmar conta.');
@@ -48,7 +82,9 @@ export default function ConvidadoScreen() {
     }
   }
 
-  if (!token) {
+  if (!hashChecado) return null;
+
+  if (!token || !accessToken) {
     return (
       <View style={styles.container}>
         <Text style={styles.erro}>Link de convite inválido ou expirado.</Text>
@@ -62,7 +98,17 @@ export default function ConvidadoScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Text style={styles.titulo}>Criar sua conta</Text>
-      <Text style={styles.emailTexto}>{email}</Text>
+      <Text style={styles.emailTexto}>{contexto?.email}</Text>
+
+      {(contexto?.casaNome || contexto?.convidadoPorNome) && (
+        <View style={styles.card}>
+          <Text style={styles.cardTexto}>
+            {contexto.convidadoPorNome ? `${contexto.convidadoPorNome} te convidou` : 'Você foi convidado'}
+            {contexto.casaNome ? ` para fazer parte de "${contexto.casaNome}"` : ''}
+            {contexto.papel ? ` como ${contexto.papel}` : ''}.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.form}>
         <TextInput
@@ -101,7 +147,9 @@ export default function ConvidadoScreen() {
 const styles = StyleSheet.create({
   container:  { flex: 1, justifyContent: 'center', padding: 24 },
   titulo:     { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
-  emailTexto: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 24 },
+  emailTexto: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 },
+  card:       { backgroundColor: '#e3f2fd', borderRadius: 8, padding: 14, marginBottom: 16 },
+  cardTexto:  { color: '#1565c0', fontSize: 14, textAlign: 'center' },
   form:       { gap: 12 },
   input: {
     borderWidth: 1,

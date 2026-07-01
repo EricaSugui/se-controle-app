@@ -2,28 +2,32 @@ const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 type Pessoa = { id: number; nome: string; email: string };
 
-async function postComToken<T>(path: string, token: string, body: unknown): Promise<T> {
+async function requestComToken<T>(method: string, path: string, token: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
+    method,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(body),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({})) as { message?: string };
-    throw new Error(err.message ?? `Erro ${res.status}`);
+    const err = await res.json().catch(() => ({})) as { erro?: string };
+    throw new Error(err.erro ?? `Erro ${res.status}`);
   }
 
   return res.json() as Promise<T>;
 }
 
 export function criarPessoa(nome: string, email: string, token: string): Promise<Pessoa> {
-  return postComToken<Pessoa>('/pessoas', token, { nome, email });
+  return requestComToken<Pessoa>('POST', '/pessoas', token, { nome, email });
 }
 
 export function vincularConta(pessoaId: number, token: string): Promise<void> {
-  return postComToken<void>('/auth/vincular', token, { pessoa_id: pessoaId });
+  return requestComToken<void>('POST', '/auth/vincular', token, { pessoa_id: pessoaId });
+}
+
+export function aceitarConvite(conviteToken: string, nome: string, accessToken: string): Promise<Pessoa> {
+  return requestComToken<Pessoa>('PATCH', `/convites/token/${conviteToken}/aceitar`, accessToken, { nome });
 }
