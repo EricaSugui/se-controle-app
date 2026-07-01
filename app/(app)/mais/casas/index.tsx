@@ -77,9 +77,14 @@ export default function CasasScreen() {
         renderItem={({ item }: { item: CasaDashboard }) => (
           <View style={styles.item}>
             <Text style={styles.itemNome}>{item.nome}</Text>
-            <Pressable onPress={() => confirmarDesativar(item)}>
-              <Text style={styles.remover}>Remover</Text>
-            </Pressable>
+            <View style={styles.acoes}>
+              <Pressable onPress={() => router.push({ pathname: '/(app)/mais/casas/[id]', params: { id: item.id, nome: item.nome } })}>
+                <Text style={styles.membros}>Membros</Text>
+              </Pressable>
+              <Pressable onPress={() => confirmarDesativar(item)}>
+                <Text style={styles.remover}>Remover</Text>
+              </Pressable>
+            </View>
           </View>
         )}
       />
@@ -97,7 +102,9 @@ const styles = StyleSheet.create({
   vazio:           { textAlign: 'center', color: '#888', marginTop: 32 },
 
   item:            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14 },
-  itemNome:        { fontSize: 15, fontWeight: '500' },
+  itemNome:        { fontSize: 15, fontWeight: '500', flex: 1 },
+  acoes:           { flexDirection: 'row', gap: 16 },
+  membros:         { color: '#1565c0', fontSize: 14 },
   remover:         { color: '#c62828', fontSize: 14 },
 
   botaoNova:       { margin: 16, backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center' },

@@ -34,6 +34,13 @@ export type Casa = {
   created_at: string;
 };
 
+export type MembroCasa = {
+  id: number;
+  nome: string;
+  email: string;
+  papel: 'admin' | 'membro';
+};
+
 export type CasaDashboard = {
   id: number;
   nome: string;
