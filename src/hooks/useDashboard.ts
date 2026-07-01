@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { getDashboard } from '../services/api/dashboard';
 import type { Dashboard } from '../types';
 
@@ -17,13 +18,14 @@ type State =
 export function useDashboard(competencia = competenciaAtual()) {
   const [state, setState] = useState<State>({ status: 'loading' });
 
-  useEffect(() => {
-    setState({ status: 'loading' });
-
-    getDashboard(competencia)
-      .then((data) => setState({ status: 'success', data }))
-      .catch((err: Error) => setState({ status: 'error', error: err.message }));
-  }, [competencia]);
+  useFocusEffect(
+    useCallback(() => {
+      setState({ status: 'loading' });
+      getDashboard(competencia)
+        .then((data) => setState({ status: 'success', data }))
+        .catch((err: Error) => setState({ status: 'error', error: err.message }));
+    }, [competencia])
+  );
 
   return state;
 }

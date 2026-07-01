@@ -54,6 +54,11 @@ export default function DashboardScreen() {
         </View>
 
         <Text style={styles.secao}>Casas</Text>
+        {data.casas.length === 0 && (
+          <Text style={styles.vazio}>
+            Nenhuma casa vinculada. Acesse Mais {'>'} Gerenciar casas para cadastrar.
+          </Text>
+        )}
         {data.casas.map((casa) => (
           <View key={casa.id} style={styles.casa}>
             <Text style={styles.casaNome}>{casa.nome}</Text>
@@ -101,5 +106,6 @@ const styles = StyleSheet.create({
   secao:              { fontSize: 16, fontWeight: 'bold', marginTop: 8 },
   casa:               { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, gap: 4 },
   casaNome:           { fontSize: 15, fontWeight: '600' },
+  vazio:              { color: '#888', textAlign: 'center', fontStyle: 'italic', paddingVertical: 8 },
   error:              { color: '#c62828', textAlign: 'center', padding: 16 },
 });

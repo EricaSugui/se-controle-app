@@ -1,5 +1,5 @@
-const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
-// const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+// const BASE_URL = 'https://se-controle-backend-production.up.railway.app';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 let authToken: string | null = null;
 
@@ -32,5 +32,7 @@ export const api = {
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
   put: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PATCH', body: body !== undefined ? JSON.stringify(body) : undefined }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
