@@ -7,6 +7,7 @@ export default function MaisScreen() {
       <Text style={styles.title}>Mais</Text>
       <Link href="/(app)/mais/receitas">Receitas</Link>
       <Link href="/(app)/mais/relatorios">Relatórios</Link>
+      <Link href="/(app)/mais/casas">Gerenciar casas</Link>
     </View>
   );
 }
