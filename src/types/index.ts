@@ -27,6 +27,13 @@ export type Usuario = {
   grupoId?: string;
 };
 
+export type Casa = {
+  id: number;
+  nome: string;
+  ativo: boolean;
+  created_at: string;
+};
+
 export type CasaDashboard = {
   id: number;
   nome: string;
