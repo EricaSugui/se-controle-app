@@ -48,13 +48,19 @@ export default function ConvidadoScreen() {
   const [hashChecado, setHashChecado] = useState(false);
 
   useEffect(() => {
+    console.log('[convidado] href:', Platform.OS === 'web' ? window.location.href : '(não é web)');
+    console.log('[convidado] token (query):', token);
+
     if (Platform.OS !== 'web') { setHashChecado(true); return; }
     const params = parseHash(window.location.hash);
+    console.log('[convidado] hash parseado:', params);
+
     setAccessToken(params.access_token ?? null);
     setHashChecado(true);
   }, []);
 
   const contexto = accessToken ? contextoDoAccessToken(accessToken) : null;
+  console.log('[convidado] contexto extraído do access_token:', contexto);
 
   const [nome, setNome] = useState('');
   const [senha, setSenha] = useState('');
