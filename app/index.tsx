@@ -30,8 +30,12 @@ export default function Index() {
     console.log('[index] hash parseado:', params);
 
     if (params.access_token && params.type === 'invite') {
-      console.log('[index] redirecionando para /convidado');
-      router.replace({ pathname: '/(auth)/convidado', params: { token: params.access_token } });
+      // Chegamos aqui sem o token do convite (só existia na query string do
+      // redirect_to original, que o Supabase ignorou). Sem ele não dá pra
+      // aceitar o convite — manda pra tela de convidado sem params pra ela
+      // mostrar "link inválido" em vez de um 404 confuso no backend.
+      console.warn('[index] link de convite caiu na Site URL em vez de /convidado — verifique as Redirect URLs no painel do Supabase.');
+      router.replace('/(auth)/convidado');
       return;
     } else if (params.access_token && params.type === 'signup') {
       console.log('[index] redirecionando para /confirmacao');
