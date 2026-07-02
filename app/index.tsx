@@ -21,24 +21,18 @@ export default function Index() {
     if (Platform.OS !== 'web') { setHashChecado(true); return; }
 
     const hash = window.location.hash;
-    console.log('[index] href:', window.location.href);
-    console.log('[index] hash bruto:', hash);
-
     if (!hash) { setHashChecado(true); return; }
 
     const params = parseHash(hash);
-    console.log('[index] hash parseado:', params);
 
     if (params.access_token && params.type === 'invite') {
-      // Chegamos aqui sem o token do convite (só existia na query string do
-      // redirect_to original, que o Supabase ignorou). Sem ele não dá pra
-      // aceitar o convite — manda pra tela de convidado sem params pra ela
+      // Só chega aqui se o link de convite cair na Site URL em vez de
+      // /convidado (redirect_to não configurado/aceito no Supabase). Sem o
+      // token do convite não dá pra aceitar — manda sem params pra tela
       // mostrar "link inválido" em vez de um 404 confuso no backend.
-      console.warn('[index] link de convite caiu na Site URL em vez de /convidado — verifique as Redirect URLs no painel do Supabase.');
       router.replace('/(auth)/convidado');
       return;
     } else if (params.access_token && params.type === 'signup') {
-      console.log('[index] redirecionando para /confirmacao');
       router.replace({ pathname: '/(auth)/confirmacao', params: { token: params.access_token } });
       return;
     }
