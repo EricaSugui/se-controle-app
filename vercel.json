@@ -1,6 +1,7 @@
 {
   "buildCommand": "npx expo export -p web",
   "outputDirectory": "dist",
+  "cleanUrls": true,
   "env": {
     "REACT_APP_API_URL": "https://se-controle-backend-production.up.railway.app"
   }
