@@ -56,3 +56,26 @@ export type Dashboard = {
   minha_parte_total: number;
   casas: CasaDashboard[];
 };
+
+export type Pessoa = {
+  id: number;
+  nome: string;
+  email: string | null;
+  ativo: boolean;
+};
+
+export type CartaoContaInput = {
+  nome: string;
+  tipo: 'credito' | 'debito';
+  titular_id: number | null;
+  limite: number | null;
+  dia_fechamento: number | null;
+  dia_vencimento: number | null;
+};
+
+export type CartaoConta = CartaoContaInput & {
+  id: number;
+  ativo: boolean;
+  created_at: string;
+  pode_editar: boolean;
+};
