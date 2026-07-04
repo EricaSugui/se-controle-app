@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "se-controle-rn",
-    "slug": "se-controle-rn",
+    "slug": "se-controle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,6 +37,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "07059eff-32c9-4f53-b620-25b679b06d0e"
+      }
+    },
+    "owner": "ericasuguis-team"
   }
 }
