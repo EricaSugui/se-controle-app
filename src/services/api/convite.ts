@@ -1,3 +1,5 @@
+import { api } from './client';
+
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 type Pessoa = { id: number; nome: string; email: string };
@@ -30,4 +32,9 @@ export function vincularConta(pessoaId: number, token: string): Promise<void> {
 
 export function aceitarConvite(conviteToken: string, nome: string, accessToken: string): Promise<Pessoa> {
   return requestComToken<Pessoa>('PATCH', `/convites/token/${conviteToken}/aceitar`, accessToken, { nome });
+}
+
+export function convidarPessoa(email: string, convidadoPorId: number): Promise<void> {
+  const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  return api.post<void>('/convites', { email, convidado_por_id: convidadoPorId, expires_at });
 }
