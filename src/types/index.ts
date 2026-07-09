@@ -6,11 +6,32 @@ export type Gasto = {
   categoriaId: string;
 };
 
-export type Receita = {
-  id: string;
-  descricao: string;
-  valor: number;
-  data: string;
+export type ReceitaInput = {
+  casa_id: number;
+  pessoa_id: number | null;
+  origem_id: number | null;
+  observacao: string | null;
+  valor_bruto: number | null;
+  descontos: number | null;
+  valor_liquido: number;
+  data: string | null;
+  competencia: string | null;
+};
+
+export type Receita = ReceitaInput & {
+  id: number;
+  lancado_por_id: number | null;
+  pessoa_nome: string | null;
+  origem_nome: string | null;
+  pode_editar: boolean;
+  created_at: string;
+};
+
+export type OrigemReceita = {
+  id: number;
+  nome: string;
+  ativo: boolean;
+  created_at: string;
 };
 
 export type Orcamento = {
@@ -36,6 +57,7 @@ export type Casa = {
 
 export type MembroCasa = {
   id: number;
+  pessoa_id: number;
   nome: string;
   email: string;
   papel: 'admin' | 'membro';
