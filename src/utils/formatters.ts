@@ -3,7 +3,8 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString('pt-BR');
+  const [ano, mes, dia] = isoDate.slice(0, 10).split('-').map(Number);
+  return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR');
 }
 
 export function formatMonth(yearMonth: string): string {
