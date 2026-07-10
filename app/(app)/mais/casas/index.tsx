@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { desativarCasa } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
+import { confirmar, notificar } from '@/src/utils/confirmar';
 import type { CasaDashboard } from '@/src/types';
 
 function competenciaAtual(): string {
@@ -29,13 +30,9 @@ export default function CasasScreen() {
   useFocusEffect(carregar);
 
   function confirmarDesativar(casa: CasaDashboard) {
-    Alert.alert(
-      'Remover casa',
-      `Deseja remover "${casa.nome}"? Esta ação não pode ser desfeita.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Remover', style: 'destructive', onPress: () => remover(casa.id) },
-      ]
+    confirmar(
+      { titulo: 'Remover casa', mensagem: `Deseja remover "${casa.nome}"? Esta ação não pode ser desfeita.`, textoConfirmar: 'Remover' },
+      () => remover(casa.id)
     );
   }
 
@@ -44,7 +41,7 @@ export default function CasasScreen() {
       await desativarCasa(id);
       carregar();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     }
   }
 

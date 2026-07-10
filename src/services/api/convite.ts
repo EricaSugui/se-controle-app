@@ -34,7 +34,7 @@ export function aceitarConvite(conviteToken: string, nome: string, accessToken: 
   return requestComToken<Pessoa>('PATCH', `/convites/token/${conviteToken}/aceitar`, accessToken, { nome });
 }
 
-export function convidarPessoa(email: string, convidadoPorId: number): Promise<void> {
+export function convidarPessoa(email: string): Promise<void> {
   const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-  return api.post<void>('/convites', { email, convidado_por_id: convidadoPorId, expires_at });
+  return api.post<void>('/convites', { email, expires_at });
 }

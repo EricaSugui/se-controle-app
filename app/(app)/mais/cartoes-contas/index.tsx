@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { ativarCartaoConta, desativarCartaoConta, getCartoesContas } from '@/src/services/api/cartoesContas';
+import { confirmar, notificar } from '@/src/utils/confirmar';
 import type { CartaoConta } from '@/src/types';
 
 export default function CartoesContasScreen() {
@@ -35,14 +36,17 @@ export default function CartoesContasScreen() {
     });
   }
 
+  function compartilhar(item: CartaoConta) {
+    router.push({
+      pathname: '/(app)/mais/cartoes-contas/visibilidade',
+      params: { cartaoId: item.id, nome: item.nome },
+    });
+  }
+
   function confirmarDesativar(item: CartaoConta) {
-    Alert.alert(
-      'Desativar',
-      `Deseja desativar "${item.nome}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Desativar', style: 'destructive', onPress: () => alternarStatus(item, false) },
-      ]
+    confirmar(
+      { titulo: 'Desativar', mensagem: `Deseja desativar "${item.nome}"?`, textoConfirmar: 'Desativar' },
+      () => alternarStatus(item, false)
     );
   }
 
@@ -52,7 +56,7 @@ export default function CartoesContasScreen() {
       else await desativarCartaoConta(item.id);
       carregar();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     }
   }
 
@@ -92,6 +96,9 @@ export default function CartoesContasScreen() {
               <View style={styles.acoes}>
                 <Pressable onPress={() => editar(item)}>
                   <Text style={styles.editar}>Editar</Text>
+                </Pressable>
+                <Pressable onPress={() => compartilhar(item)}>
+                  <Text style={styles.editar}>Compartilhar</Text>
                 </Pressable>
                 {item.ativo ? (
                   <Pressable onPress={() => confirmarDesativar(item)}>

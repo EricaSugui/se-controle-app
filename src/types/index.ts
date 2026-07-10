@@ -101,3 +101,14 @@ export type CartaoConta = CartaoContaInput & {
   created_at: string;
   pode_editar: boolean;
 };
+
+export type CartaoCasaVisibilidadeInput = {
+  casa_id: number;
+  compartilhado: boolean;
+};
+
+export type CartaoCasaVisibilidade = CartaoCasaVisibilidadeInput & {
+  id: number;
+  cartao_id: number;
+  created_at: string;
+};

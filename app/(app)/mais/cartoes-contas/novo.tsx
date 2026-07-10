@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { createCartaoConta } from '@/src/services/api/cartoesContas';
 import { getPessoasRelacionadas } from '@/src/services/api/pessoas';
 import { CartaoContaForm, type CartaoContaFormValues } from '@/src/components/domain/CartaoContaForm';
+import { notificar } from '@/src/utils/confirmar';
 import type { Pessoa } from '@/src/types';
 
 const VALORES_INICIAIS: CartaoContaFormValues = {
@@ -42,7 +43,7 @@ export default function NovoCartaoContaScreen() {
       });
       router.back();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     } finally {
       setSalvando(false);
     }

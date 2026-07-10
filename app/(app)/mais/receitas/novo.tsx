@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { createReceita } from '@/src/services/api/receitas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
+import { notificar } from '@/src/utils/confirmar';
 import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 function competenciaAtual(): string {
@@ -73,7 +74,7 @@ export default function NovaReceitaScreen() {
       });
       router.back();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     } finally {
       setSalvando(false);
     }
