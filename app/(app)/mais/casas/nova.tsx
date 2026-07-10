@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { createCasa, vincularPessoa } from '@/src/services/api/casas';
 import { useAuth } from '@/src/context/AuthContext';
+import { notificar } from '@/src/utils/confirmar';
 
 export default function NovaCasaScreen() {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ export default function NovaCasaScreen() {
       await vincularPessoa(casa.id, Number(user.id));
       router.back();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     } finally {
       setSalvando(false);
     }

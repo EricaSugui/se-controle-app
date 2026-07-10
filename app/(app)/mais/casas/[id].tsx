@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,8 +11,9 @@ import {
   View,
 } from 'react-native';
 import { useLocalSearchParams, useNavigation, useFocusEffect } from 'expo-router';
-import { getMembros, convidarMembro } from '@/src/services/api/casas';
+import { getMembros, convidarMembro, removerMembro } from '@/src/services/api/casas';
 import { useAuth } from '@/src/context/AuthContext';
+import { confirmar, notificar } from '@/src/utils/confirmar';
 import type { MembroCasa } from '@/src/types';
 
 const PAPEIS: { valor: 'membro' | 'admin'; label: string }[] = [
@@ -55,18 +55,36 @@ export default function CasaDetalhesScreen() {
     }, [nome, navigation])
   );
 
+  const souAdmin = membros.some((m) => m.pessoa_id === Number(user?.id) && m.papel === 'admin');
+
+  function confirmarRemover(membro: MembroCasa) {
+    confirmar(
+      { titulo: 'Remover membro', mensagem: `Deseja remover "${membro.nome}" desta casa?`, textoConfirmar: 'Remover' },
+      () => remover(membro)
+    );
+  }
+
+  async function remover(membro: MembroCasa) {
+    try {
+      await removerMembro(casaId, membro.pessoa_id);
+      carregar();
+    } catch (e: unknown) {
+      notificar('Erro', (e as Error).message);
+    }
+  }
+
   async function convidar() {
     const emailTrimmed = email.trim().toLowerCase();
     if (!emailTrimmed) return;
 
     setConvidando(true);
     try {
-      await convidarMembro(casaId, emailTrimmed, papel, Number(user!.id));
+      await convidarMembro(casaId, emailTrimmed, papel);
       setEmail('');
-      Alert.alert('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
+      notificar('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
       carregar();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     } finally {
       setConvidando(false);
     }
@@ -102,8 +120,15 @@ export default function CasaDetalhesScreen() {
                 <Text style={styles.membroNome}>{item.nome}</Text>
                 <Text style={styles.membroEmail}>{item.email}</Text>
               </View>
-              <View style={[styles.badge, item.papel === 'admin' ? styles.badgeAdmin : styles.badgeMembro]}>
-                <Text style={styles.badgeTexto}>{labelPapel(item.papel)}</Text>
+              <View style={styles.membroAcoes}>
+                <View style={[styles.badge, item.papel === 'admin' ? styles.badgeAdmin : styles.badgeMembro]}>
+                  <Text style={styles.badgeTexto}>{labelPapel(item.papel)}</Text>
+                </View>
+                {souAdmin && item.pessoa_id !== Number(user?.id) && (
+                  <Pressable onPress={() => confirmarRemover(item)}>
+                    <Text style={styles.remover}>Remover</Text>
+                  </Pressable>
+                )}
               </View>
             </View>
           ))
@@ -170,10 +195,12 @@ const styles = StyleSheet.create({
   membroNome:       { fontSize: 14, fontWeight: '500' },
   membroEmail:      { fontSize: 12, color: '#666', marginTop: 2 },
 
+  membroAcoes:      { flexDirection: 'row', alignItems: 'center', gap: 12 },
   badge:            { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
   badgeAdmin:       { backgroundColor: '#1565c0' },
   badgeMembro:      { backgroundColor: '#757575' },
   badgeTexto:       { color: '#fff', fontSize: 12, fontWeight: '600' },
+  remover:          { color: '#c62828', fontSize: 13 },
 
   divider:          { height: 1, backgroundColor: '#e0e0e0', marginVertical: 16 },
 

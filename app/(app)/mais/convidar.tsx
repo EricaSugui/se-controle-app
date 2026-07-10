@@ -1,24 +1,23 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput } from 'react-native';
 import { convidarPessoa } from '@/src/services/api/convite';
-import { useAuth } from '@/src/context/AuthContext';
+import { notificar } from '@/src/utils/confirmar';
 
 export default function ConvidarAmigoScreen() {
-  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   async function convidar() {
     const emailTrimmed = email.trim().toLowerCase();
-    if (!emailTrimmed || !user) return;
+    if (!emailTrimmed) return;
 
     setEnviando(true);
     try {
-      await convidarPessoa(emailTrimmed, Number(user.id));
+      await convidarPessoa(emailTrimmed);
       setEmail('');
-      Alert.alert('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
+      notificar('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     } finally {
       setEnviando(false);
     }

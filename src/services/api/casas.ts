@@ -17,7 +17,11 @@ export function getMembros(casaId: number): Promise<MembroCasa[]> {
   return api.get<MembroCasa[]>(`/casas/${casaId}/pessoas`);
 }
 
-export function convidarMembro(casaId: number, email: string, papel: 'membro' | 'admin', convidadoPorId: number): Promise<void> {
+export function removerMembro(casaId: number, pessoaId: number): Promise<void> {
+  return api.delete<void>(`/casas/${casaId}/pessoas/${pessoaId}`);
+}
+
+export function convidarMembro(casaId: number, email: string, papel: 'membro' | 'admin'): Promise<void> {
   const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-  return api.post<void>('/convites', { email, convidado_por_id: convidadoPorId, casa_id: casaId, papel, expires_at });
+  return api.post<void>('/convites', { email, casa_id: casaId, papel, expires_at });
 }

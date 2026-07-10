@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { deleteReceita, getReceitas } from '@/src/services/api/receitas';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
+import { confirmar, notificar } from '@/src/utils/confirmar';
 import type { Receita } from '@/src/types';
 
 function competenciaAtual(): string {
@@ -50,13 +51,13 @@ export default function ReceitasScreen() {
   }
 
   function confirmarExcluir(item: Receita) {
-    Alert.alert(
-      'Excluir receita',
-      `Deseja excluir esta receita${item.origem_nome ? ` de ${item.origem_nome}` : ''}? Esta ação não pode ser desfeita.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => excluir(item.id) },
-      ]
+    confirmar(
+      {
+        titulo: 'Excluir receita',
+        mensagem: `Deseja excluir esta receita${item.origem_nome ? ` de ${item.origem_nome}` : ''}? Esta ação não pode ser desfeita.`,
+        textoConfirmar: 'Excluir',
+      },
+      () => excluir(item.id)
     );
   }
 
@@ -65,7 +66,7 @@ export default function ReceitasScreen() {
       await deleteReceita(id);
       carregar();
     } catch (e: unknown) {
-      Alert.alert('Erro', (e as Error).message);
+      notificar('Erro', (e as Error).message);
     }
   }
 
