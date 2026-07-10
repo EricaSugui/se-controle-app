@@ -20,7 +20,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText} — ${path}`);
+    const corpo = await response.json().catch(() => null) as { erro?: string } | null;
+    throw new Error(corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json() as Promise<T>;
