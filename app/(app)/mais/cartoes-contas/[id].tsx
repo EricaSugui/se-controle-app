@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { updateCartaoConta } from '@/src/services/api/cartoesContas';
@@ -31,6 +31,19 @@ export default function EditarCartaoContaScreen() {
   });
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
   const [salvando, setSalvando] = useState(false);
+
+  // A tela é reaproveitada ao navegar de um cartão/conta para outro (mesma
+  // rota [id]), então o estado precisa ser resincronizado quando o id muda.
+  useEffect(() => {
+    setValues({
+      nome: params.nome ?? '',
+      tipo: params.tipo === 'debito' ? 'debito' : 'credito',
+      titularId: params.titularId ? Number(params.titularId) : null,
+      limite: params.limite ?? '',
+      diaFechamento: params.diaFechamento ?? '',
+      diaVencimento: params.diaVencimento ?? '',
+    });
+  }, [params.id]);
 
   useFocusEffect(
     useCallback(() => {
