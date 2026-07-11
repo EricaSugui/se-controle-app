@@ -48,6 +48,22 @@ export default function EditarReceitaScreen() {
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
   const [salvando, setSalvando] = useState(false);
 
+  // A tela é reaproveitada ao navegar de uma receita para outra (mesma
+  // rota [id]), então o estado precisa ser resincronizado quando o id muda.
+  useEffect(() => {
+    setValues({
+      casaId: Number(params.casaId),
+      pessoaId: params.pessoaId ? Number(params.pessoaId) : null,
+      origemId: params.origemId ? Number(params.origemId) : null,
+      observacao: params.observacao ?? '',
+      valorBruto: params.valorBruto ?? '',
+      descontos: params.descontos ?? '',
+      valorLiquido: params.valorLiquido ?? '',
+      data: params.data ?? '',
+      competencia: params.competencia || competenciaAtual(),
+    });
+  }, [params.id]);
+
   useFocusEffect(
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
