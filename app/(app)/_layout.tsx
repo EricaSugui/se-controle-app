@@ -11,7 +11,7 @@ export default function AppLayout() {
         options={{ title: user ? `Dashboard - ${user.nome}` : 'Dashboard' }}
       />
       <Tabs.Screen name="gastos/index" options={{ title: 'Gastos' }} />
-      <Tabs.Screen name="orcamento/index" options={{ title: 'Orçamento' }} />
+      <Tabs.Screen name="metas/index" options={{ title: 'Metas' }} />
       <Tabs.Screen name="mais/index" options={{ title: 'Mais' }} />
     </Tabs>
   );

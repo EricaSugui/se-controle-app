@@ -11,10 +11,16 @@ function competenciaAtual(): string {
   return `${mes}-${ano}`;
 }
 
+const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
+  { valor: 'caixa', label: 'Caixa' },
+  { valor: 'competencia', label: 'Competência' },
+];
+
 export default function DashboardScreen() {
   const [competencia, setCompetencia] = useState(competenciaAtual);
+  const [eixo, setEixo] = useState<'caixa' | 'competencia'>('caixa');
   const [seletorVisivel, setSeletorVisivel] = useState(false);
-  const state = useDashboard(competencia);
+  const state = useDashboard(competencia, eixo);
 
   if (state.status === 'loading') {
     return (
@@ -45,6 +51,23 @@ export default function DashboardScreen() {
           <Text style={styles.competencia}>{data.competencia}</Text>
           <Text style={styles.competenciaHint}>▼ trocar mês</Text>
         </Pressable>
+
+        <View style={styles.eixoRow}>
+          {EIXOS.map((e) => (
+            <Pressable
+              key={e.valor}
+              style={[styles.eixoOpcao, eixo === e.valor && styles.eixoOpcaoAtiva]}
+              onPress={() => setEixo(e.valor)}
+            >
+              <Text style={[styles.eixoTexto, eixo === e.valor && styles.eixoTextoAtivo]}>{e.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.eixoHint}>
+          {eixo === 'caixa'
+            ? 'Caixa: parcelas que saem do bolso neste mês'
+            : 'Competência: compras decididas neste mês'}
+        </Text>
 
         <View style={styles.resumo}>
           <ResumoItem label="Receitas" valor={receitas_total} cor="#2e7d32" />
@@ -97,6 +120,13 @@ const styles = StyleSheet.create({
   competenciaBotao:   { alignItems: 'center' },
   competencia:        { fontSize: 20, fontWeight: 'bold' },
   competenciaHint:    { fontSize: 12, color: '#888', marginTop: 2 },
+
+  eixoRow:            { flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  eixoOpcao:          { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 },
+  eixoOpcaoAtiva:     { borderColor: '#1565c0', backgroundColor: '#e3f2fd' },
+  eixoTexto:          { fontSize: 13, color: '#555' },
+  eixoTextoAtivo:     { color: '#1565c0', fontWeight: '600' },
+  eixoHint:           { fontSize: 12, color: '#888', textAlign: 'center' },
 
   resumo:             { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 16, gap: 8 },
   resumoItem:         { flexDirection: 'row', justifyContent: 'space-between' },

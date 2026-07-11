@@ -1,44 +1,50 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { createReceita } from '@/src/services/api/receitas';
-import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { createCompra } from '@/src/services/api/compras';
+import { getCategorias } from '@/src/services/api/categorias';
+import { getFormasPagamento } from '@/src/services/api/formasPagamento';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
-import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
+import { CompraForm, type CompraFormValues } from '@/src/components/domain/CompraForm';
+import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
-import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
 
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
+function hojeISO(): string {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mes}-${dia}`;
 }
 
-function valoresIniciais(): ReceitaFormValues {
+function valoresIniciais(): CompraFormValues {
   return {
     casaId: null,
     pessoaId: null,
-    origemId: null,
-    observacao: '',
-    valorBruto: '',
-    descontos: '',
-    valorLiquido: '',
-    data: '',
+    categoriaId: null,
+    descricao: '',
+    cartaoContaId: null,
+    formaPagamentoId: null,
+    data: hojeISO(),
     competencia: competenciaAtual(),
+    totalParcelas: '1',
+    valorParcela: '',
   };
 }
 
-export default function NovaReceitaScreen() {
-  const [values, setValues] = useState<ReceitaFormValues>(valoresIniciais);
+export default function NovaCompraScreen() {
+  const [values, setValues] = useState<CompraFormValues>(valoresIniciais);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
-  const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cartoes, setCartoes] = useState<CartaoConta[]>([]);
+  const [formas, setFormas] = useState<FormaPagamento[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
-  // receita" mostraria o que foi digitado na última vez.
+  // compra" mostraria o que foi digitado na última vez.
   useFocusEffect(
     useCallback(() => {
       setValues(valoresIniciais());
@@ -48,7 +54,9 @@ export default function NovaReceitaScreen() {
   useFocusEffect(
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
-      getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCategorias(true).then(setCategorias).catch(() => {});
+      getCartoesContas(true).then(setCartoes).catch(() => {});
+      getFormasPagamento(true).then(setFormas).catch(() => {});
     }, [])
   );
 
@@ -66,21 +74,31 @@ export default function NovaReceitaScreen() {
     getMembros(values.casaId).then(setMembros).catch(() => setMembros([]));
   }, [values.casaId]);
 
+  const podeSalvar =
+    values.casaId != null &&
+    values.pessoaId != null &&
+    values.categoriaId != null &&
+    values.data !== '' &&
+    values.valorParcela.trim() !== '' &&
+    !salvando;
+
   async function salvar() {
-    if (values.casaId == null || !values.valorLiquido.trim()) return;
+    if (values.casaId == null || values.pessoaId == null || values.categoriaId == null) return;
+    if (!values.data || !values.valorParcela.trim()) return;
 
     setSalvando(true);
     try {
-      await createReceita({
+      await createCompra({
         casa_id: values.casaId,
         pessoa_id: values.pessoaId,
-        origem_id: values.origemId,
-        observacao: values.observacao.trim() || null,
-        valor_bruto: values.valorBruto ? Number(values.valorBruto) : null,
-        descontos: values.descontos ? Number(values.descontos) : null,
-        valor_liquido: Number(values.valorLiquido),
-        data: values.data.trim() || null,
-        competencia: values.competencia || null,
+        categoria_id: values.categoriaId,
+        descricao: values.descricao.trim() || null,
+        cartao_conta_id: values.cartaoContaId,
+        forma_pagamento_id: values.formaPagamentoId,
+        data: values.data,
+        competencia: values.competencia,
+        total_parcelas: Number(values.totalParcelas) || 1,
+        valor_parcela: Number(values.valorParcela),
       });
       router.back();
     } catch (e: unknown) {
@@ -90,12 +108,18 @@ export default function NovaReceitaScreen() {
     }
   }
 
-  const podeSalvar = values.casaId != null && values.valorLiquido.trim() !== '' && !salvando;
-
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} />
+        <CompraForm
+          values={values}
+          onChange={setValues}
+          casas={casas}
+          membros={membros}
+          categorias={categorias}
+          cartoes={cartoes}
+          formas={formas}
+        />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}

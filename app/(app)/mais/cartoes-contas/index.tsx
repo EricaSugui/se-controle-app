@@ -43,6 +43,13 @@ export default function CartoesContasScreen() {
     });
   }
 
+  function verFaturas(item: CartaoConta) {
+    router.push({
+      pathname: '/(app)/mais/cartoes-contas/faturas',
+      params: { cartaoId: item.id, nome: item.nome },
+    });
+  }
+
   function confirmarDesativar(item: CartaoConta) {
     confirmar(
       { titulo: 'Desativar', mensagem: `Deseja desativar "${item.nome}"?`, textoConfirmar: 'Desativar' },
@@ -100,6 +107,11 @@ export default function CartoesContasScreen() {
                 <Pressable onPress={() => compartilhar(item)}>
                   <Text style={styles.editar}>Compartilhar</Text>
                 </Pressable>
+                {item.tipo === 'credito' && (
+                  <Pressable onPress={() => verFaturas(item)}>
+                    <Text style={styles.editar}>Faturas</Text>
+                  </Pressable>
+                )}
                 {item.ativo ? (
                   <Pressable onPress={() => confirmarDesativar(item)}>
                     <Text style={styles.desativar}>Desativar</Text>

@@ -1,6 +1,6 @@
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { formatDate } from '@/src/utils/formatters';
 
 type Props = {
@@ -24,6 +24,20 @@ function paraTexto(data: Date): string {
 
 export function DatePickerField({ valor, onSelecionar, placeholder = 'Selecionar data' }: Props) {
   const [pickerIosVisivel, setPickerIosVisivel] = useState(false);
+
+  // No web o picker nativo não existe (DateTimePickerAndroid é no-op e o
+  // componente iOS nunca renderiza) — usamos o <input type="date"> do DOM,
+  // que já trabalha no mesmo formato AAAA-MM-DD.
+  if (Platform.OS === 'web') {
+    return (
+      <input
+        type="date"
+        value={valor}
+        onChange={(e) => onSelecionar(e.target.value)}
+        style={webInputStyle}
+      />
+    );
+  }
 
   function abrir() {
     if (Platform.OS === 'android') {
@@ -67,3 +81,14 @@ const styles = StyleSheet.create({
   texto:       { fontSize: 16, color: '#000' },
   placeholder: { fontSize: 16, color: '#999' },
 });
+
+// Espelha styles.input para o elemento DOM usado no web.
+const webInputStyle: CSSProperties = {
+  border: '1px solid #ccc',
+  borderRadius: 8,
+  padding: 12,
+  fontSize: 16,
+  fontFamily: 'inherit',
+  color: '#000',
+  backgroundColor: 'transparent',
+};

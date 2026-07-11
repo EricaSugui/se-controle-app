@@ -15,16 +15,16 @@ type State =
   | { status: 'error'; error: string }
   | { status: 'success'; data: Dashboard };
 
-export function useDashboard(competencia = competenciaAtual()) {
+export function useDashboard(competencia = competenciaAtual(), eixo: 'caixa' | 'competencia' = 'caixa') {
   const [state, setState] = useState<State>({ status: 'loading' });
 
   useFocusEffect(
     useCallback(() => {
       setState({ status: 'loading' });
-      getDashboard(competencia)
+      getDashboard(competencia, eixo)
         .then((data) => setState({ status: 'success', data }))
         .catch((err: Error) => setState({ status: 'error', error: err.message }));
-    }, [competencia])
+    }, [competencia, eixo])
   );
 
   return state;
