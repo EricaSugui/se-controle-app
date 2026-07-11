@@ -21,6 +21,14 @@ export default function NovoCartaoContaScreen() {
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
   const [salvando, setSalvando] = useState(false);
 
+  // A tela fica montada entre navegações — sem o reset, reabrir "+ Novo
+  // cartão/conta" mostraria o que foi digitado na última vez.
+  useFocusEffect(
+    useCallback(() => {
+      setValues(VALORES_INICIAIS);
+    }, [])
+  );
+
   useFocusEffect(
     useCallback(() => {
       getPessoasRelacionadas(true).then(setPessoas).catch(() => {});

@@ -1,5 +1,7 @@
 export function formatCurrency(value: number): string {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  // Coage para número: NUMERIC do Postgres pode chegar como string em
+  // backends antigos, e undefined/null não devem derrubar a tela inteira.
+  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 export function formatDate(isoDate: string): string {

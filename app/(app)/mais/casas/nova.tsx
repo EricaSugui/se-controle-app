@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { createCasa, vincularPessoa } from '@/src/services/api/casas';
 import { useAuth } from '@/src/context/AuthContext';
 import { notificar } from '@/src/utils/confirmar';
@@ -9,6 +9,14 @@ export default function NovaCasaScreen() {
   const { user } = useAuth();
   const [nome, setNome] = useState('');
   const [salvando, setSalvando] = useState(false);
+
+  // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
+  // casa" mostraria o que foi digitado na última vez.
+  useFocusEffect(
+    useCallback(() => {
+      setNome('');
+    }, [])
+  );
 
   async function salvar() {
     const nomeTrimmed = nome.trim();
