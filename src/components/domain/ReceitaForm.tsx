@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
+import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 export type ReceitaFormValues = {
@@ -9,9 +10,9 @@ export type ReceitaFormValues = {
   pessoaId: number | null;
   origemId: number | null;
   observacao: string;
-  valorBruto: string;
-  descontos: string;
-  valorLiquido: string;
+  valorBruto: number | null;
+  descontos: number | null;
+  valorLiquido: number | null;
   data: string;
   competencia: string;
 };
@@ -31,12 +32,10 @@ export function ReceitaForm({ values, onChange, casas, membros, origens }: Props
     onChange({ ...values, [key]: value });
   }
 
-  function alterarBrutoOuDescontos(bruto: string, descontos: string) {
-    const brutoNum = Number(bruto);
-    if (bruto.trim() !== '' && !Number.isNaN(brutoNum)) {
-      const descontosNum = Number(descontos);
-      const liquido = brutoNum - (descontos.trim() !== '' && !Number.isNaN(descontosNum) ? descontosNum : 0);
-      onChange({ ...values, valorBruto: bruto, descontos, valorLiquido: String(liquido) });
+  function alterarBrutoOuDescontos(bruto: number | null, descontos: number | null) {
+    if (bruto != null) {
+      const liquido = bruto - (descontos ?? 0);
+      onChange({ ...values, valorBruto: bruto, descontos, valorLiquido: liquido });
     } else {
       onChange({ ...values, valorBruto: bruto, descontos });
     }
@@ -114,31 +113,19 @@ export function ReceitaForm({ values, onChange, casas, membros, origens }: Props
       )}
 
       <Text style={styles.label}>Valor bruto</Text>
-      <TextInput
-        style={styles.input}
+      <CurrencyInput
         value={values.valorBruto}
-        onChangeText={(v) => alterarBrutoOuDescontos(v, values.descontos)}
-        placeholder="Ex: 5500"
-        keyboardType="decimal-pad"
+        onChange={(v) => alterarBrutoOuDescontos(v, values.descontos)}
       />
 
       <Text style={styles.label}>Descontos</Text>
-      <TextInput
-        style={styles.input}
+      <CurrencyInput
         value={values.descontos}
-        onChangeText={(v) => alterarBrutoOuDescontos(values.valorBruto, v)}
-        placeholder="Ex: 500"
-        keyboardType="decimal-pad"
+        onChange={(v) => alterarBrutoOuDescontos(values.valorBruto, v)}
       />
 
       <Text style={styles.label}>Valor líquido</Text>
-      <TextInput
-        style={styles.input}
-        value={values.valorLiquido}
-        onChangeText={(v) => set('valorLiquido', v)}
-        placeholder="Ex: 5000"
-        keyboardType="decimal-pad"
-      />
+      <CurrencyInput value={values.valorLiquido} onChange={(v) => set('valorLiquido', v)} />
 
       <Text style={styles.label}>Data</Text>
       <DatePickerField valor={values.data} onSelecionar={(v) => set('data', v)} />

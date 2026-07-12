@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
+import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { formatCurrency } from '@/src/utils/formatters';
 import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
 
@@ -15,7 +16,7 @@ export type CompraFormValues = {
   data: string;
   competencia: string;
   totalParcelas: string;
-  valorParcela: string;
+  valorParcela: number | null;
 };
 
 type Props = {
@@ -35,11 +36,10 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
     onChange({ ...values, [key]: value });
   }
 
-  const valorParcelaNum = Number(values.valorParcela);
   const totalParcelasNum = Number(values.totalParcelas);
   const totalCompra =
-    values.valorParcela.trim() !== '' && !Number.isNaN(valorParcelaNum) && totalParcelasNum >= 1
-      ? valorParcelaNum * totalParcelasNum
+    values.valorParcela != null && totalParcelasNum >= 1
+      ? values.valorParcela * totalParcelasNum
       : null;
 
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
@@ -100,13 +100,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       )}
 
       <Text style={styles.label}>Valor da parcela</Text>
-      <TextInput
-        style={styles.input}
-        value={values.valorParcela}
-        onChangeText={(v) => set('valorParcela', v)}
-        placeholder="Ex: 149.40"
-        keyboardType="decimal-pad"
-      />
+      <CurrencyInput value={values.valorParcela} onChange={(v) => set('valorParcela', v)} />
 
       <Text style={styles.label}>Total de parcelas</Text>
       <TextInput

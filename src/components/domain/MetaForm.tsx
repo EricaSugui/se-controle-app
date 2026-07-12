@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type { CasaDashboard } from '@/src/types';
 
 export type MetaFormValues = {
@@ -6,9 +7,9 @@ export type MetaFormValues = {
   pessoaId: number | null;
   casaId: number | null;
   objetivo: string;
-  valorAtual: string;
-  meta: string;
-  falta: string;
+  valorAtual: number | null;
+  meta: number | null;
+  falta: number | null;
 };
 
 type Props = {
@@ -24,12 +25,10 @@ export function MetaForm({ values, onChange, casas, usuarioPessoaId, mostrarEsco
     onChange({ ...values, [key]: value });
   }
 
-  function alterarValores(valorAtual: string, meta: string) {
-    const metaNum = Number(meta);
-    if (meta.trim() !== '' && !Number.isNaN(metaNum)) {
-      const atualNum = Number(valorAtual);
-      const falta = metaNum - (valorAtual.trim() !== '' && !Number.isNaN(atualNum) ? atualNum : 0);
-      onChange({ ...values, valorAtual, meta, falta: String(falta) });
+  function alterarValores(valorAtual: number | null, meta: number | null) {
+    if (meta != null) {
+      const falta = meta - (valorAtual ?? 0);
+      onChange({ ...values, valorAtual, meta, falta });
     } else {
       onChange({ ...values, valorAtual, meta });
     }
@@ -73,30 +72,16 @@ export function MetaForm({ values, onChange, casas, usuarioPessoaId, mostrarEsco
       />
 
       <Text style={styles.label}>Valor atual</Text>
-      <TextInput
-        style={styles.input}
-        value={values.valorAtual}
-        onChangeText={(v) => alterarValores(v, values.meta)}
-        placeholder="Ex: 0"
-        keyboardType="decimal-pad"
-      />
+      <CurrencyInput value={values.valorAtual} onChange={(v) => alterarValores(v, values.meta)} />
 
       <Text style={styles.label}>Meta</Text>
-      <TextInput
-        style={styles.input}
-        value={values.meta}
-        onChangeText={(v) => alterarValores(values.valorAtual, v)}
-        placeholder="Ex: 50000"
-        keyboardType="decimal-pad"
-      />
+      <CurrencyInput value={values.meta} onChange={(v) => alterarValores(values.valorAtual, v)} />
 
       <Text style={styles.label}>Falta</Text>
-      <TextInput
-        style={styles.input}
+      <CurrencyInput
         value={values.falta}
-        onChangeText={(v) => set('falta', v)}
+        onChange={(v) => set('falta', v)}
         placeholder="Calculado automaticamente"
-        keyboardType="decimal-pad"
       />
     </View>
   );

@@ -47,7 +47,7 @@ export default function EditarCompraScreen() {
           data: compra.data ? compra.data.slice(0, 10) : '',
           competencia: compra.competencia || competenciaAtual(),
           totalParcelas: String(compra.total_parcelas ?? 1),
-          valorParcela: compra.valor_parcela != null ? String(compra.valor_parcela) : '',
+          valorParcela: compra.valor_parcela,
         });
         setParcelas(parcelasResp);
         navigation.setOptions({ title: compra.descricao || 'Editar compra' });
@@ -80,12 +80,12 @@ export default function EditarCompraScreen() {
     values.pessoaId != null &&
     values.categoriaId != null &&
     values.data !== '' &&
-    values.valorParcela.trim() !== '' &&
+    values.valorParcela != null &&
     !salvando;
 
   async function salvar() {
     if (values == null || values.casaId == null || values.pessoaId == null || values.categoriaId == null) return;
-    if (!values.data || !values.valorParcela.trim()) return;
+    if (!values.data || values.valorParcela == null) return;
 
     setSalvando(true);
     try {
@@ -99,7 +99,7 @@ export default function EditarCompraScreen() {
         data: values.data,
         competencia: values.competencia,
         total_parcelas: Number(values.totalParcelas) || 1,
-        valor_parcela: Number(values.valorParcela),
+        valor_parcela: values.valorParcela,
       });
       router.back();
     } catch (e: unknown) {

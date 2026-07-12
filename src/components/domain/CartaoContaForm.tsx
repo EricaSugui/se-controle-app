@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type { Pessoa } from '@/src/types';
 
 export type CartaoContaFormValues = {
   nome: string;
   tipo: 'credito' | 'debito';
   titularId: number | null;
-  limite: string;
+  limite: number | null;
   diaFechamento: string;
   diaVencimento: string;
 };
@@ -76,13 +77,7 @@ export function CartaoContaForm({ values, onChange, pessoas }: Props) {
       {values.tipo === 'credito' && (
         <>
           <Text style={styles.label}>Limite</Text>
-          <TextInput
-            style={styles.input}
-            value={values.limite}
-            onChangeText={(v) => set('limite', v)}
-            placeholder="Ex: 12000"
-            keyboardType="decimal-pad"
-          />
+          <CurrencyInput value={values.limite} onChange={(v) => set('limite', v)} />
 
           <Text style={styles.label}>Dia de fechamento</Text>
           <TextInput

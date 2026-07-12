@@ -30,7 +30,7 @@ function valoresIniciais(): CompraFormValues {
     data: hojeISO(),
     competencia: competenciaAtual(),
     totalParcelas: '1',
-    valorParcela: '',
+    valorParcela: null,
   };
 }
 
@@ -79,12 +79,12 @@ export default function NovaCompraScreen() {
     values.pessoaId != null &&
     values.categoriaId != null &&
     values.data !== '' &&
-    values.valorParcela.trim() !== '' &&
+    values.valorParcela != null &&
     !salvando;
 
   async function salvar() {
     if (values.casaId == null || values.pessoaId == null || values.categoriaId == null) return;
-    if (!values.data || !values.valorParcela.trim()) return;
+    if (!values.data || values.valorParcela == null) return;
 
     setSalvando(true);
     try {
@@ -98,7 +98,7 @@ export default function NovaCompraScreen() {
         data: values.data,
         competencia: values.competencia,
         total_parcelas: Number(values.totalParcelas) || 1,
-        valor_parcela: Number(values.valorParcela),
+        valor_parcela: values.valorParcela,
       });
       router.back();
     } catch (e: unknown) {

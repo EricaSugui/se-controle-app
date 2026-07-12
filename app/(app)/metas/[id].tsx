@@ -32,9 +32,9 @@ export default function EditarMetaScreen() {
           pessoaId: meta.pessoa_id,
           casaId: meta.casa_id,
           objetivo: meta.objetivo,
-          valorAtual: String(meta.valor_atual ?? 0),
-          meta: meta.meta != null ? String(meta.meta) : '',
-          falta: meta.falta != null ? String(meta.falta) : '',
+          valorAtual: meta.valor_atual ?? 0,
+          meta: meta.meta,
+          falta: meta.falta,
         });
         navigation.setOptions({ title: meta.objetivo || 'Editar meta' });
       })
@@ -59,9 +59,9 @@ export default function EditarMetaScreen() {
       // pessoa_id/casa_id são imutáveis — reenviamos os valores originais
       await updateMeta(id, {
         objetivo: values.objetivo.trim(),
-        valor_atual: Number(values.valorAtual) || 0,
-        meta: values.meta.trim() ? Number(values.meta) : null,
-        falta: values.falta.trim() ? Number(values.falta) : null,
+        valor_atual: values.valorAtual ?? 0,
+        meta: values.meta,
+        falta: values.falta,
         pessoa_id: values.pessoaId,
         casa_id: values.casaId,
       });

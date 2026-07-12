@@ -37,9 +37,9 @@ export default function EditarReceitaScreen() {
     pessoaId: params.pessoaId ? Number(params.pessoaId) : null,
     origemId: params.origemId ? Number(params.origemId) : null,
     observacao: params.observacao ?? '',
-    valorBruto: params.valorBruto ?? '',
-    descontos: params.descontos ?? '',
-    valorLiquido: params.valorLiquido ?? '',
+    valorBruto: params.valorBruto ? Number(params.valorBruto) : null,
+    descontos: params.descontos ? Number(params.descontos) : null,
+    valorLiquido: params.valorLiquido ? Number(params.valorLiquido) : null,
     data: params.data ?? '',
     competencia: params.competencia || competenciaAtual(),
   });
@@ -56,9 +56,9 @@ export default function EditarReceitaScreen() {
       pessoaId: params.pessoaId ? Number(params.pessoaId) : null,
       origemId: params.origemId ? Number(params.origemId) : null,
       observacao: params.observacao ?? '',
-      valorBruto: params.valorBruto ?? '',
-      descontos: params.descontos ?? '',
-      valorLiquido: params.valorLiquido ?? '',
+      valorBruto: params.valorBruto ? Number(params.valorBruto) : null,
+      descontos: params.descontos ? Number(params.descontos) : null,
+      valorLiquido: params.valorLiquido ? Number(params.valorLiquido) : null,
       data: params.data ?? '',
       competencia: params.competencia || competenciaAtual(),
     });
@@ -80,7 +80,7 @@ export default function EditarReceitaScreen() {
   }, [values.casaId]);
 
   async function salvar() {
-    if (values.casaId == null || !values.valorLiquido.trim()) return;
+    if (values.casaId == null || values.valorLiquido == null) return;
 
     setSalvando(true);
     try {
@@ -89,9 +89,9 @@ export default function EditarReceitaScreen() {
         pessoa_id: values.pessoaId,
         origem_id: values.origemId,
         observacao: values.observacao.trim() || null,
-        valor_bruto: values.valorBruto ? Number(values.valorBruto) : null,
-        descontos: values.descontos ? Number(values.descontos) : null,
-        valor_liquido: Number(values.valorLiquido),
+        valor_bruto: values.valorBruto,
+        descontos: values.descontos,
+        valor_liquido: values.valorLiquido,
         data: values.data.trim() || null,
         competencia: values.competencia || null,
       });
@@ -103,7 +103,7 @@ export default function EditarReceitaScreen() {
     }
   }
 
-  const podeSalvar = values.casaId != null && values.valorLiquido.trim() !== '' && !salvando;
+  const podeSalvar = values.casaId != null && values.valorLiquido != null && !salvando;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
