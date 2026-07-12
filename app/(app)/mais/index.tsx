@@ -1,7 +1,10 @@
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function MaisScreen() {
+  const { user } = useAuth();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Mais</Text>
@@ -10,6 +13,7 @@ export default function MaisScreen() {
       <Link href="/(app)/mais/relatorios">Relatórios</Link>
       <Link href="/(app)/mais/casas">Gerenciar casas</Link>
       <Link href="/(app)/mais/convidar">Convidar amigos</Link>
+      {user?.admin_sistema && <Link href="/(app)/mais/administracao">Administração</Link>}
     </View>
   );
 }
