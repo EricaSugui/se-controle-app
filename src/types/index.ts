@@ -31,6 +31,7 @@ export type Usuario = {
   nome: string;
   email: string;
   grupoId?: string;
+  admin_sistema: boolean;
 };
 
 export type Casa = {
