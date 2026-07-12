@@ -33,7 +33,8 @@
     "ios": "expo start --ios",
     "build:web": "expo export -p web",
     "web": "expo start --web",
-    "eas:prod": "npx eas-cli@latest build --profile production"
+    "eas:prod": "npx eas-cli@latest build --profile production",
+    "eas:dev": "expo start --dev-client"
   },
   "private": true
 }
