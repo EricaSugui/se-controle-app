@@ -25,7 +25,7 @@ export default function EditarCartaoContaScreen() {
     nome: params.nome ?? '',
     tipo: params.tipo === 'debito' ? 'debito' : 'credito',
     titularId: params.titularId ? Number(params.titularId) : null,
-    limite: params.limite ?? '',
+    limite: params.limite ? Number(params.limite) : null,
     diaFechamento: params.diaFechamento ?? '',
     diaVencimento: params.diaVencimento ?? '',
   });
@@ -39,7 +39,7 @@ export default function EditarCartaoContaScreen() {
       nome: params.nome ?? '',
       tipo: params.tipo === 'debito' ? 'debito' : 'credito',
       titularId: params.titularId ? Number(params.titularId) : null,
-      limite: params.limite ?? '',
+      limite: params.limite ? Number(params.limite) : null,
       diaFechamento: params.diaFechamento ?? '',
       diaVencimento: params.diaVencimento ?? '',
     });
@@ -67,7 +67,7 @@ export default function EditarCartaoContaScreen() {
         nome: nomeTrimmed,
         tipo: values.tipo,
         titular_id: values.titularId,
-        limite: values.limite ? Number(values.limite) : null,
+        limite: values.limite,
         dia_fechamento: values.diaFechamento ? Number(values.diaFechamento) : null,
         dia_vencimento: values.diaVencimento ? Number(values.diaVencimento) : null,
       });

@@ -11,7 +11,7 @@ const VALORES_INICIAIS: CartaoContaFormValues = {
   nome: '',
   tipo: 'credito',
   titularId: null,
-  limite: '',
+  limite: null,
   diaFechamento: '',
   diaVencimento: '',
 };
@@ -45,7 +45,7 @@ export default function NovoCartaoContaScreen() {
         nome: nomeTrimmed,
         tipo: values.tipo,
         titular_id: values.titularId,
-        limite: values.limite ? Number(values.limite) : null,
+        limite: values.limite,
         dia_fechamento: values.diaFechamento ? Number(values.diaFechamento) : null,
         dia_vencimento: values.diaVencimento ? Number(values.diaVencimento) : null,
       });

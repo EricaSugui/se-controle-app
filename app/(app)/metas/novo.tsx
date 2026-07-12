@@ -17,9 +17,9 @@ export default function NovaMetaScreen() {
     pessoaId: usuarioPessoaId || null,
     casaId: null,
     objetivo: '',
-    valorAtual: '',
-    meta: '',
-    falta: '',
+    valorAtual: null,
+    meta: null,
+    falta: null,
   });
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [salvando, setSalvando] = useState(false);
@@ -32,9 +32,9 @@ export default function NovaMetaScreen() {
         pessoaId: usuarioPessoaId || null,
         casaId: null,
         objetivo: '',
-        valorAtual: '',
-        meta: '',
-        falta: '',
+        valorAtual: null,
+        meta: null,
+        falta: null,
       });
     }, [usuarioPessoaId])
   );
@@ -55,9 +55,9 @@ export default function NovaMetaScreen() {
     try {
       await createMeta({
         objetivo: values.objetivo.trim(),
-        valor_atual: Number(values.valorAtual) || 0,
-        meta: values.meta.trim() ? Number(values.meta) : null,
-        falta: values.falta.trim() ? Number(values.falta) : null,
+        valor_atual: values.valorAtual ?? 0,
+        meta: values.meta,
+        falta: values.falta,
         pessoa_id: values.pessoaId,
         casa_id: values.casaId,
       });

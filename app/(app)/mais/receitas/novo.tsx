@@ -22,9 +22,9 @@ function valoresIniciais(): ReceitaFormValues {
     pessoaId: null,
     origemId: null,
     observacao: '',
-    valorBruto: '',
-    descontos: '',
-    valorLiquido: '',
+    valorBruto: null,
+    descontos: null,
+    valorLiquido: null,
     data: '',
     competencia: competenciaAtual(),
   };
@@ -67,7 +67,7 @@ export default function NovaReceitaScreen() {
   }, [values.casaId]);
 
   async function salvar() {
-    if (values.casaId == null || !values.valorLiquido.trim()) return;
+    if (values.casaId == null || values.valorLiquido == null) return;
 
     setSalvando(true);
     try {
@@ -76,9 +76,9 @@ export default function NovaReceitaScreen() {
         pessoa_id: values.pessoaId,
         origem_id: values.origemId,
         observacao: values.observacao.trim() || null,
-        valor_bruto: values.valorBruto ? Number(values.valorBruto) : null,
-        descontos: values.descontos ? Number(values.descontos) : null,
-        valor_liquido: Number(values.valorLiquido),
+        valor_bruto: values.valorBruto,
+        descontos: values.descontos,
+        valor_liquido: values.valorLiquido,
         data: values.data.trim() || null,
         competencia: values.competencia || null,
       });
@@ -90,7 +90,7 @@ export default function NovaReceitaScreen() {
     }
   }
 
-  const podeSalvar = values.casaId != null && values.valorLiquido.trim() !== '' && !salvando;
+  const podeSalvar = values.casaId != null && values.valorLiquido != null && !salvando;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
