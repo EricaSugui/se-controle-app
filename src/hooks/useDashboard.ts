@@ -1,14 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getDashboard } from '../services/api/dashboard';
+import { competenciaAtual } from '../utils/competencia';
 import type { Dashboard } from '../types';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 type State =
   | { status: 'loading' }

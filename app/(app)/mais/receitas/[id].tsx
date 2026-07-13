@@ -7,14 +7,8 @@ import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
 import { notificar } from '@/src/utils/confirmar';
+import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 export default function EditarReceitaScreen() {
   const params = useLocalSearchParams<{
