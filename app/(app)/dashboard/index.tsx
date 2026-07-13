@@ -1,15 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { useDashboard } from '@/src/hooks/useDashboard';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { getStatusDespesasFixas } from '@/src/services/api/despesasFixas';
+import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
   { valor: 'caixa', label: 'Caixa' },
@@ -20,7 +16,18 @@ export default function DashboardScreen() {
   const [competencia, setCompetencia] = useState(competenciaAtual);
   const [eixo, setEixo] = useState<'caixa' | 'competencia'>('caixa');
   const [seletorVisivel, setSeletorVisivel] = useState(false);
+  const [alertas, setAlertas] = useState(0);
   const state = useDashboard(competencia, eixo);
+
+  useFocusEffect(
+    useCallback(() => {
+      getStatusDespesasFixas()
+        .then((itens) =>
+          setAlertas(itens.filter((i) => i.status === 'em_atraso' || i.status === 'vencendo_hoje').length)
+        )
+        .catch(() => setAlertas(0));
+    }, [])
+  );
 
   if (state.status === 'loading') {
     return (
@@ -68,6 +75,17 @@ export default function DashboardScreen() {
             ? 'Caixa: parcelas que saem do bolso neste mês'
             : 'Competência: compras decididas neste mês'}
         </Text>
+
+        {alertas > 0 && (
+          <Pressable style={styles.alertaContas} onPress={() => router.push('/(app)/mais/despesas-fixas')}>
+            <Text style={styles.alertaContasTexto}>
+              {alertas === 1
+                ? '1 conta fixa vencendo ou em atraso'
+                : `${alertas} contas fixas vencendo ou em atraso`}{' '}
+              ›
+            </Text>
+          </Pressable>
+        )}
 
         <View style={styles.resumo}>
           <ResumoItem label="Receitas" valor={receitas_total} cor="#2e7d32" />
@@ -127,6 +145,9 @@ const styles = StyleSheet.create({
   eixoTexto:          { fontSize: 13, color: '#555' },
   eixoTextoAtivo:     { color: '#1565c0', fontWeight: '600' },
   eixoHint:           { fontSize: 12, color: '#888', textAlign: 'center' },
+
+  alertaContas:       { backgroundColor: '#fdecea', borderRadius: 8, padding: 12 },
+  alertaContasTexto:  { color: '#c62828', fontWeight: '600', fontSize: 14, textAlign: 'center' },
 
   resumo:             { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 16, gap: 8 },
   resumoItem:         { flexDirection: 'row', justifyContent: 'space-between' },

@@ -21,6 +21,12 @@ export default function EditarCompraScreen() {
   const [values, setValues] = useState<CompraFormValues | null>(null);
   const [parcelas, setParcelas] = useState<Parcela[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Vínculo com despesa fixa: o PUT remove o vínculo se os campos forem
+  // omitidos, então precisam ser repassados no salvar.
+  const [vinculo, setVinculo] = useState<{
+    despesa_fixa_id: number | null;
+    competencia_referencia: string | null;
+  }>({ despesa_fixa_id: null, competencia_referencia: null });
 
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
@@ -50,6 +56,10 @@ export default function EditarCompraScreen() {
           valorParcela: compra.valor_parcela,
         });
         setParcelas(parcelasResp);
+        setVinculo({
+          despesa_fixa_id: compra.despesa_fixa_id ?? null,
+          competencia_referencia: compra.competencia_referencia ?? null,
+        });
         navigation.setOptions({ title: compra.descricao || 'Editar compra' });
       })
       .catch((e: Error) => setError(e.message));
@@ -100,6 +110,8 @@ export default function EditarCompraScreen() {
         competencia: values.competencia,
         total_parcelas: Number(values.totalParcelas) || 1,
         valor_parcela: values.valorParcela,
+        despesa_fixa_id: vinculo.despesa_fixa_id,
+        competencia_referencia: vinculo.competencia_referencia,
       });
       router.back();
     } catch (e: unknown) {
@@ -131,6 +143,13 @@ export default function EditarCompraScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {vinculo.despesa_fixa_id != null && (
+          <Text style={styles.aviso}>
+            Pagamento vinculado a despesa fixa
+            {vinculo.competencia_referencia ? ` (competência ${vinculo.competencia_referencia})` : ''}.
+          </Text>
+        )}
+
         <CompraForm
           values={values}
           onChange={setValues}
