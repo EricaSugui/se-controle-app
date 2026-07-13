@@ -1,17 +1,18 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { MESES_COMPETENCIA } from '@/src/utils/competencia';
 
-const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-const MESES_EN = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+// Meses em português — mesmo formato que o backend gera e valida (AGO-26).
+const MESES = MESES_COMPETENCIA;
 
 export function competenciaParaData(competencia: string): { mes: number; ano: number } {
   const [mesStr, anoStr] = competencia.split('-');
-  const mes = MESES_EN.indexOf(mesStr); // 0-indexed
+  const mes = MESES.indexOf(mesStr); // 0-indexed
   const ano = 2000 + Number(anoStr);
   return { mes, ano };
 }
 
 export function dataParaCompetencia(mes: number, ano: number): string {
-  return `${MESES_EN[mes]}-${String(ano).slice(-2)}`;
+  return `${MESES[mes]}-${String(ano).slice(-2)}`;
 }
 
 type Props = {

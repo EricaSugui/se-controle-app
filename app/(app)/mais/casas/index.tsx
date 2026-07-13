@@ -4,14 +4,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { desativarCasa } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { confirmar, notificar } from '@/src/utils/confirmar';
+import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard } from '@/src/types';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 export default function CasasScreen() {
   const [casas, setCasas] = useState<CasaDashboard[]>([]);

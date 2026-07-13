@@ -5,14 +5,8 @@ import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { deleteReceita, getReceitas } from '@/src/services/api/receitas';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { confirmar, notificar } from '@/src/utils/confirmar';
+import { competenciaAtual } from '@/src/utils/competencia';
 import type { Receita } from '@/src/types';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 export default function ReceitasScreen() {
   const [competencia, setCompetencia] = useState(competenciaAtual);

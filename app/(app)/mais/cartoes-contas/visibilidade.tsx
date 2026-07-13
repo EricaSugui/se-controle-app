@@ -4,14 +4,8 @@ import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router
 import { getDashboard } from '@/src/services/api/dashboard';
 import { atualizarVisibilidade, criarVisibilidade, getVisibilidade } from '@/src/services/api/cartaoCasaVisibilidade';
 import { notificar } from '@/src/utils/confirmar';
+import { competenciaAtual } from '@/src/utils/competencia';
 import type { CartaoCasaVisibilidade, CasaDashboard } from '@/src/types';
-
-function competenciaAtual(): string {
-  const now = new Date();
-  const mes = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-  const ano = String(now.getFullYear()).slice(-2);
-  return `${mes}-${ano}`;
-}
 
 export default function VisibilidadeCartaoContaScreen() {
   const { cartaoId, nome } = useLocalSearchParams<{ cartaoId: string; nome: string }>();
