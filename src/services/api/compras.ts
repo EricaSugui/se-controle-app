@@ -1,8 +1,11 @@
 import { api } from './client';
 import type { Compra, CompraInput, Parcela } from '../../types';
 
-export function getCompras(competencia?: string): Promise<Compra[]> {
-  const query = competencia ? `?competencia=${competencia}` : '';
+export function getCompras(competencia?: string, despesaFixaId?: number): Promise<Compra[]> {
+  const params: string[] = [];
+  if (competencia) params.push(`competencia=${competencia}`);
+  if (despesaFixaId != null) params.push(`despesa_fixa_id=${despesaFixaId}`);
+  const query = params.length > 0 ? `?${params.join('&')}` : '';
   return api.get<Compra[]>(`/compras${query}`);
 }
 

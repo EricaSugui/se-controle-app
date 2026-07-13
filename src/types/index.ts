@@ -124,6 +124,8 @@ export type CompraInput = {
   competencia: string;
   total_parcelas: number;
   valor_parcela: number;
+  despesa_fixa_id?: number | null;
+  competencia_referencia?: string | null; // MES-AA; exige despesa_fixa_id
 };
 
 export type Parcela = {
@@ -148,6 +150,47 @@ export type Compra = CompraInput & {
   pode_editar: boolean;
   parcelas?: Parcela[]; // presente apenas nas respostas de POST/PUT
   created_at: string;
+};
+
+export type TipoValorDespesaFixa = 'fixo' | 'variavel_estimado';
+export type PeriodicidadeDespesaFixa = 'mensal' | 'anual';
+export type StatusDespesaFixa = 'pago' | 'em_dia' | 'vencendo_hoje' | 'em_atraso';
+
+export type DespesaFixaInput = {
+  // exatamente um entre pessoa_id e casa_id; imutável após a criação
+  casa_id: number | null;
+  pessoa_id: number | null;
+  categoria_id: number;
+  descricao: string;
+  tipo_valor: TipoValorDespesaFixa;
+  valor_referencia: number;
+  periodicidade: PeriodicidadeDespesaFixa;
+  dia_esperado: number;
+  vigente_desde: string;
+  vigente_ate: string | null;
+  despesa_fixa_anterior_id?: number | null; // imutável; ignorado no PUT
+};
+
+export type DespesaFixa = DespesaFixaInput & {
+  id: number;
+  lancado_por_id: number | null;
+  categoria_nome?: string; // presente apenas em GET (lista e por id)
+  created_at: string;
+};
+
+export type DespesaFixaStatusItem = {
+  despesa_fixa_id: number;
+  descricao: string;
+  casa_id: number | null;
+  pessoa_id: number | null;
+  categoria_id: number;
+  categoria_nome: string;
+  tipo_valor: TipoValorDespesaFixa;
+  valor_referencia: number;
+  periodicidade: PeriodicidadeDespesaFixa;
+  competencia: string;
+  data_esperada: string;
+  status: StatusDespesaFixa;
 };
 
 export type MetaInput = {
