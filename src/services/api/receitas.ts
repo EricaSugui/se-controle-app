@@ -1,8 +1,11 @@
 import { api } from './client';
 import type { Receita, ReceitaInput } from '../../types';
 
-export function getReceitas(competencia?: string): Promise<Receita[]> {
-  const query = competencia ? `?competencia=${competencia}` : '';
+export function getReceitas(competencia?: string, receitaFixaId?: number): Promise<Receita[]> {
+  const params: string[] = [];
+  if (competencia) params.push(`competencia=${competencia}`);
+  if (receitaFixaId != null) params.push(`receita_fixa_id=${receitaFixaId}`);
+  const query = params.length > 0 ? `?${params.join('&')}` : '';
   return api.get<Receita[]>(`/receitas${query}`);
 }
 

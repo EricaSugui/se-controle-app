@@ -22,9 +22,15 @@ export default function EditarReceitaScreen() {
     valorLiquido: string;
     data?: string;
     competencia?: string;
+    receitaFixaId?: string;
+    competenciaReferencia?: string;
   }>();
 
   const id = Number(params.id);
+  // Vínculo com receita fixa: o PUT remove o vínculo se os campos forem
+  // omitidos, então precisam ser repassados no salvar.
+  const receitaFixaId = params.receitaFixaId ? Number(params.receitaFixaId) : null;
+  const competenciaReferencia = params.competenciaReferencia || null;
 
   const [values, setValues] = useState<ReceitaFormValues>({
     casaId: Number(params.casaId),
@@ -88,6 +94,8 @@ export default function EditarReceitaScreen() {
         valor_liquido: values.valorLiquido,
         data: values.data.trim() || null,
         competencia: values.competencia || null,
+        receita_fixa_id: receitaFixaId,
+        competencia_referencia: competenciaReferencia,
       });
       router.back();
     } catch (e: unknown) {
@@ -102,6 +110,13 @@ export default function EditarReceitaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {receitaFixaId != null && (
+          <Text style={styles.aviso}>
+            Recebimento vinculado a receita fixa
+            {competenciaReferencia ? ` (competência ${competenciaReferencia})` : ''}.
+          </Text>
+        )}
+
         <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} />
 
         <Pressable
@@ -121,6 +136,7 @@ export default function EditarReceitaScreen() {
 
 const styles = StyleSheet.create({
   container:         { padding: 24, gap: 12 },
+  aviso:             { fontSize: 13, color: '#777', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 },
   botao:             { backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 16 },
   botaoDesabilitado: { opacity: 0.5 },
   botaoTexto:        { color: '#fff', fontWeight: '600', fontSize: 15 },

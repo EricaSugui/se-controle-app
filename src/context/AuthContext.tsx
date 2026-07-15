@@ -8,6 +8,7 @@ type AuthContextValue = {
   user: Usuario | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -27,8 +28,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  // Ressincroniza o user após alterações no próprio cadastro (ex.: fuso
+  // horário no perfil) — fora isso, o user só é carregado no signIn.
+  async function refreshUser() {
+    const me = await getMe();
+    setUser(me);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

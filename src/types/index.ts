@@ -8,6 +8,8 @@ export type ReceitaInput = {
   valor_liquido: number;
   data: string | null;
   competencia: string | null;
+  receita_fixa_id?: number | null;
+  competencia_referencia?: string | null; // MES-AA; exige receita_fixa_id
 };
 
 export type Receita = ReceitaInput & {
@@ -32,6 +34,7 @@ export type Usuario = {
   email: string;
   grupoId?: string;
   admin_sistema: boolean;
+  fuso_horario: string; // IANA, ex. America/Sao_Paulo
 };
 
 export type Casa = {
@@ -191,6 +194,46 @@ export type DespesaFixaStatusItem = {
   competencia: string;
   data_esperada: string;
   status: StatusDespesaFixa;
+};
+
+export type TipoConfiabilidadeReceitaFixa = 'fixa' | 'variavel';
+export type StatusReceitaFixa = 'recebido' | 'aguardando' | 'atrasado';
+
+export type ReceitaFixaInput = {
+  // exatamente um entre pessoa_id e casa_id; imutável após a criação
+  casa_id: number | null;
+  pessoa_id: number | null;
+  origem_id: number;
+  descricao: string;
+  tipo_confiabilidade: TipoConfiabilidadeReceitaFixa;
+  valor_esperado: number | null; // null = variável sem estimativa
+  periodicidade: PeriodicidadeDespesaFixa;
+  dia_esperado_recebimento: number;
+  vigente_desde: string;
+  vigente_ate: string | null;
+  receita_fixa_anterior_id?: number | null; // imutável; ignorado no PUT
+};
+
+export type ReceitaFixa = ReceitaFixaInput & {
+  id: number;
+  lancado_por_id: number | null;
+  origem_nome?: string; // presente apenas em GET (lista e por id)
+  created_at: string;
+};
+
+export type ReceitaFixaStatusItem = {
+  receita_fixa_id: number;
+  descricao: string;
+  casa_id: number | null;
+  pessoa_id: number | null;
+  origem_id: number;
+  origem_nome: string;
+  tipo_confiabilidade: TipoConfiabilidadeReceitaFixa;
+  valor_esperado: number | null;
+  periodicidade: PeriodicidadeDespesaFixa;
+  competencia: string;
+  data_esperada: string;
+  status: StatusReceitaFixa;
 };
 
 export type MetaInput = {
