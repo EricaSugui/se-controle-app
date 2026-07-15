@@ -157,7 +157,7 @@ export type Compra = CompraInput & {
 
 export type TipoValorDespesaFixa = 'fixo' | 'variavel_estimado';
 export type PeriodicidadeDespesaFixa = 'mensal' | 'anual';
-export type StatusDespesaFixa = 'pago' | 'em_dia' | 'vencendo_hoje' | 'em_atraso';
+export type StatusDespesaFixa = 'pago' | 'em_dia' | 'vencendo_hoje' | 'em_atraso' | 'justificado';
 
 export type DespesaFixaInput = {
   // exatamente um entre pessoa_id e casa_id; imutável após a criação
@@ -196,8 +196,22 @@ export type DespesaFixaStatusItem = {
   status: StatusDespesaFixa;
 };
 
+export type DespesaFixaExcecaoInput = {
+  competencia_referencia: string; // MMM-AA em pt-BR, ex. ABR-26
+  valor_ocorrido?: number | null; // null = isenção/carência
+  motivo?: string | null; // máx. 255 chars
+};
+
+export type DespesaFixaExcecao = DespesaFixaExcecaoInput & {
+  id: number;
+  despesa_fixa_id: number;
+  valor_esperado_original: number | null; // snapshot do servidor
+  lancado_por_id: number | null;
+  created_at: string;
+};
+
 export type TipoConfiabilidadeReceitaFixa = 'fixa' | 'variavel';
-export type StatusReceitaFixa = 'recebido' | 'aguardando' | 'atrasado';
+export type StatusReceitaFixa = 'recebido' | 'aguardando' | 'atrasado' | 'justificado';
 
 export type ReceitaFixaInput = {
   // exatamente um entre pessoa_id e casa_id; imutável após a criação
@@ -234,6 +248,20 @@ export type ReceitaFixaStatusItem = {
   competencia: string;
   data_esperada: string;
   status: StatusReceitaFixa;
+};
+
+export type ReceitaFixaExcecaoInput = {
+  competencia_referencia: string; // MMM-AA em pt-BR, ex. ABR-26
+  valor_ocorrido?: number | null; // null = isenção/carência
+  motivo?: string | null; // máx. 255 chars
+};
+
+export type ReceitaFixaExcecao = ReceitaFixaExcecaoInput & {
+  id: number;
+  receita_fixa_id: number;
+  valor_esperado_original: number | null; // snapshot do servidor
+  lancado_por_id: number | null;
+  created_at: string;
 };
 
 export type MetaInput = {

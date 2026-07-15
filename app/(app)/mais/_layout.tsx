@@ -26,6 +26,7 @@ export default function MaisLayout() {
       <Stack.Screen name="despesas-fixas/[id]" options={{ title: 'Despesa fixa' }} />
       <Stack.Screen name="despesas-fixas/contratos" options={{ title: 'Contratos' }} />
       <Stack.Screen name="despesas-fixas/pagamento" options={{ title: 'Registrar pagamento' }} />
+      <Stack.Screen name="despesas-fixas/justificar" options={{ title: 'Justificar competência' }} />
       <Stack.Screen name="despesas-fixas/reajuste" options={{ title: 'Reajuste' }} />
 
       <Stack.Screen name="receitas/index" options={{ title: 'Receitas' }} />
@@ -37,6 +38,7 @@ export default function MaisLayout() {
       <Stack.Screen name="receitas-fixas/[id]" options={{ title: 'Receita fixa' }} />
       <Stack.Screen name="receitas-fixas/contratos" options={{ title: 'Contratos' }} />
       <Stack.Screen name="receitas-fixas/recebimento" options={{ title: 'Registrar recebimento' }} />
+      <Stack.Screen name="receitas-fixas/justificar" options={{ title: 'Justificar competência' }} />
       <Stack.Screen name="receitas-fixas/reajuste" options={{ title: 'Reajuste' }} />
     </Stack>
   );

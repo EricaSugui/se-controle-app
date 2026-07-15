@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { encerrarReceitaFixa, getReceitaFixa, updateReceitaFixa } from '@/src/services/api/receitasFixas';
+import {
+  deleteExcecaoReceitaFixa,
+  encerrarReceitaFixa,
+  getExcecoesReceitaFixa,
+  getReceitaFixa,
+  updateReceitaFixa,
+} from '@/src/services/api/receitasFixas';
 import { getReceitas } from '@/src/services/api/receitas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
 import { getDashboard } from '@/src/services/api/dashboard';
@@ -16,7 +22,14 @@ import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
-import type { CasaDashboard, MembroCasa, OrigemReceita, Receita, ReceitaFixa } from '@/src/types';
+import type {
+  CasaDashboard,
+  MembroCasa,
+  OrigemReceita,
+  Receita,
+  ReceitaFixa,
+  ReceitaFixaExcecao,
+} from '@/src/types';
 
 export default function ReceitaFixaDetalheScreen() {
   const params = useLocalSearchParams<{ id: string; descricao?: string }>();
@@ -27,6 +40,7 @@ export default function ReceitaFixaDetalheScreen() {
   const [receitaFixa, setReceitaFixa] = useState<ReceitaFixa | null>(null);
   const [values, setValues] = useState<ReceitaFixaFormValues | null>(null);
   const [historico, setHistorico] = useState<Receita[]>([]);
+  const [excecoes, setExcecoes] = useState<ReceitaFixaExcecao[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
@@ -37,11 +51,12 @@ export default function ReceitaFixaDetalheScreen() {
   const carregar = useCallback(() => {
     setLoading(true);
     setError(null);
-    Promise.all([getReceitaFixa(id), getReceitas(undefined, id)])
-      .then(([r, receitas]) => {
+    Promise.all([getReceitaFixa(id), getReceitas(undefined, id), getExcecoesReceitaFixa(id)])
+      .then(([r, receitas, excs]) => {
         setReceitaFixa(r);
         setValues(receitaFixaParaFormValues(r));
         setHistorico(receitas);
+        setExcecoes(excs);
         navigation.setOptions({ title: r.descricao || 'Receita fixa' });
       })
       .catch((e: Error) => setError(e.message))
@@ -121,6 +136,24 @@ export default function ReceitaFixaDetalheScreen() {
 
   function reajustar() {
     router.push({ pathname: '/(app)/mais/receitas-fixas/reajuste', params: { id } });
+  }
+
+  function confirmarRemoverExcecao(excecao: ReceitaFixaExcecao) {
+    confirmar(
+      {
+        titulo: 'Remover exceção',
+        mensagem: `Remover a exceção de ${excecao.competencia_referencia}? O atraso desta competência será reaberto.`,
+        textoConfirmar: 'Remover',
+      },
+      async () => {
+        try {
+          await deleteExcecaoReceitaFixa(id, excecao.id);
+          carregar();
+        } catch (e: unknown) {
+          notificar('Erro', (e as Error).message);
+        }
+      }
+    );
   }
 
   if (loading) {
@@ -218,6 +251,34 @@ export default function ReceitaFixaDetalheScreen() {
                   .join(' · ')}
               </Text>
             </View>
+          </View>
+        ))}
+
+        <Text style={styles.secaoTitulo}>Exceções</Text>
+        {excecoes.length === 0 && (
+          <Text style={styles.vazio}>Nenhuma exceção registrada.</Text>
+        )}
+        {excecoes.map((excecao) => (
+          <View key={excecao.id} style={styles.recebimento}>
+            <View style={styles.recebimentoInfo}>
+              <Text style={styles.recebimentoValor}>{excecao.competencia_referencia}</Text>
+              <Text style={styles.recebimentoDetalhe}>
+                {excecao.motivo?.trim() || 'Sem motivo informado'}
+              </Text>
+              <Text style={styles.recebimentoDetalhe}>
+                {excecao.valor_ocorrido != null
+                  ? `Valor ocorrido: ${formatCurrency(excecao.valor_ocorrido)}`
+                  : 'Sem valor ocorrido'}
+                {excecao.valor_esperado_original != null
+                  ? ` · Esperado: ${formatCurrency(excecao.valor_esperado_original)}`
+                  : ''}
+              </Text>
+            </View>
+            {podeEditar && (
+              <Pressable onPress={() => confirmarRemoverExcecao(excecao)}>
+                <Text style={styles.encerrar}>Remover</Text>
+              </Pressable>
+            )}
           </View>
         ))}
       </ScrollView>

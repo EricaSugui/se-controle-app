@@ -1,5 +1,11 @@
 import { api } from './client';
-import type { DespesaFixa, DespesaFixaInput, DespesaFixaStatusItem } from '../../types';
+import type {
+  DespesaFixa,
+  DespesaFixaExcecao,
+  DespesaFixaExcecaoInput,
+  DespesaFixaInput,
+  DespesaFixaStatusItem,
+} from '../../types';
 
 export function getDespesasFixas(filtros?: {
   casaId?: number;
@@ -31,6 +37,21 @@ export function encerrarDespesaFixa(id: number, vigenteAte?: string): Promise<De
     `/despesas-fixas/${id}/encerrar`,
     vigenteAte ? { vigente_ate: vigenteAte } : undefined
   );
+}
+
+export function getExcecoesDespesaFixa(despesaFixaId: number): Promise<DespesaFixaExcecao[]> {
+  return api.get<DespesaFixaExcecao[]>(`/despesas-fixas/${despesaFixaId}/excecoes`);
+}
+
+export function createExcecaoDespesaFixa(
+  despesaFixaId: number,
+  input: DespesaFixaExcecaoInput
+): Promise<DespesaFixaExcecao> {
+  return api.post<DespesaFixaExcecao>(`/despesas-fixas/${despesaFixaId}/excecoes`, input);
+}
+
+export function deleteExcecaoDespesaFixa(despesaFixaId: number, excecaoId: number): Promise<void> {
+  return api.delete<void>(`/despesas-fixas/${despesaFixaId}/excecoes/${excecaoId}`);
 }
 
 export function getStatusDespesasFixas(

@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { encerrarDespesaFixa, getDespesaFixa, updateDespesaFixa } from '@/src/services/api/despesasFixas';
+import {
+  deleteExcecaoDespesaFixa,
+  encerrarDespesaFixa,
+  getDespesaFixa,
+  getExcecoesDespesaFixa,
+  updateDespesaFixa,
+} from '@/src/services/api/despesasFixas';
 import { getCompras } from '@/src/services/api/compras';
 import { getCategorias } from '@/src/services/api/categorias';
 import { getDashboard } from '@/src/services/api/dashboard';
@@ -16,7 +22,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
-import type { CasaDashboard, Categoria, Compra, DespesaFixa, MembroCasa } from '@/src/types';
+import type { CasaDashboard, Categoria, Compra, DespesaFixa, DespesaFixaExcecao, MembroCasa } from '@/src/types';
 
 export default function DespesaFixaDetalheScreen() {
   const params = useLocalSearchParams<{ id: string; descricao?: string }>();
@@ -27,6 +33,7 @@ export default function DespesaFixaDetalheScreen() {
   const [despesa, setDespesa] = useState<DespesaFixa | null>(null);
   const [values, setValues] = useState<DespesaFixaFormValues | null>(null);
   const [historico, setHistorico] = useState<Compra[]>([]);
+  const [excecoes, setExcecoes] = useState<DespesaFixaExcecao[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -37,11 +44,12 @@ export default function DespesaFixaDetalheScreen() {
   const carregar = useCallback(() => {
     setLoading(true);
     setError(null);
-    Promise.all([getDespesaFixa(id), getCompras(undefined, id)])
-      .then(([d, compras]) => {
+    Promise.all([getDespesaFixa(id), getCompras(undefined, id), getExcecoesDespesaFixa(id)])
+      .then(([d, compras, excs]) => {
         setDespesa(d);
         setValues(despesaFixaParaFormValues(d));
         setHistorico(compras);
+        setExcecoes(excs);
         navigation.setOptions({ title: d.descricao || 'Despesa fixa' });
       })
       .catch((e: Error) => setError(e.message))
@@ -122,6 +130,24 @@ export default function DespesaFixaDetalheScreen() {
 
   function reajustar() {
     router.push({ pathname: '/(app)/mais/despesas-fixas/reajuste', params: { id } });
+  }
+
+  function confirmarRemoverExcecao(excecao: DespesaFixaExcecao) {
+    confirmar(
+      {
+        titulo: 'Remover exceção',
+        mensagem: `Remover a exceção de ${excecao.competencia_referencia}? O atraso desta competência será reaberto.`,
+        textoConfirmar: 'Remover',
+      },
+      async () => {
+        try {
+          await deleteExcecaoDespesaFixa(id, excecao.id);
+          carregar();
+        } catch (e: unknown) {
+          notificar('Erro', (e as Error).message);
+        }
+      }
+    );
   }
 
   if (loading) {
@@ -219,6 +245,34 @@ export default function DespesaFixaDetalheScreen() {
                   .join(' · ')}
               </Text>
             </View>
+          </View>
+        ))}
+
+        <Text style={styles.secaoTitulo}>Exceções</Text>
+        {excecoes.length === 0 && (
+          <Text style={styles.vazio}>Nenhuma exceção registrada.</Text>
+        )}
+        {excecoes.map((excecao) => (
+          <View key={excecao.id} style={styles.pagamento}>
+            <View style={styles.pagamentoInfo}>
+              <Text style={styles.pagamentoValor}>{excecao.competencia_referencia}</Text>
+              <Text style={styles.pagamentoDetalhe}>
+                {excecao.motivo?.trim() || 'Sem motivo informado'}
+              </Text>
+              <Text style={styles.pagamentoDetalhe}>
+                {excecao.valor_ocorrido != null
+                  ? `Valor ocorrido: ${formatCurrency(excecao.valor_ocorrido)}`
+                  : 'Sem valor ocorrido'}
+                {excecao.valor_esperado_original != null
+                  ? ` · Esperado: ${formatCurrency(excecao.valor_esperado_original)}`
+                  : ''}
+              </Text>
+            </View>
+            {podeEditar && (
+              <Pressable onPress={() => confirmarRemoverExcecao(excecao)}>
+                <Text style={styles.encerrar}>Remover</Text>
+              </Pressable>
+            )}
           </View>
         ))}
       </ScrollView>
