@@ -2,9 +2,16 @@
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 let authToken: string | null = null;
+let onUnauthorized: (() => void) | null = null;
 
 export function setAuthToken(token: string | null) {
   authToken = token;
+}
+
+// Chamado quando uma requisição volta 401 — permite que o AuthContext
+// limpe a sessão e mande de volta pro login mesmo fora de um componente.
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -20,6 +27,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status === 401) onUnauthorized?.();
     const corpo = await response.json().catch(() => null) as { erro?: string } | null;
     throw new Error(corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
   }

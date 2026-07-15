@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { router } from 'expo-router';
 import { supabaseSignIn } from '../services/supabase/auth';
 import { getMe } from '../services/api/auth';
-import { setAuthToken } from '../services/api/client';
+import { setAuthToken, setUnauthorizedHandler } from '../services/api/client';
 import type { Usuario } from '../types';
 
 type AuthContextValue = {
@@ -27,6 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthToken(null);
     setUser(null);
   }
+
+  // Token expirado/inválido em qualquer chamada à API — limpa a sessão e
+  // manda de volta pro login, mesmo que a tela atual não faça nada sozinha.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      signOut();
+      router.replace('/(auth)/login');
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
   // Ressincroniza o user após alterações no próprio cadastro (ex.: fuso
   // horário no perfil) — fora isso, o user só é carregado no signIn.

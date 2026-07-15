@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { updatePessoa } from '@/src/services/api/pessoas';
 import { useAuth } from '@/src/context/AuthContext';
-import { notificar } from '@/src/utils/confirmar';
+import { confirmar, notificar } from '@/src/utils/confirmar';
 
 const FUSOS_BR = [
   { valor: 'America/Sao_Paulo', label: 'São Paulo (Brasília)' },
@@ -15,7 +16,7 @@ const FUSOS_BR = [
 ];
 
 export default function PerfilScreen() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, signOut } = useAuth();
 
   const [fusoSelecionado, setFusoSelecionado] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -55,6 +56,16 @@ export default function PerfilScreen() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  function confirmarSair() {
+    confirmar(
+      { titulo: 'Sair', mensagem: 'Deseja encerrar a sessão?', textoConfirmar: 'Sair' },
+      () => {
+        signOut();
+        router.replace('/(auth)/login');
+      }
+    );
   }
 
   if (user == null) {
@@ -106,6 +117,10 @@ export default function PerfilScreen() {
           : <Text style={styles.botaoTexto}>Salvar</Text>
         }
       </Pressable>
+
+      <Pressable style={styles.botaoSair} onPress={confirmarSair}>
+        <Text style={styles.botaoSairTexto}>Sair</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -130,4 +145,7 @@ const styles = StyleSheet.create({
   botao:             { backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 16 },
   botaoDesabilitado: { opacity: 0.5 },
   botaoTexto:        { color: '#fff', fontWeight: '600', fontSize: 15 },
+
+  botaoSair:         { borderWidth: 1, borderColor: '#c62828', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 24 },
+  botaoSairTexto:    { color: '#c62828', fontWeight: '600', fontSize: 15 },
 });
