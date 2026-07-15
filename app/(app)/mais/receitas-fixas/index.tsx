@@ -18,9 +18,10 @@ const STATUS_INFO: Record<StatusReceitaFixa, { label: string; cor: string }> = {
   atrasado: { label: 'Atrasado', cor: '#c62828' },
   aguardando: { label: 'Aguardando', cor: '#1565c0' },
   recebido: { label: 'Recebido', cor: '#2e7d32' },
+  justificado: { label: 'Justificado', cor: '#616161' },
 };
 
-const ORDEM_STATUS: StatusReceitaFixa[] = ['atrasado', 'aguardando', 'recebido'];
+const ORDEM_STATUS: StatusReceitaFixa[] = ['atrasado', 'aguardando', 'recebido', 'justificado'];
 
 export default function RecebimentosScreen() {
   const [modo, setModo] = useState<Modo>('mes');
@@ -67,6 +68,18 @@ export default function RecebimentosScreen() {
         origemId: item.origem_id,
         casaId: item.casa_id != null ? String(item.casa_id) : '',
         pessoaId: item.pessoa_id != null ? String(item.pessoa_id) : '',
+      },
+    });
+  }
+
+  function justificar(item: ReceitaFixaStatusItem) {
+    router.push({
+      pathname: '/(app)/mais/receitas-fixas/justificar',
+      params: {
+        receitaFixaId: item.receita_fixa_id,
+        competenciaReferencia: item.competencia,
+        descricao: item.descricao,
+        valorEsperado: item.valor_esperado != null ? String(item.valor_esperado) : '',
       },
     });
   }
@@ -137,9 +150,14 @@ export default function RecebimentosScreen() {
                     : 'valor variável'}
                 </Text>
               </View>
-              {item.status !== 'recebido' && (
+              {item.status !== 'recebido' && item.status !== 'justificado' && (
                 <Pressable onPress={() => registrarRecebimento(item)}>
                   <Text style={styles.registrar}>Registrar recebimento</Text>
+                </Pressable>
+              )}
+              {item.status === 'atrasado' && (
+                <Pressable onPress={() => justificar(item)}>
+                  <Text style={styles.justificar}>Justificar</Text>
                 </Pressable>
               )}
             </Pressable>
@@ -190,6 +208,7 @@ const styles = StyleSheet.create({
   itemDetalhe:         { fontSize: 12, color: '#777', marginTop: 2 },
   itemValor:           { fontSize: 14, fontWeight: '600' },
   registrar:           { color: '#1565c0', fontSize: 14 },
+  justificar:          { color: '#616161', fontSize: 14 },
 
   botaoContratos:      { margin: 16, borderWidth: 1.5, borderColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center' },
   botaoContratosTexto: { color: '#1565c0', fontWeight: '600', fontSize: 15 },

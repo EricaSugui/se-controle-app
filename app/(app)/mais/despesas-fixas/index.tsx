@@ -19,9 +19,10 @@ const STATUS_INFO: Record<StatusDespesaFixa, { label: string; cor: string }> = {
   vencendo_hoje: { label: 'Vence hoje', cor: '#e65100' },
   em_dia: { label: 'Em dia', cor: '#1565c0' },
   pago: { label: 'Pago', cor: '#2e7d32' },
+  justificado: { label: 'Justificado', cor: '#616161' },
 };
 
-const ORDEM_STATUS: StatusDespesaFixa[] = ['em_atraso', 'vencendo_hoje', 'em_dia', 'pago'];
+const ORDEM_STATUS: StatusDespesaFixa[] = ['em_atraso', 'vencendo_hoje', 'em_dia', 'pago', 'justificado'];
 
 export default function ContasDoMesScreen() {
   const [modo, setModo] = useState<Modo>('mes');
@@ -68,6 +69,18 @@ export default function ContasDoMesScreen() {
         categoriaId: item.categoria_id,
         casaId: item.casa_id != null ? String(item.casa_id) : '',
         pessoaId: item.pessoa_id != null ? String(item.pessoa_id) : '',
+      },
+    });
+  }
+
+  function justificar(item: DespesaFixaStatusItem) {
+    router.push({
+      pathname: '/(app)/mais/despesas-fixas/justificar',
+      params: {
+        despesaFixaId: item.despesa_fixa_id,
+        competenciaReferencia: item.competencia,
+        descricao: item.descricao,
+        valorReferencia: String(item.valor_referencia),
       },
     });
   }
@@ -137,9 +150,14 @@ export default function ContasDoMesScreen() {
                   {formatCurrency(item.valor_referencia)}
                 </Text>
               </View>
-              {item.status !== 'pago' && (
+              {item.status !== 'pago' && item.status !== 'justificado' && (
                 <Pressable onPress={() => registrarPagamento(item)}>
                   <Text style={styles.registrar}>Registrar pagamento</Text>
+                </Pressable>
+              )}
+              {item.status === 'em_atraso' && (
+                <Pressable onPress={() => justificar(item)}>
+                  <Text style={styles.justificar}>Justificar</Text>
                 </Pressable>
               )}
             </Pressable>
@@ -190,6 +208,7 @@ const styles = StyleSheet.create({
   itemDetalhe:         { fontSize: 12, color: '#777', marginTop: 2 },
   itemValor:           { fontSize: 14, fontWeight: '600' },
   registrar:           { color: '#1565c0', fontSize: 14 },
+  justificar:          { color: '#616161', fontSize: 14 },
 
   botaoContratos:      { margin: 16, borderWidth: 1.5, borderColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center' },
   botaoContratosTexto: { color: '#1565c0', fontWeight: '600', fontSize: 15 },

@@ -1,5 +1,11 @@
 import { api } from './client';
-import type { ReceitaFixa, ReceitaFixaInput, ReceitaFixaStatusItem } from '../../types';
+import type {
+  ReceitaFixa,
+  ReceitaFixaExcecao,
+  ReceitaFixaExcecaoInput,
+  ReceitaFixaInput,
+  ReceitaFixaStatusItem,
+} from '../../types';
 
 export function getReceitasFixas(filtros?: {
   casaId?: number;
@@ -31,6 +37,21 @@ export function encerrarReceitaFixa(id: number, vigenteAte?: string): Promise<Re
     `/receitas-fixas/${id}/encerrar`,
     vigenteAte ? { vigente_ate: vigenteAte } : undefined
   );
+}
+
+export function getExcecoesReceitaFixa(receitaFixaId: number): Promise<ReceitaFixaExcecao[]> {
+  return api.get<ReceitaFixaExcecao[]>(`/receitas-fixas/${receitaFixaId}/excecoes`);
+}
+
+export function createExcecaoReceitaFixa(
+  receitaFixaId: number,
+  input: ReceitaFixaExcecaoInput
+): Promise<ReceitaFixaExcecao> {
+  return api.post<ReceitaFixaExcecao>(`/receitas-fixas/${receitaFixaId}/excecoes`, input);
+}
+
+export function deleteExcecaoReceitaFixa(receitaFixaId: number, excecaoId: number): Promise<void> {
+  return api.delete<void>(`/receitas-fixas/${receitaFixaId}/excecoes/${excecaoId}`);
 }
 
 export function getStatusReceitasFixas(
