@@ -40,6 +40,8 @@ export default function ReceitasScreen() {
         valorLiquido: String(item.valor_liquido),
         data: item.data ?? '',
         competencia: item.competencia ?? '',
+        receitaFixaId: item.receita_fixa_id != null ? String(item.receita_fixa_id) : '',
+        competenciaReferencia: item.competencia_referencia ?? '',
       },
     });
   }

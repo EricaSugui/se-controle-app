@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useDashboard } from '@/src/hooks/useDashboard';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { getStatusDespesasFixas } from '@/src/services/api/despesasFixas';
+import { getStatusReceitasFixas } from '@/src/services/api/receitasFixas';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
 
@@ -17,6 +18,7 @@ export default function DashboardScreen() {
   const [eixo, setEixo] = useState<'caixa' | 'competencia'>('caixa');
   const [seletorVisivel, setSeletorVisivel] = useState(false);
   const [alertas, setAlertas] = useState(0);
+  const [recebimentosAtrasados, setRecebimentosAtrasados] = useState(0);
   const state = useDashboard(competencia, eixo);
 
   useFocusEffect(
@@ -26,6 +28,11 @@ export default function DashboardScreen() {
           setAlertas(itens.filter((i) => i.status === 'em_atraso' || i.status === 'vencendo_hoje').length)
         )
         .catch(() => setAlertas(0));
+      getStatusReceitasFixas()
+        .then((itens) =>
+          setRecebimentosAtrasados(itens.filter((i) => i.status === 'atrasado').length)
+        )
+        .catch(() => setRecebimentosAtrasados(0));
     }, [])
   );
 
@@ -82,6 +89,20 @@ export default function DashboardScreen() {
               {alertas === 1
                 ? '1 conta fixa vencendo ou em atraso'
                 : `${alertas} contas fixas vencendo ou em atraso`}{' '}
+              ›
+            </Text>
+          </Pressable>
+        )}
+
+        {recebimentosAtrasados > 0 && (
+          <Pressable
+            style={styles.alertaRecebimentos}
+            onPress={() => router.push('/(app)/mais/receitas-fixas')}
+          >
+            <Text style={styles.alertaRecebimentosTexto}>
+              {recebimentosAtrasados === 1
+                ? '1 recebimento atrasado'
+                : `${recebimentosAtrasados} recebimentos atrasados`}{' '}
               ›
             </Text>
           </Pressable>
@@ -148,6 +169,9 @@ const styles = StyleSheet.create({
 
   alertaContas:       { backgroundColor: '#fdecea', borderRadius: 8, padding: 12 },
   alertaContasTexto:  { color: '#c62828', fontWeight: '600', fontSize: 14, textAlign: 'center' },
+
+  alertaRecebimentos:      { backgroundColor: '#e8f5e9', borderRadius: 8, padding: 12 },
+  alertaRecebimentosTexto: { color: '#2e7d32', fontWeight: '600', fontSize: 14, textAlign: 'center' },
 
   resumo:             { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 16, gap: 8 },
   resumoItem:         { flexDirection: 'row', justifyContent: 'space-between' },
