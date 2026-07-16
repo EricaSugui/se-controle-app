@@ -3,6 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect } from 'expo-router';
 import { createReceitaFixa } from '@/src/services/api/receitasFixas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import {
   ReceitaFixaForm,
@@ -12,7 +13,7 @@ import {
 import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
-import type { CasaDashboard, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, OrigemReceita } from '@/src/types';
 
 function hojeISO(): string {
   const d = new Date();
@@ -33,6 +34,7 @@ function valoresIniciais(): ReceitaFixaFormValues {
     diaEsperado: '',
     vigenteDesde: hojeISO(),
     vigenteAte: '',
+    contaDestinoId: null,
   };
 }
 
@@ -41,6 +43,7 @@ export default function NovaReceitaFixaScreen() {
   const [values, setValues] = useState<ReceitaFixaFormValues>(valoresIniciais);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
@@ -55,6 +58,7 @@ export default function NovaReceitaFixaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -92,7 +96,7 @@ export default function NovaReceitaFixaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <ReceitaFixaForm values={values} onChange={setValues} casas={casas} origens={origens} />
+        <ReceitaFixaForm values={values} onChange={setValues} casas={casas} origens={origens} contas={contas} />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}

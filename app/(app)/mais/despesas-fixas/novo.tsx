@@ -3,6 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect } from 'expo-router';
 import { createDespesaFixa } from '@/src/services/api/despesasFixas';
 import { getCategorias } from '@/src/services/api/categorias';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import {
   DespesaFixaForm,
@@ -12,7 +13,7 @@ import {
 import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
-import type { CasaDashboard, Categoria } from '@/src/types';
+import type { CartaoConta, CasaDashboard, Categoria } from '@/src/types';
 
 function hojeISO(): string {
   const d = new Date();
@@ -33,6 +34,7 @@ function valoresIniciais(): DespesaFixaFormValues {
     diaEsperado: '',
     vigenteDesde: hojeISO(),
     vigenteAte: '',
+    cartaoContaPadraoId: null,
   };
 }
 
@@ -41,6 +43,7 @@ export default function NovaDespesaFixaScreen() {
   const [values, setValues] = useState<DespesaFixaFormValues>(valoresIniciais);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cartoesContas, setCartoesContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
@@ -55,6 +58,7 @@ export default function NovaDespesaFixaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getCategorias(true).then(setCategorias).catch(() => {});
+      getCartoesContas(true).then(setCartoesContas).catch(() => {});
     }, [])
   );
 
@@ -93,7 +97,7 @@ export default function NovaDespesaFixaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <DespesaFixaForm values={values} onChange={setValues} casas={casas} categorias={categorias} />
+        <DespesaFixaForm values={values} onChange={setValues} casas={casas} categorias={categorias} cartoesContas={cartoesContas} />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}

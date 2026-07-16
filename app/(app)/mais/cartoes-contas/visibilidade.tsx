@@ -7,6 +7,8 @@ import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CartaoCasaVisibilidade, CasaDashboard } from '@/src/types';
 
+type CampoVisibilidade = 'compartilhado' | 'compartilha_saldo';
+
 export default function VisibilidadeCartaoContaScreen() {
   const { cartaoId, nome } = useLocalSearchParams<{ cartaoId: string; nome: string }>();
   const navigation = useNavigation();
@@ -16,7 +18,7 @@ export default function VisibilidadeCartaoContaScreen() {
   const [entradas, setEntradas] = useState<CartaoCasaVisibilidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [atualizandoCasaId, setAtualizandoCasaId] = useState<number | null>(null);
+  const [atualizando, setAtualizando] = useState<{ casaId: number; campo: CampoVisibilidade } | null>(null);
 
   const carregar = useCallback(() => {
     setLoading(true);
@@ -41,21 +43,27 @@ export default function VisibilidadeCartaoContaScreen() {
     }, [nome, navigation])
   );
 
-  async function alternar(casa: CasaDashboard) {
+  async function alternar(casa: CasaDashboard, campo: CampoVisibilidade) {
     const entrada = entradas.find((e) => e.casa_id === casa.id);
-    setAtualizandoCasaId(casa.id);
+    setAtualizando({ casaId: casa.id, campo });
     try {
       if (entrada) {
-        const atualizada = await atualizarVisibilidade(id, casa.id, !entrada.compartilhado);
+        // PATCH parcial: o campo omitido mantém o valor atual no backend.
+        const valorAtual = campo === 'compartilhado' ? entrada.compartilhado : entrada.compartilha_saldo;
+        const atualizada = await atualizarVisibilidade(id, casa.id, { [campo]: !valorAtual });
         setEntradas((prev) => prev.map((e) => (e.casa_id === casa.id ? atualizada : e)));
       } else {
-        const criada = await criarVisibilidade(id, { casa_id: casa.id, compartilhado: true });
+        const criada = await criarVisibilidade(id, {
+          casa_id: casa.id,
+          compartilhado: campo === 'compartilhado',
+          compartilha_saldo: campo === 'compartilha_saldo',
+        });
         setEntradas((prev) => [...prev, criada]);
       }
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {
-      setAtualizandoCasaId(null);
+      setAtualizando(null);
     }
   }
 
@@ -81,7 +89,8 @@ export default function VisibilidadeCartaoContaScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.explicacao}>
-        Escolha em quais casas este cartão/conta fica visível para os outros membros.
+        Escolha, por casa, o que os outros membros veem deste cartão/conta: os lançamentos e o
+        saldo. O saldo só entra na projeção dos membros quando os dois estão ativados.
       </Text>
 
       {casas.length === 0 && (
@@ -91,24 +100,34 @@ export default function VisibilidadeCartaoContaScreen() {
       {casas.map((casa) => {
         const entrada = entradas.find((e) => e.casa_id === casa.id);
         const compartilhado = entrada?.compartilhado ?? false;
-        const atualizando = atualizandoCasaId === casa.id;
+        const compartilhaSaldo = entrada?.compartilha_saldo ?? false;
+
+        const toggle = (campo: CampoVisibilidade, ativo: boolean, labelAtivo: string, labelInativo: string) => {
+          const emVoo = atualizando?.casaId === casa.id && atualizando.campo === campo;
+          return (
+            <Pressable
+              style={[styles.opcao, ativo && styles.opcaoAtiva]}
+              onPress={() => alternar(casa, campo)}
+              disabled={atualizando != null}
+            >
+              {emVoo ? (
+                <ActivityIndicator size="small" color={ativo ? '#1565c0' : '#555'} />
+              ) : (
+                <Text style={[styles.opcaoTexto, ativo && styles.opcaoTextoAtivo]}>
+                  {ativo ? labelAtivo : labelInativo}
+                </Text>
+              )}
+            </Pressable>
+          );
+        };
 
         return (
           <View key={casa.id} style={styles.linha}>
             <Text style={styles.casaNome}>{casa.nome}</Text>
-            <Pressable
-              style={[styles.opcao, compartilhado && styles.opcaoAtiva]}
-              onPress={() => alternar(casa)}
-              disabled={atualizando}
-            >
-              {atualizando ? (
-                <ActivityIndicator size="small" color={compartilhado ? '#1565c0' : '#555'} />
-              ) : (
-                <Text style={[styles.opcaoTexto, compartilhado && styles.opcaoTextoAtivo]}>
-                  {compartilhado ? 'Compartilhado' : 'Privado'}
-                </Text>
-              )}
-            </Pressable>
+            <View style={styles.toggles}>
+              {toggle('compartilhado', compartilhado, 'Compartilhado', 'Privado')}
+              {toggle('compartilha_saldo', compartilhaSaldo, 'Saldo visível', 'Saldo oculto')}
+            </View>
           </View>
         );
       })}
@@ -122,8 +141,9 @@ const styles = StyleSheet.create({
   explicacao:      { fontSize: 13, color: '#666', marginBottom: 4 },
   vazio:           { textAlign: 'center', color: '#888', marginTop: 32 },
 
-  linha:           { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14 },
-  casaNome:        { fontSize: 15, fontWeight: '500', flex: 1 },
+  linha:           { backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14, gap: 10 },
+  casaNome:        { fontSize: 15, fontWeight: '500' },
+  toggles:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 
   opcao:           { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14, minWidth: 110, alignItems: 'center' },
   opcaoAtiva:      { borderColor: '#1565c0', backgroundColor: '#e3f2fd' },

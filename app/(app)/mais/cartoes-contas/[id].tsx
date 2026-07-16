@@ -1,11 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { updateCartaoConta } from '@/src/services/api/cartoesContas';
+import { getCartoesContas, updateCartaoConta } from '@/src/services/api/cartoesContas';
 import { getPessoasRelacionadas } from '@/src/services/api/pessoas';
-import { CartaoContaForm, type CartaoContaFormValues } from '@/src/components/domain/CartaoContaForm';
+import {
+  CartaoContaForm,
+  cartaoContaParaInput,
+  parSaldoCompleto,
+  type CartaoContaFormValues,
+} from '@/src/components/domain/CartaoContaForm';
 import { notificar } from '@/src/utils/confirmar';
-import type { Pessoa } from '@/src/types';
+import type { CartaoConta, Pessoa, TipoCartaoConta } from '@/src/types';
+
+function parseTipo(tipo: string | undefined): TipoCartaoConta {
+  if (tipo === 'debito' || tipo === 'aplicacao') return tipo;
+  return 'credito';
+}
 
 export default function EditarCartaoContaScreen() {
   const params = useLocalSearchParams<{
@@ -16,38 +26,43 @@ export default function EditarCartaoContaScreen() {
     limite?: string;
     diaFechamento?: string;
     diaVencimento?: string;
+    contaDebitoId?: string;
+    saldoBase?: string;
+    saldoBaseData?: string;
   }>();
   const navigation = useNavigation();
 
   const id = Number(params.id);
 
-  const [values, setValues] = useState<CartaoContaFormValues>({
-    nome: params.nome ?? '',
-    tipo: params.tipo === 'debito' ? 'debito' : 'credito',
-    titularId: params.titularId ? Number(params.titularId) : null,
-    limite: params.limite ? Number(params.limite) : null,
-    diaFechamento: params.diaFechamento ?? '',
-    diaVencimento: params.diaVencimento ?? '',
-  });
+  function valoresDosParams(): CartaoContaFormValues {
+    return {
+      nome: params.nome ?? '',
+      tipo: parseTipo(params.tipo),
+      titularId: params.titularId ? Number(params.titularId) : null,
+      limite: params.limite ? Number(params.limite) : null,
+      diaFechamento: params.diaFechamento ?? '',
+      diaVencimento: params.diaVencimento ?? '',
+      contaDebitoId: params.contaDebitoId ? Number(params.contaDebitoId) : null,
+      saldoBase: params.saldoBase ? Number(params.saldoBase) : null,
+      saldoBaseData: params.saldoBaseData ?? '',
+    };
+  }
+
+  const [values, setValues] = useState<CartaoContaFormValues>(valoresDosParams);
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela é reaproveitada ao navegar de um cartão/conta para outro (mesma
   // rota [id]), então o estado precisa ser resincronizado quando o id muda.
   useEffect(() => {
-    setValues({
-      nome: params.nome ?? '',
-      tipo: params.tipo === 'debito' ? 'debito' : 'credito',
-      titularId: params.titularId ? Number(params.titularId) : null,
-      limite: params.limite ? Number(params.limite) : null,
-      diaFechamento: params.diaFechamento ?? '',
-      diaVencimento: params.diaVencimento ?? '',
-    });
+    setValues(valoresDosParams());
   }, [params.id]);
 
   useFocusEffect(
     useCallback(() => {
       getPessoasRelacionadas(true).then(setPessoas).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -57,20 +72,14 @@ export default function EditarCartaoContaScreen() {
     }, [params.nome, navigation])
   );
 
+  const podeSalvar = values.nome.trim() !== '' && values.titularId != null && parSaldoCompleto(values);
+
   async function salvar() {
-    const nomeTrimmed = values.nome.trim();
-    if (!nomeTrimmed) return;
+    if (!podeSalvar) return;
 
     setSalvando(true);
     try {
-      await updateCartaoConta(id, {
-        nome: nomeTrimmed,
-        tipo: values.tipo,
-        titular_id: values.titularId,
-        limite: values.limite,
-        dia_fechamento: values.diaFechamento ? Number(values.diaFechamento) : null,
-        dia_vencimento: values.diaVencimento ? Number(values.diaVencimento) : null,
-      });
+      await updateCartaoConta(id, cartaoContaParaInput(values));
       router.back();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
@@ -82,12 +91,18 @@ export default function EditarCartaoContaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <CartaoContaForm values={values} onChange={setValues} pessoas={pessoas} />
+        <CartaoContaForm
+          values={values}
+          onChange={setValues}
+          pessoas={pessoas}
+          // um cartão não pode debitar a fatura de si mesmo
+          contas={contas.filter((c) => c.id !== id)}
+        />
 
         <Pressable
-          style={[styles.botao, (!values.nome.trim() || salvando) && styles.botaoDesabilitado]}
+          style={[styles.botao, (!podeSalvar || salvando) && styles.botaoDesabilitado]}
           onPress={salvar}
-          disabled={!values.nome.trim() || salvando}
+          disabled={!podeSalvar || salvando}
         >
           {salvando
             ? <ActivityIndicator color="#fff" />

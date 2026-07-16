@@ -3,12 +3,13 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { updateReceita } from '@/src/services/api/receitas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
 import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
-import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 export default function EditarReceitaScreen() {
   const params = useLocalSearchParams<{
@@ -24,6 +25,7 @@ export default function EditarReceitaScreen() {
     competencia?: string;
     receitaFixaId?: string;
     competenciaReferencia?: string;
+    contaDestinoId?: string;
   }>();
 
   const id = Number(params.id);
@@ -42,10 +44,12 @@ export default function EditarReceitaScreen() {
     valorLiquido: params.valorLiquido ? Number(params.valorLiquido) : null,
     data: params.data ?? '',
     competencia: params.competencia || competenciaAtual(),
+    contaDestino: params.contaDestinoId ? Number(params.contaDestinoId) : null,
   });
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela é reaproveitada ao navegar de uma receita para outra (mesma
@@ -61,6 +65,7 @@ export default function EditarReceitaScreen() {
       valorLiquido: params.valorLiquido ? Number(params.valorLiquido) : null,
       data: params.data ?? '',
       competencia: params.competencia || competenciaAtual(),
+      contaDestino: params.contaDestinoId ? Number(params.contaDestinoId) : null,
     });
   }, [params.id]);
 
@@ -68,6 +73,7 @@ export default function EditarReceitaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -96,6 +102,8 @@ export default function EditarReceitaScreen() {
         competencia: values.competencia || null,
         receita_fixa_id: receitaFixaId,
         competencia_referencia: competenciaReferencia,
+        // chave omitida = herdar do contrato; null explícito = sem conta
+        ...(values.contaDestino !== 'herdar' ? { conta_destino_id: values.contaDestino } : {}),
       });
       router.back();
     } catch (e: unknown) {
@@ -117,7 +125,15 @@ export default function EditarReceitaScreen() {
           </Text>
         )}
 
-        <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} />
+        <ReceitaForm
+          values={values}
+          onChange={setValues}
+          casas={casas}
+          membros={membros}
+          origens={origens}
+          contas={contas}
+          vinculadaAFixa={receitaFixaId != null}
+        />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}

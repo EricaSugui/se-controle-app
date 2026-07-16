@@ -48,7 +48,7 @@ export default function EditarCompraScreen() {
           pessoaId: compra.pessoa_id,
           categoriaId: compra.categoria_id,
           descricao: compra.descricao ?? '',
-          cartaoContaId: compra.cartao_conta_id,
+          cartaoContaId: compra.cartao_conta_id ?? null,
           formaPagamentoId: compra.forma_pagamento_id,
           data: compra.data ? compra.data.slice(0, 10) : '',
           competencia: compra.competencia || competenciaAtual(),

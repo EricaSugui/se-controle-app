@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type {
+  CartaoConta,
   CasaDashboard,
   OrigemReceita,
   PeriodicidadeDespesaFixa,
@@ -21,6 +22,7 @@ export type ReceitaFixaFormValues = {
   diaEsperado: string;
   vigenteDesde: string;
   vigenteAte: string; // '' = sem data de fim
+  contaDestinoId: number | null;
 };
 
 type Props = {
@@ -28,6 +30,7 @@ type Props = {
   onChange: (values: ReceitaFixaFormValues) => void;
   casas: CasaDashboard[];
   origens: OrigemReceita[];
+  contas: CartaoConta[]; // candidatas a conta de destino (debito/aplicacao)
   // editar/reajuste: escopo é imutável no backend — exibe texto fixo no lugar dos chips
   escopoBloqueado?: boolean;
 };
@@ -48,6 +51,7 @@ export function receitaFixaParaInput(
     dia_esperado_recebimento: Number(v.diaEsperado),
     vigente_desde: v.vigenteDesde,
     vigente_ate: v.vigenteAte || null,
+    conta_destino_id: v.contaDestinoId,
     ...(anteriorId != null ? { receita_fixa_anterior_id: anteriorId } : {}),
   };
 }
@@ -64,6 +68,7 @@ export function receitaFixaParaFormValues(r: ReceitaFixa): ReceitaFixaFormValues
     diaEsperado: String(r.dia_esperado_recebimento),
     vigenteDesde: r.vigente_desde.slice(0, 10),
     vigenteAte: r.vigente_ate ? r.vigente_ate.slice(0, 10) : '',
+    contaDestinoId: r.conta_destino_id ?? null,
   };
 }
 
@@ -77,12 +82,13 @@ const PERIODICIDADES: { valor: PeriodicidadeDespesaFixa; label: string }[] = [
   { valor: 'anual', label: 'Anual' },
 ];
 
-export function ReceitaFixaForm({ values, onChange, casas, origens, escopoBloqueado = false }: Props) {
+export function ReceitaFixaForm({ values, onChange, casas, origens, contas, escopoBloqueado = false }: Props) {
   function set<K extends keyof ReceitaFixaFormValues>(key: K, value: ReceitaFixaFormValues[K]) {
     onChange({ ...values, [key]: value });
   }
 
   const nomeCasa = casas.find((c) => c.id === values.casaId)?.nome;
+  const contasDestino = contas.filter((c) => c.tipo !== 'credito' && c.ativo);
 
   return (
     <View style={styles.form}>
@@ -228,6 +234,33 @@ export function ReceitaFixaForm({ values, onChange, casas, origens, escopoBloque
           </Pressable>
         )}
       </View>
+
+      <Text style={styles.label}>Conta de destino (opcional)</Text>
+      <View style={styles.opcoesContainer}>
+        <Pressable
+          style={[styles.opcao, values.contaDestinoId === null && styles.opcaoAtiva]}
+          onPress={() => set('contaDestinoId', null)}
+        >
+          <Text style={[styles.opcaoTexto, values.contaDestinoId === null && styles.opcaoTextoAtivo]}>
+            Nenhuma
+          </Text>
+        </Pressable>
+        {contasDestino.map((c) => (
+          <Pressable
+            key={c.id}
+            style={[styles.opcao, values.contaDestinoId === c.id && styles.opcaoAtiva]}
+            onPress={() => set('contaDestinoId', c.id)}
+          >
+            <Text style={[styles.opcaoTexto, values.contaDestinoId === c.id && styles.opcaoTextoAtivo]}>
+              {c.nome}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={styles.hint}>
+        Usada como padrão nos recebimentos e na projeção de saldo. Sem conta, o contrato fica fora
+        da projeção.
+      </Text>
     </View>
   );
 }

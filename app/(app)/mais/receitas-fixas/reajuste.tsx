@@ -3,6 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { createReceitaFixa, encerrarReceitaFixa, getReceitaFixa } from '@/src/services/api/receitasFixas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import {
   ReceitaFixaForm,
@@ -13,7 +14,7 @@ import {
 import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
-import type { CasaDashboard, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, OrigemReceita } from '@/src/types';
 
 function hojeISO(): string {
   const d = new Date();
@@ -39,6 +40,7 @@ export default function ReajusteReceitaFixaScreen() {
   const [values, setValues] = useState<ReceitaFixaFormValues | null>(null);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -66,6 +68,7 @@ export default function ReajusteReceitaFixaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -145,6 +148,7 @@ export default function ReajusteReceitaFixaScreen() {
           onChange={setValues}
           casas={casas}
           origens={origens}
+          contas={contas}
           escopoBloqueado
         />
 

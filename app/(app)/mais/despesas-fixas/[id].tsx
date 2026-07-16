@@ -10,6 +10,7 @@ import {
 } from '@/src/services/api/despesasFixas';
 import { getCompras } from '@/src/services/api/compras';
 import { getCategorias } from '@/src/services/api/categorias';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { getMembros } from '@/src/services/api/casas';
 import {
@@ -22,7 +23,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
-import type { CasaDashboard, Categoria, Compra, DespesaFixa, DespesaFixaExcecao, MembroCasa } from '@/src/types';
+import type { CartaoConta, CasaDashboard, Categoria, Compra, DespesaFixa, DespesaFixaExcecao, MembroCasa } from '@/src/types';
 
 export default function DespesaFixaDetalheScreen() {
   const params = useLocalSearchParams<{ id: string; descricao?: string }>();
@@ -37,6 +38,7 @@ export default function DespesaFixaDetalheScreen() {
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cartoesContas, setCartoesContas] = useState<CartaoConta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -63,6 +65,7 @@ export default function DespesaFixaDetalheScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getCategorias(true).then(setCategorias).catch(() => {});
+      getCartoesContas(true).then(setCartoesContas).catch(() => {});
     }, [])
   );
 
@@ -178,6 +181,7 @@ export default function DespesaFixaDetalheScreen() {
               values={values}
               onChange={setValues}
               casas={casas}
+              cartoesContas={cartoesContas}
               categorias={categorias}
               escopoBloqueado
             />

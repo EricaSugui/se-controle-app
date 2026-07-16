@@ -10,6 +10,9 @@ export type ReceitaInput = {
   competencia: string | null;
   receita_fixa_id?: number | null;
   competencia_referencia?: string | null; // MES-AA; exige receita_fixa_id
+  // conta debito/aplicacao; em receita vinculada a fixa, chave OMITIDA herda
+  // o default do contrato — null explícito significa "sem conta"
+  conta_destino_id?: number | null;
 };
 
 export type Receita = ReceitaInput & {
@@ -75,13 +78,19 @@ export type Pessoa = {
   ativo: boolean;
 };
 
+export type TipoCartaoConta = 'credito' | 'debito' | 'aplicacao';
+
 export type CartaoContaInput = {
   nome: string;
-  tipo: 'credito' | 'debito';
-  titular_id: number | null;
-  limite: number | null;
-  dia_fechamento: number | null;
-  dia_vencimento: number | null;
+  tipo: TipoCartaoConta;
+  titular_id: number;
+  // campos de um tipo enviados no outro → 400
+  limite: number | null; // só credito
+  dia_fechamento: number | null; // só credito
+  dia_vencimento: number | null; // só credito
+  conta_debito_id: number | null; // só credito; conta debito/aplicacao do MESMO titular
+  saldo_base: number | null; // só debito/aplicacao; par com saldo_base_data
+  saldo_base_data: string | null; // AAAA-MM-DD; par com saldo_base
 };
 
 export type CartaoConta = CartaoContaInput & {
@@ -94,11 +103,13 @@ export type CartaoConta = CartaoContaInput & {
 export type CartaoCasaVisibilidadeInput = {
   casa_id: number;
   compartilhado: boolean;
+  compartilha_saldo?: boolean; // consentimento independente; default false
 };
 
 export type CartaoCasaVisibilidade = CartaoCasaVisibilidadeInput & {
   id: number;
   cartao_id: number;
+  compartilha_saldo: boolean;
   created_at: string;
 };
 
@@ -112,6 +123,7 @@ export type Categoria = {
 export type FormaPagamento = {
   id: number;
   nome: string;
+  exige_conta: boolean; // true → compra sem cartao_conta_id (após herança) é 400
   ativo: boolean;
   created_at: string;
 };
@@ -121,7 +133,9 @@ export type CompraInput = {
   pessoa_id: number;
   categoria_id: number;
   descricao: string | null;
-  cartao_conta_id: number | null;
+  // em compra vinculada a despesa fixa, chave OMITIDA herda o
+  // cartao_conta_padrao_id do contrato — null explícito = sem cartão/conta
+  cartao_conta_id?: number | null;
   forma_pagamento_id: number | null;
   data: string;
   competencia: string;
@@ -171,6 +185,7 @@ export type DespesaFixaInput = {
   dia_esperado: number;
   vigente_desde: string;
   vigente_ate: string | null;
+  cartao_conta_padrao_id: number | null; // meio de pagamento default (qualquer tipo)
   despesa_fixa_anterior_id?: number | null; // imutável; ignorado no PUT
 };
 
@@ -225,6 +240,7 @@ export type ReceitaFixaInput = {
   dia_esperado_recebimento: number;
   vigente_desde: string;
   vigente_ate: string | null;
+  conta_destino_id: number | null; // conta destino default (debito/aplicacao)
   receita_fixa_anterior_id?: number | null; // imutável; ignorado no PUT
 };
 
@@ -291,4 +307,53 @@ export type Fatura = FaturaInput & {
   mes_referencia: string;
   parcelas?: Parcela[]; // presente apenas em GET /faturas/{id}
   created_at: string;
+};
+
+export type TipoEventoProjecao =
+  | 'receita'
+  | 'receita_esperada'
+  | 'parcela_debito'
+  | 'fatura'
+  | 'despesa_esperada';
+
+export type EventoProjecao = {
+  data: string;
+  tipo: TipoEventoProjecao;
+  descricao: string;
+  valor: number; // com sinal: entradas +, saídas −
+  valor_indefinido?: boolean; // receita variável sem estimativa; soma como 0
+};
+
+export type ContaProjetada = {
+  conta: {
+    id: number;
+    nome: string;
+    tipo: 'debito' | 'aplicacao';
+    titular_id: number;
+    titular_nome: string;
+  };
+  saldo_base: number | null;
+  saldo_base_data: string | null;
+  sem_saldo_base: boolean;
+  fluxo_liquido: number;
+  saldo_projetado: number | null; // null quando sem_saldo_base
+  eventos: EventoProjecao[]; // ordenados por data
+};
+
+export type TipoAvisoProjecao =
+  | 'cartao_sem_conta_debito'
+  | 'despesas_fixas_sem_meio_padrao'
+  | 'receitas_fixas_sem_conta_destino';
+
+export type AvisoProjecao = {
+  tipo: TipoAvisoProjecao;
+  mensagem: string;
+  quantidade: number;
+};
+
+export type SaldoProjetado = {
+  hoje: string;
+  ate: string;
+  contas: ContaProjetada[];
+  avisos: AvisoProjecao[];
 };

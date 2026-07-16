@@ -3,6 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { createDespesaFixa, encerrarDespesaFixa, getDespesaFixa } from '@/src/services/api/despesasFixas';
 import { getCategorias } from '@/src/services/api/categorias';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import {
   DespesaFixaForm,
@@ -13,7 +14,7 @@ import {
 import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
-import type { CasaDashboard, Categoria } from '@/src/types';
+import type { CartaoConta, CasaDashboard, Categoria } from '@/src/types';
 
 function hojeISO(): string {
   const d = new Date();
@@ -39,6 +40,7 @@ export default function ReajusteDespesaFixaScreen() {
   const [values, setValues] = useState<DespesaFixaFormValues | null>(null);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cartoesContas, setCartoesContas] = useState<CartaoConta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -66,6 +68,7 @@ export default function ReajusteDespesaFixaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getCategorias(true).then(setCategorias).catch(() => {});
+      getCartoesContas(true).then(setCartoesContas).catch(() => {});
     }, [])
   );
 
@@ -145,6 +148,7 @@ export default function ReajusteDespesaFixaScreen() {
           values={values}
           onChange={setValues}
           casas={casas}
+          cartoesContas={cartoesContas}
           categorias={categorias}
           escopoBloqueado
         />

@@ -42,6 +42,7 @@ export default function ReceitasScreen() {
         competencia: item.competencia ?? '',
         receitaFixaId: item.receita_fixa_id != null ? String(item.receita_fixa_id) : '',
         competenciaReferencia: item.competencia_referencia ?? '',
+        contaDestinoId: item.conta_destino_id != null ? String(item.conta_destino_id) : '',
       },
     });
   }

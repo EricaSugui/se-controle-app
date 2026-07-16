@@ -10,6 +10,7 @@ import {
 } from '@/src/services/api/receitasFixas';
 import { getReceitas } from '@/src/services/api/receitas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { getMembros } from '@/src/services/api/casas';
 import {
@@ -23,6 +24,7 @@ import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import type {
+  CartaoConta,
   CasaDashboard,
   MembroCasa,
   OrigemReceita,
@@ -44,6 +46,7 @@ export default function ReceitaFixaDetalheScreen() {
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -70,6 +73,7 @@ export default function ReceitaFixaDetalheScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -185,6 +189,7 @@ export default function ReceitaFixaDetalheScreen() {
               onChange={setValues}
               casas={casas}
               origens={origens}
+              contas={contas}
               escopoBloqueado
             />
 

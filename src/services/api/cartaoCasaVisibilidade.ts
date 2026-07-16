@@ -15,9 +15,9 @@ export function criarVisibilidade(
 export function atualizarVisibilidade(
   cartaoId: number,
   casaId: number,
-  compartilhado: boolean
+  patch: { compartilhado?: boolean; compartilha_saldo?: boolean }
 ): Promise<CartaoCasaVisibilidade> {
-  return api.patch<CartaoCasaVisibilidade>(`/cartoes-contas/${cartaoId}/visibilidade/${casaId}`, { compartilhado });
+  return api.patch<CartaoCasaVisibilidade>(`/cartoes-contas/${cartaoId}/visibilidade/${casaId}`, patch);
 }
 
 export function removerVisibilidade(cartaoId: number, casaId: number): Promise<void> {
