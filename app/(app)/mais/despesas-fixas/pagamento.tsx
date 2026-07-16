@@ -14,6 +14,10 @@ import { notificar } from '@/src/utils/confirmar';
 import { formatCurrency } from '@/src/utils/formatters';
 import type { CartaoConta, CasaDashboard, FormaPagamento, MembroCasa } from '@/src/types';
 
+// 'herdar' = omitir cartao_conta_id no payload (backend usa o meio de
+// pagamento padrão do contrato); null = enviar null explícito ("sem cartão/conta").
+type CartaoContaSelecao = number | null | 'herdar';
+
 function hojeISO(): string {
   const d = new Date();
   const mes = String(d.getMonth() + 1).padStart(2, '0');
@@ -39,7 +43,7 @@ export default function PagamentoDespesaFixaScreen() {
   const [valor, setValor] = useState<number | null>(null);
   const [data, setData] = useState(hojeISO());
   const [descricaoCompra, setDescricaoCompra] = useState('');
-  const [cartaoContaId, setCartaoContaId] = useState<number | null>(null);
+  const [cartaoContaId, setCartaoContaId] = useState<CartaoContaSelecao>('herdar');
   const [formaPagamentoId, setFormaPagamentoId] = useState<number | null>(null);
   // contrato de casa: casa fixa, escolhe-se a pessoa; pessoal: pessoa fixa, escolhe-se a casa
   const [pessoaSelId, setPessoaSelId] = useState<number | null>(null);
@@ -56,7 +60,7 @@ export default function PagamentoDespesaFixaScreen() {
     setValor(params.valorReferencia ? Number(params.valorReferencia) : null);
     setData(hojeISO());
     setDescricaoCompra(params.descricao ?? '');
-    setCartaoContaId(null);
+    setCartaoContaId('herdar');
     setFormaPagamentoId(null);
     setPessoaSelId(null);
     setCasaSelId(null);
@@ -95,6 +99,7 @@ export default function PagamentoDespesaFixaScreen() {
   const pessoaIdFinal = contratoDeCasa ? pessoaSelId : Number(params.pessoaId);
 
   const cartaoSelecionado = cartoes.find((c) => c.id === cartaoContaId);
+  const formaSelecionada = formas.find((f) => f.id === formaPagamentoId);
 
   const podeSalvar =
     valor != null && data !== '' && casaIdFinal != null && pessoaIdFinal != null && !salvando;
@@ -109,7 +114,8 @@ export default function PagamentoDespesaFixaScreen() {
         pessoa_id: pessoaIdFinal,
         categoria_id: Number(params.categoriaId),
         descricao: descricaoCompra.trim() || null,
-        cartao_conta_id: cartaoContaId,
+        // chave omitida = herdar o meio padrão do contrato; null = sem cartão/conta
+        ...(cartaoContaId !== 'herdar' ? { cartao_conta_id: cartaoContaId } : {}),
         forma_pagamento_id: formaPagamentoId,
         data,
         competencia: competenciaAtual(),
@@ -186,6 +192,14 @@ export default function PagamentoDespesaFixaScreen() {
             <Text style={styles.label}>Cartão/conta</Text>
             <View style={styles.opcoesContainer}>
               <Pressable
+                style={[styles.opcao, cartaoContaId === 'herdar' && styles.opcaoAtiva]}
+                onPress={() => setCartaoContaId('herdar')}
+              >
+                <Text style={[styles.opcaoTexto, cartaoContaId === 'herdar' && styles.opcaoTextoAtivo]}>
+                  Padrão do contrato
+                </Text>
+              </Pressable>
+              <Pressable
                 style={[styles.opcao, cartaoContaId === null && styles.opcaoAtiva]}
                 onPress={() => setCartaoContaId(null)}
               >
@@ -207,6 +221,11 @@ export default function PagamentoDespesaFixaScreen() {
             </View>
             {cartaoSelecionado?.tipo === 'credito' && (
               <Text style={styles.hint}>As parcelas serão atribuídas às faturas do cartão.</Text>
+            )}
+            {formaSelecionada?.exige_conta && cartaoContaId === null && (
+              <Text style={styles.hint}>
+                A forma "{formaSelecionada.nome}" exige um cartão/conta.
+              </Text>
             )}
           </>
         )}

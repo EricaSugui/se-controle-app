@@ -32,6 +32,9 @@ export default function CartoesContasScreen() {
         limite: item.limite != null ? String(item.limite) : '',
         diaFechamento: item.dia_fechamento != null ? String(item.dia_fechamento) : '',
         diaVencimento: item.dia_vencimento != null ? String(item.dia_vencimento) : '',
+        contaDebitoId: item.conta_debito_id != null ? String(item.conta_debito_id) : '',
+        saldoBase: item.saldo_base != null ? String(item.saldo_base) : '',
+        saldoBaseData: item.saldo_base_data ?? '',
       },
     });
   }
@@ -97,7 +100,9 @@ export default function CartoesContasScreen() {
           <View style={[styles.item, !item.ativo && styles.itemInativo]}>
             <View style={styles.itemInfo}>
               <Text style={styles.itemNome}>{item.nome}</Text>
-              <Text style={styles.itemTipo}>{item.tipo === 'credito' ? 'Crédito' : 'Débito'}</Text>
+              <Text style={styles.itemTipo}>
+                {item.tipo === 'credito' ? 'Crédito' : item.tipo === 'debito' ? 'Débito' : 'Aplicação'}
+              </Text>
             </View>
             {item.pode_editar && (
               <View style={styles.acoes}>

@@ -3,7 +3,11 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
-import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
+
+// 'herdar' = não enviar conta_destino_id no payload (o backend herda o default
+// do contrato vinculado); null = enviar null explícito ("sem conta").
+export type ContaDestinoSelecao = number | null | 'herdar';
 
 export type ReceitaFormValues = {
   casaId: number | null;
@@ -15,6 +19,7 @@ export type ReceitaFormValues = {
   valorLiquido: number | null;
   data: string;
   competencia: string;
+  contaDestino: ContaDestinoSelecao;
 };
 
 type Props = {
@@ -23,9 +28,11 @@ type Props = {
   casas: CasaDashboard[];
   membros: MembroCasa[];
   origens: OrigemReceita[];
+  contas: CartaoConta[]; // candidatas a conta de destino (debito/aplicacao)
+  vinculadaAFixa?: boolean; // exibe a opção "Padrão do contrato"
 };
 
-export function ReceitaForm({ values, onChange, casas, membros, origens }: Props) {
+export function ReceitaForm({ values, onChange, casas, membros, origens, contas, vinculadaAFixa = false }: Props) {
   const [seletorCompetenciaVisivel, setSeletorCompetenciaVisivel] = useState(false);
 
   function set<K extends keyof ReceitaFormValues>(key: K, value: ReceitaFormValues[K]) {
@@ -126,6 +133,41 @@ export function ReceitaForm({ values, onChange, casas, membros, origens }: Props
 
       <Text style={styles.label}>Valor líquido</Text>
       <CurrencyInput value={values.valorLiquido} onChange={(v) => set('valorLiquido', v)} />
+
+      <Text style={styles.label}>Conta de destino</Text>
+      <View style={styles.opcoesContainer}>
+        {vinculadaAFixa && (
+          <Pressable
+            style={[styles.opcao, values.contaDestino === 'herdar' && styles.opcaoAtiva]}
+            onPress={() => set('contaDestino', 'herdar')}
+          >
+            <Text style={[styles.opcaoTexto, values.contaDestino === 'herdar' && styles.opcaoTextoAtivo]}>
+              Padrão do contrato
+            </Text>
+          </Pressable>
+        )}
+        <Pressable
+          style={[styles.opcao, values.contaDestino === null && styles.opcaoAtiva]}
+          onPress={() => set('contaDestino', null)}
+        >
+          <Text style={[styles.opcaoTexto, values.contaDestino === null && styles.opcaoTextoAtivo]}>
+            Nenhuma
+          </Text>
+        </Pressable>
+        {contas
+          .filter((c) => c.tipo !== 'credito' && c.ativo)
+          .map((c) => (
+            <Pressable
+              key={c.id}
+              style={[styles.opcao, values.contaDestino === c.id && styles.opcaoAtiva]}
+              onPress={() => set('contaDestino', c.id)}
+            >
+              <Text style={[styles.opcaoTexto, values.contaDestino === c.id && styles.opcaoTextoAtivo]}>
+                {c.nome}
+              </Text>
+            </Pressable>
+          ))}
+      </View>
 
       <Text style={styles.label}>Data</Text>
       <DatePickerField valor={values.data} onSelecionar={(v) => set('data', v)} />

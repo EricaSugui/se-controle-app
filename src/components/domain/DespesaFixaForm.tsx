@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type {
+  CartaoConta,
   CasaDashboard,
   Categoria,
   DespesaFixa,
@@ -21,6 +22,7 @@ export type DespesaFixaFormValues = {
   diaEsperado: string;
   vigenteDesde: string;
   vigenteAte: string; // '' = sem data de fim
+  cartaoContaPadraoId: number | null;
 };
 
 type Props = {
@@ -28,6 +30,7 @@ type Props = {
   onChange: (values: DespesaFixaFormValues) => void;
   casas: CasaDashboard[];
   categorias: Categoria[];
+  cartoesContas: CartaoConta[]; // candidatos a meio de pagamento padrão (qualquer tipo)
   // editar/reajuste: escopo é imutável no backend — exibe texto fixo no lugar dos chips
   escopoBloqueado?: boolean;
 };
@@ -48,6 +51,7 @@ export function despesaFixaParaInput(
     dia_esperado: Number(v.diaEsperado),
     vigente_desde: v.vigenteDesde,
     vigente_ate: v.vigenteAte || null,
+    cartao_conta_padrao_id: v.cartaoContaPadraoId,
     ...(anteriorId != null ? { despesa_fixa_anterior_id: anteriorId } : {}),
   };
 }
@@ -64,6 +68,7 @@ export function despesaFixaParaFormValues(d: DespesaFixa): DespesaFixaFormValues
     diaEsperado: String(d.dia_esperado),
     vigenteDesde: d.vigente_desde.slice(0, 10),
     vigenteAte: d.vigente_ate ? d.vigente_ate.slice(0, 10) : '',
+    cartaoContaPadraoId: d.cartao_conta_padrao_id ?? null,
   };
 }
 
@@ -77,12 +82,13 @@ const PERIODICIDADES: { valor: PeriodicidadeDespesaFixa; label: string }[] = [
   { valor: 'anual', label: 'Anual' },
 ];
 
-export function DespesaFixaForm({ values, onChange, casas, categorias, escopoBloqueado = false }: Props) {
+export function DespesaFixaForm({ values, onChange, casas, categorias, cartoesContas, escopoBloqueado = false }: Props) {
   function set<K extends keyof DespesaFixaFormValues>(key: K, value: DespesaFixaFormValues[K]) {
     onChange({ ...values, [key]: value });
   }
 
   const nomeCasa = casas.find((c) => c.id === values.casaId)?.nome;
+  const meiosPagamento = cartoesContas.filter((c) => c.ativo);
 
   return (
     <View style={styles.form}>
@@ -223,6 +229,33 @@ export function DespesaFixaForm({ values, onChange, casas, categorias, escopoBlo
           </Pressable>
         )}
       </View>
+
+      <Text style={styles.label}>Meio de pagamento padrão (opcional)</Text>
+      <View style={styles.opcoesContainer}>
+        <Pressable
+          style={[styles.opcao, values.cartaoContaPadraoId === null && styles.opcaoAtiva]}
+          onPress={() => set('cartaoContaPadraoId', null)}
+        >
+          <Text style={[styles.opcaoTexto, values.cartaoContaPadraoId === null && styles.opcaoTextoAtivo]}>
+            Nenhum
+          </Text>
+        </Pressable>
+        {meiosPagamento.map((c) => (
+          <Pressable
+            key={c.id}
+            style={[styles.opcao, values.cartaoContaPadraoId === c.id && styles.opcaoAtiva]}
+            onPress={() => set('cartaoContaPadraoId', c.id)}
+          >
+            <Text style={[styles.opcaoTexto, values.cartaoContaPadraoId === c.id && styles.opcaoTextoAtivo]}>
+              {c.nome}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={styles.hint}>
+        Herdado pelos pagamentos e usado na projeção de saldo. Sem meio padrão, o contrato fica
+        fora da projeção.
+      </Text>
     </View>
   );
 }

@@ -1,54 +1,64 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { createCartaoConta } from '@/src/services/api/cartoesContas';
+import { createCartaoConta, getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getPessoasRelacionadas } from '@/src/services/api/pessoas';
-import { CartaoContaForm, type CartaoContaFormValues } from '@/src/components/domain/CartaoContaForm';
+import {
+  CartaoContaForm,
+  cartaoContaParaInput,
+  parSaldoCompleto,
+  type CartaoContaFormValues,
+} from '@/src/components/domain/CartaoContaForm';
+import { useAuth } from '@/src/context/AuthContext';
 import { notificar } from '@/src/utils/confirmar';
-import type { Pessoa } from '@/src/types';
+import type { CartaoConta, Pessoa } from '@/src/types';
 
-const VALORES_INICIAIS: CartaoContaFormValues = {
-  nome: '',
-  tipo: 'credito',
-  titularId: null,
-  limite: null,
-  diaFechamento: '',
-  diaVencimento: '',
-};
+function valoresIniciais(titularId: number | null): CartaoContaFormValues {
+  return {
+    nome: '',
+    tipo: 'credito',
+    titularId,
+    limite: null,
+    diaFechamento: '',
+    diaVencimento: '',
+    contaDebitoId: null,
+    saldoBase: null,
+    saldoBaseData: '',
+  };
+}
 
 export default function NovoCartaoContaScreen() {
-  const [values, setValues] = useState<CartaoContaFormValues>(VALORES_INICIAIS);
+  const { user } = useAuth();
+  const titularDefault = user ? Number(user.id) : null;
+
+  const [values, setValues] = useState<CartaoContaFormValues>(valoresIniciais(titularDefault));
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Novo
   // cartão/conta" mostraria o que foi digitado na última vez.
   useFocusEffect(
     useCallback(() => {
-      setValues(VALORES_INICIAIS);
-    }, [])
+      setValues(valoresIniciais(titularDefault));
+    }, [titularDefault])
   );
 
   useFocusEffect(
     useCallback(() => {
       getPessoasRelacionadas(true).then(setPessoas).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
+  const podeSalvar = values.nome.trim() !== '' && values.titularId != null && parSaldoCompleto(values);
+
   async function salvar() {
-    const nomeTrimmed = values.nome.trim();
-    if (!nomeTrimmed) return;
+    if (!podeSalvar) return;
 
     setSalvando(true);
     try {
-      await createCartaoConta({
-        nome: nomeTrimmed,
-        tipo: values.tipo,
-        titular_id: values.titularId,
-        limite: values.limite,
-        dia_fechamento: values.diaFechamento ? Number(values.diaFechamento) : null,
-        dia_vencimento: values.diaVencimento ? Number(values.diaVencimento) : null,
-      });
+      await createCartaoConta(cartaoContaParaInput(values));
       router.back();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
@@ -60,12 +70,12 @@ export default function NovoCartaoContaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <CartaoContaForm values={values} onChange={setValues} pessoas={pessoas} />
+        <CartaoContaForm values={values} onChange={setValues} pessoas={pessoas} contas={contas} />
 
         <Pressable
-          style={[styles.botao, (!values.nome.trim() || salvando) && styles.botaoDesabilitado]}
+          style={[styles.botao, (!podeSalvar || salvando) && styles.botaoDesabilitado]}
           onPress={salvar}
-          disabled={!values.nome.trim() || salvando}
+          disabled={!podeSalvar || salvando}
         >
           {salvando
             ? <ActivityIndicator color="#fff" />

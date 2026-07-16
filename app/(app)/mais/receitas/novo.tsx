@@ -3,12 +3,13 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { router, useFocusEffect } from 'expo-router';
 import { createReceita } from '@/src/services/api/receitas';
 import { getOrigensReceita } from '@/src/services/api/origensReceita';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
 import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
-import type { CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
+import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 function valoresIniciais(): ReceitaFormValues {
   return {
@@ -21,6 +22,7 @@ function valoresIniciais(): ReceitaFormValues {
     valorLiquido: null,
     data: '',
     competencia: competenciaAtual(),
+    contaDestino: null,
   };
 }
 
@@ -29,6 +31,7 @@ export default function NovaReceitaScreen() {
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
@@ -43,6 +46,7 @@ export default function NovaReceitaScreen() {
     useCallback(() => {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       getOrigensReceita(true).then(setOrigens).catch(() => {});
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [])
   );
 
@@ -75,6 +79,8 @@ export default function NovaReceitaScreen() {
         valor_liquido: values.valorLiquido,
         data: values.data.trim() || null,
         competencia: values.competencia || null,
+        // receita avulsa não tem contrato para herdar — valor sempre explícito
+        conta_destino_id: values.contaDestino === 'herdar' ? null : values.contaDestino,
       });
       router.back();
     } catch (e: unknown) {
@@ -89,7 +95,7 @@ export default function NovaReceitaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} />
+        <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} contas={contas} />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}

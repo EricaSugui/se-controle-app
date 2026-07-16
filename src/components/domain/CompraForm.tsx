@@ -43,6 +43,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       : null;
 
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
+  const formaSelecionada = formas.find((f) => f.id === values.formaPagamentoId);
 
   return (
     <View style={styles.form}>
@@ -140,6 +141,11 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
           </View>
           {cartaoSelecionado?.tipo === 'credito' && (
             <Text style={styles.hint}>As parcelas serão atribuídas às faturas do cartão.</Text>
+          )}
+          {formaSelecionada?.exige_conta && values.cartaoContaId === null && (
+            <Text style={styles.hint}>
+              A forma "{formaSelecionada.nome}" exige um cartão/conta.
+            </Text>
           )}
         </>
       )}

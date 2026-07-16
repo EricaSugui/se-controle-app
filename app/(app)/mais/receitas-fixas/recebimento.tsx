@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { createReceita } from '@/src/services/api/receitas';
+import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
@@ -10,7 +11,11 @@ import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
 import { formatCurrency } from '@/src/utils/formatters';
-import type { CasaDashboard, MembroCasa } from '@/src/types';
+import type { CartaoConta, CasaDashboard, MembroCasa } from '@/src/types';
+
+// 'herdar' = omitir conta_destino_id no payload (backend usa o default do
+// contrato); null = enviar null explícito ("sem conta").
+type ContaDestinoSelecao = number | null | 'herdar';
 
 function hojeISO(): string {
   const d = new Date();
@@ -41,9 +46,11 @@ export default function RecebimentoReceitaFixaScreen() {
   // pessoa fixa (obrigatória no vínculo), escolhe-se a casa
   const [pessoaSelId, setPessoaSelId] = useState<number | null>(null);
   const [casaSelId, setCasaSelId] = useState<number | null>(null);
+  const [contaDestino, setContaDestino] = useState<ContaDestinoSelecao>('herdar');
 
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
+  const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   // A tela fica montada entre navegações — reseta ao trocar de recebimento.
@@ -53,6 +60,7 @@ export default function RecebimentoReceitaFixaScreen() {
     setObservacao(params.descricao ?? '');
     setPessoaSelId(null);
     setCasaSelId(null);
+    setContaDestino('herdar');
     navigation.setOptions({
       title: params.descricao ? `Receber — ${params.descricao}` : 'Registrar recebimento',
     });
@@ -66,6 +74,7 @@ export default function RecebimentoReceitaFixaScreen() {
       } else {
         getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
       }
+      getCartoesContas(true).then(setContas).catch(() => {});
     }, [contratoDeCasa, params.casaId])
   );
 
@@ -108,6 +117,8 @@ export default function RecebimentoReceitaFixaScreen() {
         competencia: competenciaAtual(),
         receita_fixa_id: Number(params.receitaFixaId),
         competencia_referencia: params.competenciaReferencia,
+        // chave omitida = herdar do contrato; null explícito = sem conta
+        ...(contaDestino !== 'herdar' ? { conta_destino_id: contaDestino } : {}),
       });
       router.back();
     } catch (e: unknown) {
@@ -181,6 +192,39 @@ export default function RecebimentoReceitaFixaScreen() {
             </View>
           </>
         )}
+
+        <Text style={styles.label}>Conta de destino</Text>
+        <View style={styles.opcoesContainer}>
+          <Pressable
+            style={[styles.opcao, contaDestino === 'herdar' && styles.opcaoAtiva]}
+            onPress={() => setContaDestino('herdar')}
+          >
+            <Text style={[styles.opcaoTexto, contaDestino === 'herdar' && styles.opcaoTextoAtivo]}>
+              Padrão do contrato
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.opcao, contaDestino === null && styles.opcaoAtiva]}
+            onPress={() => setContaDestino(null)}
+          >
+            <Text style={[styles.opcaoTexto, contaDestino === null && styles.opcaoTextoAtivo]}>
+              Nenhuma
+            </Text>
+          </Pressable>
+          {contas
+            .filter((c) => c.tipo !== 'credito' && c.ativo)
+            .map((c) => (
+              <Pressable
+                key={c.id}
+                style={[styles.opcao, contaDestino === c.id && styles.opcaoAtiva]}
+                onPress={() => setContaDestino(c.id)}
+              >
+                <Text style={[styles.opcaoTexto, contaDestino === c.id && styles.opcaoTextoAtivo]}>
+                  {c.nome}
+                </Text>
+              </Pressable>
+            ))}
+        </View>
 
         <Text style={styles.label}>Observação</Text>
         <TextInput
