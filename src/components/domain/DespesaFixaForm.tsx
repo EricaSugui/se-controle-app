@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
+import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
 import type {
   CartaoConta,
   CasaDashboard,
@@ -142,19 +143,11 @@ export function DespesaFixaForm({ values, onChange, casas, categorias, cartoesCo
       {categorias.length > 0 && (
         <>
           <Text style={styles.label}>Categoria</Text>
-          <View style={styles.opcoesContainer}>
-            {categorias.map((cat) => (
-              <Pressable
-                key={cat.id}
-                style={[styles.opcao, values.categoriaId === cat.id && styles.opcaoAtiva]}
-                onPress={() => set('categoriaId', cat.id)}
-              >
-                <Text style={[styles.opcaoTexto, values.categoriaId === cat.id && styles.opcaoTextoAtivo]}>
-                  {cat.nome}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <CategoriaSelector
+            categorias={categorias}
+            categoriaSelecionadaId={values.categoriaId}
+            onSelect={(id) => set('categoriaId', id)}
+          />
         </>
       )}
 
