@@ -8,7 +8,7 @@ import { getDashboard } from '@/src/services/api/dashboard';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { useAuth } from '@/src/context/AuthContext';
-import { competenciaAtual } from '@/src/utils/competencia';
+import { competenciaAtual, competenciaDaData } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
 import { formatCurrency } from '@/src/utils/formatters';
 import type { CartaoConta, CasaDashboard, MembroCasa } from '@/src/types';
@@ -114,7 +114,8 @@ export default function RecebimentoReceitaFixaScreen() {
         descontos: null,
         valor_liquido: valor,
         data,
-        competencia: competenciaAtual(),
+        // competência do lançamento segue a data do recebimento, não "hoje"
+        competencia: competenciaDaData(data),
         receita_fixa_id: Number(params.receitaFixaId),
         competencia_referencia: params.competenciaReferencia,
         // chave omitida = herdar do contrato; null explícito = sem conta

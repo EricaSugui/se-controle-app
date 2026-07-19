@@ -4,6 +4,7 @@ import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { formatCurrency } from '@/src/utils/formatters';
+import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
 
 export type CompraFormValues = {
@@ -178,7 +179,12 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       )}
 
       <Text style={styles.label}>Data</Text>
-      <DatePickerField valor={values.data} onSelecionar={(v) => set('data', v)} />
+      <DatePickerField
+        valor={values.data}
+        // a competência default acompanha a data do evento (não "hoje");
+        // continua editável no seletor abaixo
+        onSelecionar={(v) => onChange({ ...values, data: v, competencia: competenciaDaData(v) })}
+      />
 
       <Text style={styles.label}>Competência</Text>
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>

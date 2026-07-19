@@ -9,7 +9,7 @@ import { getDashboard } from '@/src/services/api/dashboard';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { useAuth } from '@/src/context/AuthContext';
-import { competenciaAtual } from '@/src/utils/competencia';
+import { competenciaAtual, competenciaDaData } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
 import { formatCurrency } from '@/src/utils/formatters';
 import type { CartaoConta, CasaDashboard, FormaPagamento, MembroCasa } from '@/src/types';
@@ -118,7 +118,8 @@ export default function PagamentoDespesaFixaScreen() {
         ...(cartaoContaId !== 'herdar' ? { cartao_conta_id: cartaoContaId } : {}),
         forma_pagamento_id: formaPagamentoId,
         data,
-        competencia: competenciaAtual(),
+        // competência do lançamento segue a data do pagamento, não "hoje"
+        competencia: competenciaDaData(data),
         total_parcelas: 1,
         valor_parcela: valor,
         despesa_fixa_id: Number(params.despesaFixaId),
