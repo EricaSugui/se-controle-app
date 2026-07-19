@@ -127,6 +127,8 @@ export type FormaPagamento = {
   nome: string;
   exige_conta: boolean; // true → compra sem cartao_conta_id (após herança) é 400
   ativo: boolean;
+  icone: string; // nome de ícone — normalmente MaterialCommunityIcons; ver ICONES_MATERIAL_ICONS
+  cor: string; // hex, ex: "#8D6E63"
   created_at: string;
 };
 

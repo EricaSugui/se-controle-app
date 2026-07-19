@@ -5,6 +5,7 @@ import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
 import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
+import { FormaPagamentoSelector } from '@/src/components/ui/FormaPagamentoSelector';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
@@ -132,27 +133,11 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       {formas.length > 0 && (
         <>
           <Text style={styles.label}>Forma de pagamento</Text>
-          <View style={styles.opcoesContainer}>
-            <Pressable
-              style={[styles.opcao, values.formaPagamentoId === null && styles.opcaoAtiva]}
-              onPress={() => set('formaPagamentoId', null)}
-            >
-              <Text style={[styles.opcaoTexto, values.formaPagamentoId === null && styles.opcaoTextoAtivo]}>
-                Nenhuma
-              </Text>
-            </Pressable>
-            {formas.map((f) => (
-              <Pressable
-                key={f.id}
-                style={[styles.opcao, values.formaPagamentoId === f.id && styles.opcaoAtiva]}
-                onPress={() => set('formaPagamentoId', f.id)}
-              >
-                <Text style={[styles.opcaoTexto, values.formaPagamentoId === f.id && styles.opcaoTextoAtivo]}>
-                  {f.nome}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <FormaPagamentoSelector
+            formas={formas}
+            formaSelecionadaId={values.formaPagamentoId}
+            onSelect={(id) => set('formaPagamentoId', id)}
+          />
         </>
       )}
 
