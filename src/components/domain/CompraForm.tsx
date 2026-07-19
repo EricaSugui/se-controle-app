@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
+import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
@@ -85,19 +86,11 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       {categorias.length > 0 && (
         <>
           <Text style={styles.label}>Categoria</Text>
-          <View style={styles.opcoesContainer}>
-            {categorias.map((cat) => (
-              <Pressable
-                key={cat.id}
-                style={[styles.opcao, values.categoriaId === cat.id && styles.opcaoAtiva]}
-                onPress={() => set('categoriaId', cat.id)}
-              >
-                <Text style={[styles.opcaoTexto, values.categoriaId === cat.id && styles.opcaoTextoAtivo]}>
-                  {cat.nome}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <CategoriaSelector
+            categorias={categorias}
+            categoriaSelecionadaId={values.categoriaId}
+            onSelect={(id) => set('categoriaId', id)}
+          />
         </>
       )}
 

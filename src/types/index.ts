@@ -117,6 +117,8 @@ export type Categoria = {
   id: number;
   nome: string;
   ativo: boolean;
+  icone: string; // nome de ícone MaterialCommunityIcons
+  cor: string; // hex, ex: "#FF7043"
   created_at: string;
 };
 
