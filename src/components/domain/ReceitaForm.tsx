@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
+import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 // 'herdar' = não enviar conta_destino_id no payload (o backend herda o default
@@ -170,7 +171,12 @@ export function ReceitaForm({ values, onChange, casas, membros, origens, contas,
       </View>
 
       <Text style={styles.label}>Data</Text>
-      <DatePickerField valor={values.data} onSelecionar={(v) => set('data', v)} />
+      <DatePickerField
+        valor={values.data}
+        // a competência default acompanha a data do evento (não "hoje");
+        // continua editável no seletor abaixo
+        onSelecionar={(v) => onChange({ ...values, data: v, competencia: competenciaDaData(v) })}
+      />
 
       <Text style={styles.label}>Competência</Text>
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>
