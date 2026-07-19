@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
+import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
 import type {
   CartaoConta,
   CasaDashboard,
@@ -224,27 +225,11 @@ export function DespesaFixaForm({ values, onChange, casas, categorias, cartoesCo
       </View>
 
       <Text style={styles.label}>Meio de pagamento padrão (opcional)</Text>
-      <View style={styles.opcoesContainer}>
-        <Pressable
-          style={[styles.opcao, values.cartaoContaPadraoId === null && styles.opcaoAtiva]}
-          onPress={() => set('cartaoContaPadraoId', null)}
-        >
-          <Text style={[styles.opcaoTexto, values.cartaoContaPadraoId === null && styles.opcaoTextoAtivo]}>
-            Nenhum
-          </Text>
-        </Pressable>
-        {meiosPagamento.map((c) => (
-          <Pressable
-            key={c.id}
-            style={[styles.opcao, values.cartaoContaPadraoId === c.id && styles.opcaoAtiva]}
-            onPress={() => set('cartaoContaPadraoId', c.id)}
-          >
-            <Text style={[styles.opcaoTexto, values.cartaoContaPadraoId === c.id && styles.opcaoTextoAtivo]}>
-              {c.nome}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <CartaoContaSelector
+        contas={meiosPagamento}
+        contaSelecionadaId={values.cartaoContaPadraoId}
+        onSelect={(id) => set('cartaoContaPadraoId', id)}
+      />
       <Text style={styles.hint}>
         Herdado pelos pagamentos e usado na projeção de saldo. Sem meio padrão, o contrato fica
         fora da projeção.

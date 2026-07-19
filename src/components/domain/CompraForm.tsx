@@ -4,6 +4,7 @@ import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
+import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
@@ -112,27 +113,11 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       {cartoes.length > 0 && (
         <>
           <Text style={styles.label}>Cartão/conta</Text>
-          <View style={styles.opcoesContainer}>
-            <Pressable
-              style={[styles.opcao, values.cartaoContaId === null && styles.opcaoAtiva]}
-              onPress={() => set('cartaoContaId', null)}
-            >
-              <Text style={[styles.opcaoTexto, values.cartaoContaId === null && styles.opcaoTextoAtivo]}>
-                Nenhum
-              </Text>
-            </Pressable>
-            {cartoes.map((c) => (
-              <Pressable
-                key={c.id}
-                style={[styles.opcao, values.cartaoContaId === c.id && styles.opcaoAtiva]}
-                onPress={() => set('cartaoContaId', c.id)}
-              >
-                <Text style={[styles.opcaoTexto, values.cartaoContaId === c.id && styles.opcaoTextoAtivo]}>
-                  {c.nome}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <CartaoContaSelector
+            contas={cartoes}
+            contaSelecionadaId={values.cartaoContaId}
+            onSelect={(id) => set('cartaoContaId', id)}
+          />
           {cartaoSelecionado?.tipo === 'credito' && (
             <Text style={styles.hint}>As parcelas serão atribuídas às faturas do cartão.</Text>
           )}
