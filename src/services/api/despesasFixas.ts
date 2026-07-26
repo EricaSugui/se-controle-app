@@ -32,6 +32,19 @@ export function updateDespesaFixa(id: number, input: DespesaFixaInput): Promise<
   return api.put<DespesaFixa>(`/despesas-fixas/${id}`, input);
 }
 
+// Reajuste atômico: encerra o contrato vigente em vigente_desde − 1 dia e
+// cria o sucessor (que herda categoria, descrição, tipo, periodicidade e
+// cartão/conta padrão) na mesma transação. dia_esperado omitido herda o atual.
+export function reajustarDespesaFixa(
+  id: number,
+  input: { valor_referencia: number; vigente_desde: string; dia_esperado?: number }
+): Promise<{ anterior: DespesaFixa; nova: DespesaFixa }> {
+  return api.post<{ anterior: DespesaFixa; nova: DespesaFixa }>(
+    `/despesas-fixas/${id}/reajustar`,
+    input
+  );
+}
+
 export function encerrarDespesaFixa(id: number, vigenteAte?: string): Promise<DespesaFixa> {
   return api.patch<DespesaFixa>(
     `/despesas-fixas/${id}/encerrar`,

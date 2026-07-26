@@ -32,6 +32,19 @@ export function updateReceitaFixa(id: number, input: ReceitaFixaInput): Promise<
   return api.put<ReceitaFixa>(`/receitas-fixas/${id}`, input);
 }
 
+// Reajuste atômico: encerra o contrato vigente em vigente_desde − 1 dia e
+// cria o sucessor (que herda origem, descrição, tipo, periodicidade e conta
+// destino) na mesma transação. dia_esperado_recebimento omitido herda o atual.
+export function reajustarReceitaFixa(
+  id: number,
+  input: { valor_esperado: number; vigente_desde: string; dia_esperado_recebimento?: number }
+): Promise<{ anterior: ReceitaFixa; nova: ReceitaFixa }> {
+  return api.post<{ anterior: ReceitaFixa; nova: ReceitaFixa }>(
+    `/receitas-fixas/${id}/reajustar`,
+    input
+  );
+}
+
 export function encerrarReceitaFixa(id: number, vigenteAte?: string): Promise<ReceitaFixa> {
   return api.patch<ReceitaFixa>(
     `/receitas-fixas/${id}/encerrar`,
