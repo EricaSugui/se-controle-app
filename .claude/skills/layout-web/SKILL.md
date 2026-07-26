@@ -78,6 +78,25 @@ Verificado no `node_modules`, não suposto:
 - **`cursor: pointer` já vem** em `Pressable` e em `Text` com `onPress`.
 - **Hover não vem de graça** — esse é o gap real, e é por componente.
 
+## Master-detail: search param no desktop, rota no celular
+
+Padrão estabelecido em gastos, para repetir nas outras listas:
+
+- **Estado da tela vai para a URL**, não para `useState`: `/gastos?competencia=MAI-26&editar=123`.
+  Mês vira compartilhável e o voltar do browser funciona.
+- **Desktop largo (`painelDuplo`, ≥1280)** abre o detalhe num painel via `router.setParams`.
+  Não usar `router.push` para o painel: o `Stack` mantém a lista montada por baixo, então a
+  rota de detalhe renderizaria uma **segunda** instância da lista — refetch e scroll novo a
+  cada clique, justo o que master-detail existe para evitar.
+- **Celular e desktop estreito** continuam em `push` para a rota `[id]`. `setParams` não
+  empilha no navegador nativo, então o gesto de voltar deixaria de fechar o formulário.
+- **O editor é um componente compartilhado** (`CompraEditor`), não uma tela. O que muda entre
+  os dois contextos é só `onSalvo` (voltar × fechar painel e recarregar).
+- **`key={idSelecionado}` no editor.** Sem isso, trocar de linha mantém o formulário montado
+  com os valores da compra anterior enquanto o fetch não volta.
+- **`useEffect` além do `useFocusEffect`** para recarregar: no painel a tela nunca perde nem
+  reganha foco quando o id muda.
+
 ## Tokens: tema × domínio
 
 `src/theme/tokens.ts` tem a paleta extraída do uso real — **não é um redesign**.
@@ -106,16 +125,17 @@ Concluído:
   `<Head>` no layout raiz dando título à aba (que estava **vazia**, não com o nome do app)
 - [x] **C.5 parcial** — hover no `Button`
 
-Pendente, em ordem recomendada:
+- [x] **B.3** — dashboard em grade (resumos em cards, casas com `flexWrap`)
+- [x] **B.4** — gastos como tabela (≥768) + master-detail com painel (≥1280)
 
-- [ ] **B.3 — dashboard em grid.** Os 4 resumos são linhas `space-between` empilhadas.
-- [ ] **B.4 — gastos como tabela + master-detail.** Os 4 campos do card já são colunas
-  querendo existir; `gastos/[id]` pode renderizar ao lado da lista.
+Pendente, em ordem recomendada:
 - [ ] **C.7 — selectors deixam de ser bottom sheet no desktop.** Os 3 usam
   `animationType="slide"` colado no rodapé com `maxHeight: 70%`.
-- [ ] **C.5 restante — hover nas linhas de lista e nas ações de texto** ("Editar",
-  "Excluir", "+ Nova compra"). Feito junto com B, quando as linhas forem reconstruídas —
-  adiantar agora seria refazer depois.
+- [ ] **C.5 restante — hover nas outras listas.** Feito em gastos e no dashboard; as demais
+  telas de lista (`receitas`, `metas`, `cartoes-contas`, `despesas-fixas`, …) seguem sem.
+  Fazer junto com o redesenho de cada uma, usando `useHover`.
+- [ ] **Master-detail nas outras listas**, seguindo o padrão da seção acima. `receitas` e
+  `metas` são as candidatas óbvias.
 - [ ] **Título por rota.** Hoje toda aba do browser diz "Se Controle". Cada tela precisaria
   do próprio `<Head>`; vale fazer junto com o redesenho de cada uma.
 - [ ] **A.2 — sidebar absorve os destinos de "Mais".** No desktop, "Mais" é um item de

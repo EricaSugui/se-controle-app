@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { CompraEditor } from '@/src/components/domain/CompraEditor';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
@@ -12,14 +13,29 @@ import { cores, raio } from '@/src/theme/tokens';
 import type { Compra } from '@/src/types';
 
 export default function GastosScreen() {
-  const [competencia, setCompetencia] = useState(competenciaAtual);
+  // Competência e gasto aberto vivem na URL, não em useState: assim o mês
+  // é compartilhável por link, o voltar do browser funciona, e trocar de
+  // linha no painel lateral não remonta a lista.
+  const params = useLocalSearchParams<{ competencia?: string; editar?: string }>();
+  const competencia = params.competencia || competenciaAtual();
+  const editandoId = params.editar ? Number(params.editar) : null;
+
   const [seletorVisivel, setSeletorVisivel] = useState(false);
   const [itens, setItens] = useState<Compra[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Os 4 campos de cada card já são colunas querendo existir; acima de
   // 768px eles viram tabela de verdade.
-  const { compacto } = useBreakpoint();
+  const { compacto, painelDuplo } = useBreakpoint();
+  const mostrandoPainel = painelDuplo && editandoId != null;
+
+  function irPara(competenciaNova: string) {
+    router.setParams({ competencia: competenciaNova });
+  }
+
+  function fecharPainel() {
+    router.setParams({ editar: undefined });
+  }
 
   const carregar = useCallback(() => {
     setLoading(true);
@@ -32,7 +48,14 @@ export default function GastosScreen() {
 
   useFocusEffect(carregar);
 
+  // Só o desktop largo edita no painel. Abaixo disso vai para a tela cheia,
+  // que no celular é o único jeito de o gesto de voltar fechar o formulário
+  // (setParams não empilha no navegador nativo).
   function editar(item: Compra) {
+    if (painelDuplo) {
+      router.setParams({ editar: String(item.id) });
+      return;
+    }
     router.push({ pathname: '/(app)/gastos/[id]', params: { id: item.id } });
   }
 
@@ -50,6 +73,8 @@ export default function GastosScreen() {
   async function excluir(id: number) {
     try {
       await deleteCompra(id);
+      // Excluir o que está aberto no painel deixaria um formulário órfão.
+      if (editandoId === id) fecharPainel();
       carregar();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
@@ -88,20 +113,48 @@ export default function GastosScreen() {
         {!compacto && <BotaoNova />}
       </View>
 
-      <FlatList
-        data={itens}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={compacto ? styles.lista : styles.tabela}
-        ListHeaderComponent={compacto || itens.length === 0 ? null : <CabecalhoTabela />}
-        ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra nesta competência.</Text>}
-        renderItem={({ item }: { item: Compra }) =>
-          compacto ? (
-            <CardGasto item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
-          ) : (
-            <LinhaTabela item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
-          )
-        }
-      />
+      <View style={styles.corpo}>
+        <FlatList
+          data={itens}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={compacto ? styles.lista : styles.tabela}
+          ListHeaderComponent={compacto || itens.length === 0 ? null : <CabecalhoTabela />}
+          ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra nesta competência.</Text>}
+          renderItem={({ item }: { item: Compra }) =>
+            compacto ? (
+              <CardGasto item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
+            ) : (
+              <LinhaTabela
+                item={item}
+                selecionado={item.id === editandoId}
+                onEditar={() => editar(item)}
+                onExcluir={() => confirmarExcluir(item)}
+              />
+            )
+          }
+        />
+
+        {mostrandoPainel && (
+          <View style={styles.painel}>
+            <View style={styles.painelCabecalho}>
+              <Text style={styles.painelTitulo}>Editar compra</Text>
+              <Pressable onPress={fecharPainel} style={styles.painelFechar}>
+                <Text style={styles.painelFecharTexto}>✕</Text>
+              </Pressable>
+            </View>
+            {/* key: trocar de linha remonta o editor, senão o formulário
+                ficaria com o estado da compra anterior enquanto carrega. */}
+            <CompraEditor
+              key={editandoId}
+              id={editandoId!}
+              onSalvo={() => {
+                fecharPainel();
+                carregar();
+              }}
+            />
+          </View>
+        )}
+      </View>
 
       {compacto && (
         <View style={styles.rodape}>
@@ -112,7 +165,7 @@ export default function GastosScreen() {
       <MonthPicker
         visivel={seletorVisivel}
         valor={competencia}
-        onSelecionar={setCompetencia}
+        onSelecionar={irPara}
         onFechar={() => setSeletorVisivel(false)}
       />
     </View>
@@ -149,17 +202,19 @@ function CabecalhoTabela() {
 
 function LinhaTabela({
   item,
+  selecionado,
   onEditar,
   onExcluir,
 }: {
   item: Compra;
+  selecionado: boolean;
   onEditar: () => void;
   onExcluir: () => void;
 }) {
   const { hover, hoverProps } = useHover();
 
   return (
-    <View {...hoverProps} style={[styles.tr, hover && styles.trHover]}>
+    <View {...hoverProps} style={[styles.tr, hover && styles.trHover, selecionado && styles.trSelecionada]}>
       <Text style={[styles.td, COL.data]}>{formatDate(item.data)}</Text>
       <Text style={[styles.td, styles.tdForte, COL.descricao]} numberOfLines={1}>
         {item.descricao || '—'}
@@ -263,9 +318,16 @@ const styles = StyleSheet.create({
   competencia:       { fontSize: 18, fontWeight: 'bold' },
   competenciaHint:   { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
+  corpo:             { flex: 1, flexDirection: 'row' },
   lista:             { padding: 16, gap: 8, flexGrow: 1 },
   tabela:            { padding: 16, flexGrow: 1 },
   vazio:             { textAlign: 'center', color: cores.textoSuave, marginTop: 32 },
+
+  painel:            { width: 420, borderLeftWidth: 1, borderLeftColor: cores.bordaSuave, backgroundColor: cores.fundo },
+  painelCabecalho:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 4 },
+  painelTitulo:      { fontSize: 15, fontWeight: '600' },
+  painelFechar:      { padding: 6 },
+  painelFecharTexto: { fontSize: 16, color: cores.textoSuave },
 
   // Tabela (desktop)
   thead:             { flexDirection: 'row', gap: 12, paddingHorizontal: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
@@ -273,6 +335,7 @@ const styles = StyleSheet.create({
   thDireita:         { textAlign: 'right' },
   tr:                { flexDirection: 'row', gap: 12, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: raio.md, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
   trHover:           { backgroundColor: cores.fundoHover },
+  trSelecionada:     { backgroundColor: cores.primariaSuave },
   td:                { fontSize: 13, color: cores.textoMedio },
   tdForte:           { color: cores.textoForte, fontWeight: '500' },
   tdValor:           { fontSize: 14, fontWeight: '600', color: cores.negativo },
