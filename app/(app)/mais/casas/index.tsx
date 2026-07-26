@@ -69,6 +69,9 @@ export default function CasasScreen() {
           <View style={styles.item}>
             <Text style={styles.itemNome}>{item.nome}</Text>
             <View style={styles.acoes}>
+              <Pressable onPress={() => router.push({ pathname: '/(app)/mais/casas/acerto', params: { id: item.id, nome: item.nome } })}>
+                <Text style={styles.membros}>Acerto</Text>
+              </Pressable>
               <Pressable onPress={() => router.push({ pathname: '/(app)/mais/casas/[id]', params: { id: item.id, nome: item.nome } })}>
                 <Text style={styles.membros}>Membros</Text>
               </Pressable>

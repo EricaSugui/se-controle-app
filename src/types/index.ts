@@ -44,6 +44,7 @@ export type Casa = {
   id: number;
   nome: string;
   ativo: boolean;
+  acerto_eixo: EixoAcerto;
   created_at: string;
 };
 
@@ -132,6 +133,10 @@ export type FormaPagamento = {
   created_at: string;
 };
 
+// Eixo do acerto de contas: competência = valor cheio no mês da compra;
+// caixa = por parcela na data_caixa (no crédito, acompanha a fatura).
+export type EixoAcerto = 'competencia' | 'caixa';
+
 export type CompraInput = {
   casa_id: number;
   pessoa_id: number;
@@ -147,6 +152,7 @@ export type CompraInput = {
   valor_parcela: number;
   despesa_fixa_id?: number | null;
   competencia_referencia?: string | null; // MES-AA; exige despesa_fixa_id
+  acerto_eixo?: EixoAcerto | null; // null/omitido segue o padrão da casa
 };
 
 export type Parcela = {
@@ -360,4 +366,78 @@ export type SaldoProjetado = {
   ate: string;
   contas: ContaProjetada[];
   avisos: AvisoProjecao[];
+};
+
+// ---- Acerto de contas (GET /casas/:casaId/acerto) ----
+
+export type SaldoAcertoPessoa = {
+  pessoa_id: number;
+  nome: string;
+  devido: number;
+  desembolsado: number;
+  pagamentos_enviados: number;
+  pagamentos_recebidos: number;
+  saldo: number; // positivo = a receber; a soma entre as pessoas fecha em zero
+};
+
+export type AcertoMesPessoa = {
+  pessoa_id: number;
+  nome: string;
+  devido: number;
+  desembolsado: number;
+  acerto: number; // desembolsado - devido no mês
+};
+
+export type AcertoMes = {
+  mes: string; // competência MMM-AA (no eixo caixa, o mês da data_caixa)
+  por_pessoa: AcertoMesPessoa[];
+};
+
+export type PagamentoAcertoInput = {
+  de_pessoa_id: number;
+  para_pessoa_id: number;
+  valor: number;
+  data: string; // AAAA-MM-DD
+  observacao?: string | null;
+};
+
+export type PagamentoAcerto = {
+  id: number;
+  de_pessoa_id: number;
+  de_pessoa_nome: string;
+  para_pessoa_id: number;
+  para_pessoa_nome: string;
+  valor: number;
+  data: string;
+  observacao: string | null;
+  lancado_por_id: number | null;
+};
+
+export type TipoAvisoAcerto =
+  | 'meses_sem_combinado'
+  | 'compras_sem_meio'
+  | 'rateio_nao_soma_100'
+  | 'combinado_nao_soma_100';
+
+export type AvisoAcerto = {
+  tipo: TipoAvisoAcerto;
+  mensagem: string;
+  quantidade: number;
+};
+
+export type AcertoContas = {
+  casa_id: number;
+  acerto_eixo: EixoAcerto;
+  saldos: SaldoAcertoPessoa[];
+  meses: AcertoMes[]; // mais recente primeiro
+  pagamentos: PagamentoAcerto[];
+  avisos: AvisoAcerto[];
+};
+
+export type PercentualCusteio = {
+  id: number;
+  casa_id: number;
+  pessoa_id: number;
+  competencia: string; // MMM-AA
+  percentual: number; // NUMERIC do Postgres pode chegar como string — coagir
 };

@@ -54,6 +54,7 @@ export default function EditarCompraScreen() {
           competencia: compra.competencia || competenciaAtual(),
           totalParcelas: String(compra.total_parcelas ?? 1),
           valorParcela: compra.valor_parcela,
+          acertoEixo: compra.acerto_eixo ?? null,
         });
         setParcelas(parcelasResp);
         setVinculo({
@@ -112,6 +113,7 @@ export default function EditarCompraScreen() {
         valor_parcela: values.valorParcela,
         despesa_fixa_id: vinculo.despesa_fixa_id,
         competencia_referencia: vinculo.competencia_referencia,
+        acerto_eixo: values.acertoEixo,
       });
       router.back();
     } catch (e: unknown) {

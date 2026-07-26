@@ -31,6 +31,7 @@ function valoresIniciais(): CompraFormValues {
     competencia: competenciaAtual(),
     totalParcelas: '1',
     valorParcela: null,
+    acertoEixo: null,
   };
 }
 
@@ -99,6 +100,7 @@ export default function NovaCompraScreen() {
         competencia: values.competencia,
         total_parcelas: Number(values.totalParcelas) || 1,
         valor_parcela: values.valorParcela,
+        acerto_eixo: values.acertoEixo,
       });
       router.back();
     } catch (e: unknown) {
