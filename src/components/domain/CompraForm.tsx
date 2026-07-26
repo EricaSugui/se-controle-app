@@ -8,7 +8,7 @@ import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
 import { FormaPagamentoSelector } from '@/src/components/ui/FormaPagamentoSelector';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
-import type { CartaoConta, CasaDashboard, Categoria, FormaPagamento, MembroCasa } from '@/src/types';
+import type { CartaoConta, CasaDashboard, Categoria, EixoAcerto, FormaPagamento, MembroCasa } from '@/src/types';
 
 export type CompraFormValues = {
   casaId: number | null;
@@ -21,7 +21,14 @@ export type CompraFormValues = {
   competencia: string;
   totalParcelas: string;
   valorParcela: number | null;
+  acertoEixo: EixoAcerto | null; // null = padrão da casa
 };
+
+const OPCOES_ACERTO_EIXO: { valor: EixoAcerto | null; label: string }[] = [
+  { valor: null, label: 'Padrão da casa' },
+  { valor: 'competencia', label: 'Mês da compra' },
+  { valor: 'caixa', label: 'Por parcela' },
+];
 
 type Props = {
   values: CompraFormValues;
@@ -153,6 +160,25 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>
         <Text>{values.competencia}</Text>
       </Pressable>
+
+      <Text style={styles.label}>Acerto de contas</Text>
+      <View style={styles.opcoesContainer}>
+        {OPCOES_ACERTO_EIXO.map((o) => (
+          <Pressable
+            key={String(o.valor)}
+            style={[styles.opcao, values.acertoEixo === o.valor && styles.opcaoAtiva]}
+            onPress={() => set('acertoEixo', o.valor)}
+          >
+            <Text style={[styles.opcaoTexto, values.acertoEixo === o.valor && styles.opcaoTextoAtivo]}>
+              {o.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={styles.hint}>
+        Quando a compra entra no acerto entre as pessoas da casa: valor cheio no mês da compra
+        ou parcela a parcela.
+      </Text>
 
       <Text style={styles.label}>Descrição</Text>
       <TextInput

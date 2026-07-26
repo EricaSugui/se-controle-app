@@ -1,8 +1,16 @@
 import { api } from './client';
-import type { Casa, MembroCasa } from '../../types';
+import type { Casa, EixoAcerto, MembroCasa } from '../../types';
 
 export function createCasa(nome: string): Promise<Casa> {
   return api.post<Casa>('/casas', { nome });
+}
+
+// nome é obrigatório no PUT; acerto_eixo omitido preserva o valor atual.
+export function updateCasa(
+  id: number,
+  input: { nome: string; acerto_eixo?: EixoAcerto }
+): Promise<Casa> {
+  return api.put<Casa>(`/casas/${id}`, input);
 }
 
 export function vincularPessoa(casaId: number, pessoaId: number): Promise<void> {
