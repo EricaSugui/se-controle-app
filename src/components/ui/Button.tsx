@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
 import { cores, raio } from '@/src/theme/tokens';
+import { useHover } from '@/src/hooks/useHover';
 
 type Variant = 'primary' | 'outline' | 'ghost';
 
@@ -13,9 +13,7 @@ type ButtonProps = PressableProps & {
 export function Button({ label, variant = 'primary', loading = false, disabled, style, ...rest }: ButtonProps) {
   const isDisabled = disabled || loading;
 
-  // `hovered` não existe em PressableStateCallbackType nos tipos do RN —
-  // onHoverIn/onHoverOut são a via tipada. No mobile nunca disparam.
-  const [hover, setHover] = useState(false);
+  const { hover, hoverProps } = useHover();
   const hovered = hover && !isDisabled;
 
   return (
@@ -28,8 +26,7 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
         isDisabled && styles.disabled,
         typeof style === 'function' ? style({ pressed, hovered: false }) : style,
       ]}
-      onHoverIn={() => setHover(true)}
-      onHoverOut={() => setHover(false)}
+      {...hoverProps}
       disabled={isDisabled}
       {...rest}
     >

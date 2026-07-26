@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useSegments } from 'expo-router';
@@ -6,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/context/AuthContext';
 import { ABAS, type Aba } from '@/src/navigation/abas';
 import { cores, raio } from '@/src/theme/tokens';
+import { useHover } from '@/src/hooks/useHover';
 
 export const LARGURA_SIDEBAR = 240;
 
@@ -33,7 +33,7 @@ export function Sidebar() {
 }
 
 function ItemNav({ aba, ativo }: { aba: Aba; ativo: boolean }) {
-  const [hover, setHover] = useState(false);
+  const { hover, hoverProps } = useHover();
 
   return (
     // `asChild` faz o Link virar um <a href> de verdade no web — abrir em nova
@@ -46,8 +46,7 @@ function ItemNav({ aba, ativo }: { aba: Aba; ativo: boolean }) {
           hover && !ativo && styles.itemHover,
           ativo && styles.itemAtivo,
         ])}
-        onHoverIn={() => setHover(true)}
-        onHoverOut={() => setHover(false)}
+        {...hoverProps}
         accessibilityRole="link"
         accessibilityState={{ selected: ativo }}
       >
