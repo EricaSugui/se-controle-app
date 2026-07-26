@@ -9,6 +9,7 @@ export default function MaisLayout() {
       <Stack.Screen name="convidar" options={{ title: 'Convidar amigos' }} />
 
       <Stack.Screen name="relatorios/index" options={{ title: 'Relatórios' }} />
+      <Stack.Screen name="relatorios/gastos" options={{ title: 'Relatório de gastos' }} />
 
       <Stack.Screen name="casas/index" options={{ title: 'Gerenciar casas' }} />
       <Stack.Screen name="casas/nova" options={{ title: 'Nova casa' }} />

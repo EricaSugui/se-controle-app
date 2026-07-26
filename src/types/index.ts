@@ -434,6 +434,30 @@ export type AcertoContas = {
   avisos: AvisoAcerto[];
 };
 
+// ---- Relatório de gastos (GET /relatorios/gastos) ----
+
+// A matriz mês × categoria × pessoa de UMA casa — o app deriva as visões
+// (por categoria, por pessoa, drill-down, evolução) client-side.
+// "Pessoa" é o responsável pelo gasto (compras.pessoa_id), não quem pagou.
+export type LinhaRelatorioGastos = {
+  mes: string; // competência MMM-AA (no eixo caixa, o mês da data_caixa)
+  categoria_id: number;
+  categoria_nome: string;
+  categoria_icone: string; // MaterialCommunityIcons
+  categoria_cor: string; // hex
+  pessoa_id: number;
+  pessoa_nome: string;
+  total: number;
+};
+
+export type RelatorioGastos = {
+  casa_id: number;
+  de: string;
+  ate: string;
+  eixo: EixoAcerto; // mesmos valores do eixo do acerto: competencia | caixa
+  linhas: LinhaRelatorioGastos[]; // ordenadas por mês → categoria → pessoa
+};
+
 export type PercentualCusteio = {
   id: number;
   casa_id: number;

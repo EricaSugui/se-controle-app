@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { MonthPicker, competenciaParaData, dataParaCompetencia } from '@/src/components/ui/MonthPicker';
 import { getFechamentoMensal } from '@/src/services/api/fechamentoMensal';
 import { formatCurrency } from '@/src/utils/formatters';
@@ -47,6 +47,11 @@ export default function RelatoriosScreen() {
 
   return (
     <View style={styles.container}>
+      <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/gastos')}>
+        <Text style={styles.linkGastosTitulo}>Para onde foi meu dinheiro? ›</Text>
+        <Text style={styles.linkGastosSub}>Gastos por categoria e por pessoa, casa a casa</Text>
+      </Pressable>
+
       <Text style={styles.titulo}>Fechamento mensal</Text>
 
       <View style={styles.periodoRow}>
@@ -126,6 +131,10 @@ const styles = StyleSheet.create({
   container:        { flex: 1 },
   center:           { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   titulo:           { fontSize: 18, fontWeight: 'bold', textAlign: 'center', paddingTop: 16 },
+
+  linkGastos:       { backgroundColor: '#e3f2fd', borderRadius: 8, padding: 14, marginHorizontal: 16, marginTop: 16, gap: 2 },
+  linkGastosTitulo: { color: '#1565c0', fontSize: 15, fontWeight: '700' },
+  linkGastosSub:    { color: '#555', fontSize: 12 },
 
   periodoRow:       { flexDirection: 'row', justifyContent: 'center', gap: 24, paddingVertical: 12 },
   periodoBotao:     { alignItems: 'center' },
