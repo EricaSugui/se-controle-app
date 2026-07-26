@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import type { FormaPagamento } from '@/src/types';
+import { cores, raio } from '@/src/theme/tokens';
 
 const ICONE_PADRAO = 'dots-horizontal-circle-outline';
 const COR_PADRAO = '#9E9E9E';
@@ -50,10 +51,10 @@ export function FormaPagamentoSelector({ formas, formaSelecionadaId, onSelect }:
     <>
       <Pressable style={styles.chip} onPress={() => setAberto(true)}>
         <View style={[styles.circulo, { backgroundColor: cor }]}>
-          <Icone nome={icone} size={18} color="#fff" />
+          <Icone nome={icone} size={18} color={cores.textoInverso} />
         </View>
         <Text style={styles.chipTexto} numberOfLines={1}>{label}</Text>
-        <MaterialCommunityIcons name="chevron-down" size={20} color="#777" />
+        <MaterialCommunityIcons name="chevron-down" size={20} color={cores.textoSuave} />
       </Pressable>
 
       <Modal visible={aberto} transparent animationType="slide" onRequestClose={() => setAberto(false)}>
@@ -72,7 +73,7 @@ export function FormaPagamentoSelector({ formas, formaSelecionadaId, onSelect }:
                   onPress={() => selecionar(item.id)}
                 >
                   <View style={[styles.itemCirculo, { backgroundColor: item.cor || COR_PADRAO }, selecionado && styles.itemCirculoSelecionado]}>
-                    <Icone nome={item.icone} size={26} color="#fff" />
+                    <Icone nome={item.icone} size={26} color={cores.textoInverso} />
                   </View>
                   <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]} numberOfLines={2}>
                     {item.nome}
@@ -93,15 +94,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: cores.borda,
+    borderRadius: raio.md,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
   circulo:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  chipTexto:  { flex: 1, fontSize: 16, color: '#000' },
+  chipTexto:  { flex: 1, fontSize: 16, color: cores.texto },
 
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)' },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cores.overlay },
 
   sheet: {
     position: 'absolute',
@@ -109,9 +110,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     maxHeight: '70%',
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: cores.fundo,
+    borderTopLeftRadius: raio.lg,
+    borderTopRightRadius: raio.lg,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 24,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingBottom: 8 },
   item: { minHeight: 44, alignItems: 'center', gap: 6 },
   itemCirculo:             { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  itemCirculoSelecionado:  { borderWidth: 3, borderColor: '#6200ee' },
-  itemTexto:               { fontSize: 12, color: '#555', textAlign: 'center' },
-  itemTextoSelecionado:    { color: '#6200ee', fontWeight: '700' },
+  itemCirculoSelecionado:  { borderWidth: 3, borderColor: cores.primaria },
+  itemTexto:               { fontSize: 12, color: cores.textoMedio, textAlign: 'center' },
+  itemTextoSelecionado:    { color: cores.primaria, fontWeight: '700' },
 });

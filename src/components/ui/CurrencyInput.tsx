@@ -1,4 +1,5 @@
 import { StyleSheet, TextInput, type TextInputProps } from 'react-native';
+import { cores, raio } from '@/src/theme/tokens';
 
 type Props = Omit<TextInputProps, 'value' | 'onChange' | 'onChangeText' | 'keyboardType'> & {
   value: number | null;
@@ -30,5 +31,5 @@ export function CurrencyInput({ value, onChange, style, placeholder, ...rest }: 
 }
 
 const styles = StyleSheet.create({
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16 },
+  input: { borderWidth: 1, borderColor: cores.borda, borderRadius: raio.md, padding: 12, fontSize: 16 },
 });
