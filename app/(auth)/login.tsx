@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
+import { CenteredColumn, LARGURA_MAX } from '@/src/components/ui/CenteredColumn';
 import { useAuth } from '@/src/context/AuthContext';
 
 export default function LoginScreen() {
@@ -35,44 +36,47 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.titulo}>Se Controle</Text>
+      <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
+        <Text style={styles.titulo}>Se Controle</Text>
 
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="E-mail"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Senha"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-        />
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="E-mail"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Senha"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+          />
 
-        {erro && <Text style={styles.erro}>{erro}</Text>}
+          {erro && <Text style={styles.erro}>{erro}</Text>}
 
-        <Button label="Entrar" onPress={handleLogin} loading={loading} />
+          <Button label="Entrar" onPress={handleLogin} loading={loading} />
 
-        <Link href="/(auth)/cadastro" asChild>
-          <Button label="Criar conta" variant="outline" />
-        </Link>
-      </View>
+          <Link href="/(auth)/cadastro" asChild>
+            <Button label="Criar conta" variant="outline" />
+          </Link>
+        </View>
+      </CenteredColumn>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
+  wrapper:   { flex: 1 },
+  container: { justifyContent: 'center', padding: 24 },
   titulo:    { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 32 },
   form:      { gap: 12 },
   input: {
