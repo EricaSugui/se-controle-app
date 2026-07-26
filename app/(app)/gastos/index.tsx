@@ -2,10 +2,13 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { useBreakpoint } from '@/src/hooks/useBreakpoint';
+import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
+import { cores, raio } from '@/src/theme/tokens';
 import type { Compra } from '@/src/types';
 
 export default function GastosScreen() {
@@ -14,6 +17,9 @@ export default function GastosScreen() {
   const [itens, setItens] = useState<Compra[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Os 4 campos de cada card já são colunas querendo existir; acima de
+  // 768px eles viram tabela de verdade.
+  const { compacto } = useBreakpoint();
 
   const carregar = useCallback(() => {
     setLoading(true);
@@ -71,50 +77,37 @@ export default function GastosScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={() => setSeletorVisivel(true)} style={styles.competenciaBotao}>
-        <Text style={styles.competencia}>{competencia}</Text>
-        <Text style={styles.competenciaHint}>▼ trocar mês</Text>
-      </Pressable>
+      {/* No desktop a competência e o botão de nova compra dividem a linha;
+          no celular o botão continua fixo no rodapé, ao alcance do polegar. */}
+      <View style={[styles.cabecalho, !compacto && styles.cabecalhoLargo]}>
+        <Pressable onPress={() => setSeletorVisivel(true)} style={styles.competenciaBotao}>
+          <Text style={styles.competencia}>{competencia}</Text>
+          <Text style={styles.competenciaHint}>▼ trocar mês</Text>
+        </Pressable>
+
+        {!compacto && <BotaoNova />}
+      </View>
 
       <FlatList
         data={itens}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.lista}
+        contentContainerStyle={compacto ? styles.lista : styles.tabela}
+        ListHeaderComponent={compacto || itens.length === 0 ? null : <CabecalhoTabela />}
         ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra nesta competência.</Text>}
-        renderItem={({ item }: { item: Compra }) => (
-          <View style={styles.item}>
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemValor}>
-                {formatCurrency(item.valor_parcela * item.total_parcelas)}
-                {item.total_parcelas > 1 && (
-                  <Text style={styles.itemParcelas}>{`  · ${item.total_parcelas}x de ${formatCurrency(item.valor_parcela)}`}</Text>
-                )}
-              </Text>
-              <Text style={styles.itemDetalhe}>{item.descricao || item.categoria_nome || 'Sem descrição'}</Text>
-              {(item.pessoa_nome || item.cartao_conta_nome) && (
-                <Text style={styles.itemMeta}>
-                  {[item.pessoa_nome, item.cartao_conta_nome].filter(Boolean).join(' · ')}
-                </Text>
-              )}
-              <Text style={styles.itemData}>{formatDate(item.data)}</Text>
-            </View>
-            {item.pode_editar && (
-              <View style={styles.acoes}>
-                <Pressable onPress={() => editar(item)}>
-                  <Text style={styles.editar}>Editar</Text>
-                </Pressable>
-                <Pressable onPress={() => confirmarExcluir(item)}>
-                  <Text style={styles.excluir}>Excluir</Text>
-                </Pressable>
-              </View>
-            )}
-          </View>
-        )}
+        renderItem={({ item }: { item: Compra }) =>
+          compacto ? (
+            <CardGasto item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
+          ) : (
+            <LinhaTabela item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
+          )
+        }
       />
 
-      <Pressable style={styles.botaoNova} onPress={() => router.push('/(app)/gastos/novo')}>
-        <Text style={styles.botaoNovaTexto}>+ Nova compra</Text>
-      </Pressable>
+      {compacto && (
+        <View style={styles.rodape}>
+          <BotaoNova />
+        </View>
+      )}
 
       <MonthPicker
         visivel={seletorVisivel}
@@ -126,31 +119,184 @@ export default function GastosScreen() {
   );
 }
 
+function BotaoNova() {
+  const { hover, hoverProps } = useHover();
+
+  return (
+    <Pressable
+      {...hoverProps}
+      style={[styles.botaoNova, hover && styles.botaoNovaHover]}
+      onPress={() => router.push('/(app)/gastos/novo')}
+    >
+      <Text style={styles.botaoNovaTexto}>+ Nova compra</Text>
+    </Pressable>
+  );
+}
+
+function CabecalhoTabela() {
+  return (
+    <View style={styles.thead}>
+      <Text style={[styles.th, COL.data]}>Data</Text>
+      <Text style={[styles.th, COL.descricao]}>Descrição</Text>
+      <Text style={[styles.th, COL.categoria]}>Categoria</Text>
+      <Text style={[styles.th, COL.pessoa]}>Pessoa</Text>
+      <Text style={[styles.th, COL.cartao]}>Cartão/conta</Text>
+      <Text style={[styles.th, COL.valor, styles.thDireita]}>Valor</Text>
+      <View style={COL.acoes} />
+    </View>
+  );
+}
+
+function LinhaTabela({
+  item,
+  onEditar,
+  onExcluir,
+}: {
+  item: Compra;
+  onEditar: () => void;
+  onExcluir: () => void;
+}) {
+  const { hover, hoverProps } = useHover();
+
+  return (
+    <View {...hoverProps} style={[styles.tr, hover && styles.trHover]}>
+      <Text style={[styles.td, COL.data]}>{formatDate(item.data)}</Text>
+      <Text style={[styles.td, styles.tdForte, COL.descricao]} numberOfLines={1}>
+        {item.descricao || '—'}
+      </Text>
+      <Text style={[styles.td, COL.categoria]} numberOfLines={1}>
+        {item.categoria_nome || '—'}
+      </Text>
+      <Text style={[styles.td, COL.pessoa]} numberOfLines={1}>
+        {item.pessoa_nome || '—'}
+      </Text>
+      <Text style={[styles.td, COL.cartao]} numberOfLines={1}>
+        {item.cartao_conta_nome || '—'}
+      </Text>
+
+      <View style={COL.valor}>
+        <Text style={styles.tdValor}>{formatCurrency(item.valor_parcela * item.total_parcelas)}</Text>
+        {item.total_parcelas > 1 && (
+          <Text style={styles.tdParcelas}>
+            {`${item.total_parcelas}x de ${formatCurrency(item.valor_parcela)}`}
+          </Text>
+        )}
+      </View>
+
+      <View style={[COL.acoes, styles.acoes]}>
+        {item.pode_editar && (
+          <>
+            <AcaoTexto label="Editar" cor={cores.primaria} onPress={onEditar} />
+            <AcaoTexto label="Excluir" cor={cores.negativo} onPress={onExcluir} />
+          </>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function CardGasto({
+  item,
+  onEditar,
+  onExcluir,
+}: {
+  item: Compra;
+  onEditar: () => void;
+  onExcluir: () => void;
+}) {
+  return (
+    <View style={styles.item}>
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemValor}>
+          {formatCurrency(item.valor_parcela * item.total_parcelas)}
+          {item.total_parcelas > 1 && (
+            <Text style={styles.itemParcelas}>{`  · ${item.total_parcelas}x de ${formatCurrency(item.valor_parcela)}`}</Text>
+          )}
+        </Text>
+        <Text style={styles.itemDetalhe}>{item.descricao || item.categoria_nome || 'Sem descrição'}</Text>
+        {(item.pessoa_nome || item.cartao_conta_nome) && (
+          <Text style={styles.itemMeta}>
+            {[item.pessoa_nome, item.cartao_conta_nome].filter(Boolean).join(' · ')}
+          </Text>
+        )}
+        <Text style={styles.itemData}>{formatDate(item.data)}</Text>
+      </View>
+      {item.pode_editar && (
+        <View style={styles.acoes}>
+          <AcaoTexto label="Editar" cor={cores.primaria} onPress={onEditar} />
+          <AcaoTexto label="Excluir" cor={cores.negativo} onPress={onExcluir} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+function AcaoTexto({ label, cor, onPress }: { label: string; cor: string; onPress: () => void }) {
+  const { hover, hoverProps } = useHover();
+
+  return (
+    <Pressable {...hoverProps} onPress={onPress}>
+      <Text style={[styles.acaoTexto, { color: cor }, hover && styles.acaoTextoHover]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+// Larguras compartilhadas entre o cabeçalho e as linhas — se divergirem, as
+// colunas desalinham.
+const COL = StyleSheet.create({
+  data:      { width: 92 },
+  descricao: { flex: 2, minWidth: 110 },
+  categoria: { flex: 1, minWidth: 80 },
+  pessoa:    { flex: 1, minWidth: 80 },
+  cartao:    { flex: 1, minWidth: 80 },
+  valor:     { width: 150, alignItems: 'flex-end' },
+  acoes:     { width: 118 },
+});
+
 const styles = StyleSheet.create({
   center:            { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   container:         { flex: 1 },
-  competenciaBotao:  { alignItems: 'center', paddingTop: 16 },
+
+  cabecalho:         { paddingTop: 16, paddingHorizontal: 16 },
+  cabecalhoLargo:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  competenciaBotao:  { alignItems: 'center' },
   competencia:       { fontSize: 18, fontWeight: 'bold' },
-  competenciaHint:   { fontSize: 12, color: '#888', marginTop: 2 },
+  competenciaHint:   { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
   lista:             { padding: 16, gap: 8, flexGrow: 1 },
-  vazio:             { textAlign: 'center', color: '#888', marginTop: 32 },
+  tabela:            { padding: 16, flexGrow: 1 },
+  vazio:             { textAlign: 'center', color: cores.textoSuave, marginTop: 32 },
 
-  item:              { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14 },
+  // Tabela (desktop)
+  thead:             { flexDirection: 'row', gap: 12, paddingHorizontal: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
+  th:                { fontSize: 12, fontWeight: '600', color: cores.textoSuave, textTransform: 'uppercase', letterSpacing: 0.4 },
+  thDireita:         { textAlign: 'right' },
+  tr:                { flexDirection: 'row', gap: 12, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: raio.md, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
+  trHover:           { backgroundColor: cores.fundoHover },
+  td:                { fontSize: 13, color: cores.textoMedio },
+  tdForte:           { color: cores.textoForte, fontWeight: '500' },
+  tdValor:           { fontSize: 14, fontWeight: '600', color: cores.negativo },
+  tdParcelas:        { fontSize: 11, color: cores.textoSuave, marginTop: 2 },
+
+  // Cards (mobile)
+  item:              { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: cores.fundoSuave, borderRadius: raio.md, padding: 14 },
   itemInfo:          { flex: 1 },
-  itemValor:         { fontSize: 16, fontWeight: '600', color: '#c62828' },
-  itemParcelas:      { fontSize: 13, fontWeight: '400', color: '#777' },
-  itemDetalhe:       { fontSize: 13, color: '#555', marginTop: 2 },
-  itemMeta:          { fontSize: 12, color: '#777', marginTop: 2 },
-  itemData:          { fontSize: 12, color: '#888', marginTop: 2 },
+  itemValor:         { fontSize: 16, fontWeight: '600', color: cores.negativo },
+  itemParcelas:      { fontSize: 13, fontWeight: '400', color: cores.textoSuave },
+  itemDetalhe:       { fontSize: 13, color: cores.textoMedio, marginTop: 2 },
+  itemMeta:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
+  itemData:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
+
   acoes:             { flexDirection: 'row', gap: 16 },
-  editar:            { color: '#1565c0', fontSize: 14 },
-  excluir:           { color: '#c62828', fontSize: 14 },
+  acaoTexto:         { fontSize: 14 },
+  acaoTextoHover:    { textDecorationLine: 'underline' },
 
-  botaoNova:         { margin: 16, backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center' },
-  botaoNovaTexto:    { color: '#fff', fontWeight: '600', fontSize: 15 },
+  rodape:            { padding: 16 },
+  botaoNova:         { backgroundColor: cores.primaria, borderRadius: raio.md, paddingVertical: 12, paddingHorizontal: 18, alignItems: 'center' },
+  botaoNovaHover:    { opacity: 0.9 },
+  botaoNovaTexto:    { color: cores.textoInverso, fontWeight: '600', fontSize: 15 },
 
-  erro:              { color: '#c62828', textAlign: 'center', padding: 16 },
+  erro:              { color: cores.negativo, textAlign: 'center', padding: 16 },
   retry:             { padding: 10 },
-  retryTexto:        { color: '#1565c0' },
+  retryTexto:        { color: cores.primaria },
 });
