@@ -132,17 +132,48 @@ Concluído:
 A partir daqui não há mais nada transversal: o que resta é repetir padrões já
 estabelecidos, tela por tela.
 
-Pendente:
-- [ ] **C.5 restante — hover nas outras listas.** Feito em gastos e no dashboard; as demais
-  telas de lista (`receitas`, `metas`, `cartoes-contas`, `despesas-fixas`, …) seguem sem.
-  Fazer junto com o redesenho de cada uma, usando `useHover`.
-- [ ] **Master-detail nas outras listas**, seguindo o padrão da seção acima. `receitas` e
-  `metas` são as candidatas óbvias.
-- [ ] **Título por rota.** Hoje toda aba do browser diz "Se Controle". Cada tela precisaria
-  do próprio `<Head>`; vale fazer junto com o redesenho de cada uma.
+### Pendente — telas de lista
+
+Só `dashboard` e `gastos` foram redesenhadas. Estas 9 seguem no formato mobile original —
+cards, sem hover, sem tokens, sem breakpoint:
+
+| Tela | Observação |
+|---|---|
+| `metas/index` | candidata forte a master-detail (tem `[id]`) |
+| `mais/receitas/index` | candidata forte a master-detail (tem `[id]`) |
+| `mais/cartoes-contas/index` | tem `[id]` |
+| `mais/casas/index` | tem `[id]` |
+| `mais/despesas-fixas/contratos` | só leitura |
+| `mais/receitas-fixas/contratos` | só leitura |
+| `mais/cartoes-contas/faturas` | só leitura |
+| `mais/relatorios/index` | menu, não lista de dados |
+| `mais/administracao` | pouco usada |
+
+**Receita para redesenhar uma delas** (o que gastos/dashboard fizeram, nesta ordem):
+
+1. Trocar literais de cor por `cores`/`raio` — a tela inteira, não só o que mudou.
+2. `useBreakpoint()`: card no `compacto`, tabela acima. Larguras de coluna num `COL`
+   compartilhado entre cabeçalho e linhas, senão desalinham.
+3. `useHover` na linha e nas ações de texto.
+4. Estado de filtro (competência etc.) sai de `useState` e vai para search param.
+5. Master-detail só se a tela tiver `[id]`, seguindo a seção acima — extrair o editor para
+   componente e deixar `onSalvo` vir de fora.
+6. `<Head><title>` próprio da tela.
+
+### Pendente — resto
+
+- [ ] **Título por rota.** Toda aba do browser diz "Se Controle" (só o `<Head>` do layout
+  raiz existe). Cada tela precisa do próprio — passo 6 da receita acima.
 - [ ] **A.2 — sidebar absorve os destinos de "Mais".** No desktop, "Mais" é um item de
-  sidebar que leva a outro menu. Decidir depois de B, quando o formato desktop estiver claro.
-- [ ] **E.11 — escala de espaçamento/tipografia nos tokens**, quando B pedir.
+  sidebar que leva a outro menu com 9 links (`mais/index`). Melhor decidir depois que mais
+  telas de `mais/` estiverem redesenhadas, para saber quais merecem estar na sidebar.
+- [ ] **Escala de espaçamento/tipografia nos tokens.** Hoje `tokens.ts` tem só `cores` e
+  `raio`; paddings e `fontSize` seguem literais. Só vale extrair quando houver repetição
+  suficiente entre telas redesenhadas — hoje há duas, é cedo para saber a escala certa.
+- [ ] **Tokens nas telas restantes.** 44 das ~54 telas em `app/` ainda têm literais de cor.
+  Não é uma tarefa própria: sai junto com o passo 1 da receita.
+- [ ] **Verificação em runtime pela Erica.** Nada de layout é verificável por tipos ou probe
+  de bundle, e o login exige Supabase real — toda etapa termina em roteiro manual.
 
 ## Verificação
 
