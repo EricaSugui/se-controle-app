@@ -27,6 +27,8 @@ export default function RelatoriosScreen() {
   const [meses, setMeses] = useState<Dashboard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // null = soma de todas as casas
+  const [casaFiltroId, setCasaFiltroId] = useState<number | null>(null);
 
   const periodoInvalido = indiceCompetencia(de) > indiceCompetencia(ate);
 
@@ -45,6 +47,15 @@ export default function RelatoriosScreen() {
 
   useFocusEffect(carregar);
 
+  // União das casas que aparecem no período (uma casa pode não ter dados em
+  // todos os meses).
+  const casas: { id: number; nome: string }[] = [];
+  for (const mes of meses) {
+    for (const casa of mes.casas) {
+      if (!casas.some((c) => c.id === casa.id)) casas.push({ id: casa.id, nome: casa.nome });
+    }
+  }
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/gastos')}>
@@ -53,6 +64,30 @@ export default function RelatoriosScreen() {
       </Pressable>
 
       <Text style={styles.titulo}>Fechamento mensal</Text>
+
+      {casas.length > 1 && (
+        <View style={styles.casasRow}>
+          <Pressable
+            style={[styles.chip, casaFiltroId === null && styles.chipAtivo]}
+            onPress={() => setCasaFiltroId(null)}
+          >
+            <Text style={[styles.chipTexto, casaFiltroId === null && styles.chipTextoAtivo]}>
+              Todas as casas
+            </Text>
+          </Pressable>
+          {casas.map((c) => (
+            <Pressable
+              key={c.id}
+              style={[styles.chip, casaFiltroId === c.id && styles.chipAtivo]}
+              onPress={() => setCasaFiltroId(c.id)}
+            >
+              <Text style={[styles.chipTexto, casaFiltroId === c.id && styles.chipTextoAtivo]}>
+                {c.nome}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <View style={styles.periodoRow}>
         <Pressable onPress={() => setSeletorDeVisivel(true)} style={styles.periodoBotao}>
@@ -85,17 +120,32 @@ export default function RelatoriosScreen() {
           contentContainerStyle={styles.lista}
           ListEmptyComponent={<Text style={styles.vazio}>Nenhum dado no período.</Text>}
           renderItem={({ item }: { item: Dashboard }) => {
-            const receitas = item.casas.reduce((acc, c) => acc + c.receitas_total, 0);
-            const gastos = item.casas.reduce((acc, c) => acc + c.gastos_total, 0);
-            const saldo = item.casas.reduce((acc, c) => acc + c.saldo_casa, 0);
+            const casasDoMes =
+              casaFiltroId === null ? item.casas : item.casas.filter((c) => c.id === casaFiltroId);
+            const receitas = casasDoMes.reduce((acc, c) => acc + c.receitas_total, 0);
+            const gastos = casasDoMes.reduce((acc, c) => acc + c.gastos_total, 0);
+            const saldo = casasDoMes.reduce((acc, c) => acc + c.saldo_casa, 0);
+            const minhaParte = casasDoMes.reduce((acc, c) => acc + c.minha_parte, 0);
 
             return (
               <View style={styles.card}>
                 <Text style={styles.cardTitulo}>{item.competencia}</Text>
                 <Linha label="Receitas" valor={receitas} cor="#2e7d32" />
                 <Linha label="Gastos" valor={gastos} cor="#c62828" />
-                <Linha label="Minha parte" valor={item.minha_parte_total} cor="#e65100" />
+                <Linha label="Minha parte" valor={minhaParte} cor="#e65100" />
                 <Linha label="Saldo" valor={saldo} cor={saldo >= 0 ? '#2e7d32' : '#c62828'} />
+                {casaFiltroId === null && casasDoMes.length > 1 && (
+                  <View style={styles.porCasa}>
+                    {casasDoMes.map((c) => (
+                      <View key={c.id} style={styles.linha}>
+                        <Text style={styles.porCasaNome}>{c.nome}</Text>
+                        <Text style={[styles.porCasaSaldo, { color: c.saldo_casa >= 0 ? '#2e7d32' : '#c62828' }]}>
+                          {formatCurrency(c.saldo_casa)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             );
           }}
@@ -136,6 +186,12 @@ const styles = StyleSheet.create({
   linkGastosTitulo: { color: '#1565c0', fontSize: 15, fontWeight: '700' },
   linkGastosSub:    { color: '#555', fontSize: 12 },
 
+  casasRow:         { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingTop: 12 },
+  chip:             { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 14 },
+  chipAtivo:        { borderColor: '#1565c0', backgroundColor: '#e3f2fd' },
+  chipTexto:        { fontSize: 13, color: '#555' },
+  chipTextoAtivo:   { color: '#1565c0', fontWeight: '600' },
+
   periodoRow:       { flexDirection: 'row', justifyContent: 'center', gap: 24, paddingVertical: 12 },
   periodoBotao:     { alignItems: 'center' },
   periodoLabel:     { fontSize: 12, color: '#888' },
@@ -151,6 +207,10 @@ const styles = StyleSheet.create({
   linha:            { flexDirection: 'row', justifyContent: 'space-between' },
   linhaLabel:       { fontSize: 14, color: '#555' },
   linhaValor:       { fontSize: 14, fontWeight: '600' },
+
+  porCasa:          { borderTopWidth: 1, borderTopColor: '#e0e0e0', marginTop: 6, paddingTop: 6, gap: 4 },
+  porCasaNome:      { fontSize: 12, color: '#888' },
+  porCasaSaldo:     { fontSize: 12, fontWeight: '600' },
 
   erro:             { color: '#c62828', textAlign: 'center', padding: 16 },
   retry:            { padding: 10 },
