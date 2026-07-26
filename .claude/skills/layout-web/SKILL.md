@@ -127,10 +127,12 @@ Concluído:
 
 - [x] **B.3** — dashboard em grade (resumos em cards, casas com `flexWrap`)
 - [x] **B.4** — gastos como tabela (≥768) + master-detail com painel (≥1280)
+- [x] **C.7** — `Sheet` compartilhado: bottom sheet no celular, card centralizado no desktop
 
-Pendente, em ordem recomendada:
-- [ ] **C.7 — selectors deixam de ser bottom sheet no desktop.** Os 3 usam
-  `animationType="slide"` colado no rodapé com `maxHeight: 70%`.
+A partir daqui não há mais nada transversal: o que resta é repetir padrões já
+estabelecidos, tela por tela.
+
+Pendente:
 - [ ] **C.5 restante — hover nas outras listas.** Feito em gastos e no dashboard; as demais
   telas de lista (`receitas`, `metas`, `cartoes-contas`, `despesas-fixas`, …) seguem sem.
   Fazer junto com o redesenho de cada uma, usando `useHover`.
