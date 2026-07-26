@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
 import { cores, raio } from '@/src/theme/tokens';
 
@@ -12,15 +13,23 @@ type ButtonProps = PressableProps & {
 export function Button({ label, variant = 'primary', loading = false, disabled, style, ...rest }: ButtonProps) {
   const isDisabled = disabled || loading;
 
+  // `hovered` não existe em PressableStateCallbackType nos tipos do RN —
+  // onHoverIn/onHoverOut são a via tipada. No mobile nunca disparam.
+  const [hover, setHover] = useState(false);
+  const hovered = hover && !isDisabled;
+
   return (
     <Pressable
       style={({ pressed }) => [
         styles.base,
         styles[variant],
+        hovered && (variant === 'primary' ? styles.hoveredCheio : styles.hoveredVazado),
         pressed && styles.pressed,
         isDisabled && styles.disabled,
         typeof style === 'function' ? style({ pressed, hovered: false }) : style,
       ]}
+      onHoverIn={() => setHover(true)}
+      onHoverOut={() => setHover(false)}
       disabled={isDisabled}
       {...rest}
     >
@@ -46,6 +55,12 @@ const styles = StyleSheet.create({
   primary: { backgroundColor: cores.primaria },
   outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: cores.primaria },
   ghost:   { backgroundColor: 'transparent' },
+
+  // Cheio escurece de leve; vazado ganha fundo, porque opacidade em texto
+  // sobre transparente quase não se lê. Pressed continua mais forte que
+  // hover, então o gesto lê como progressão.
+  hoveredCheio:  { opacity: 0.9 },
+  hoveredVazado: { backgroundColor: cores.primariaSuave },
 
   pressed:  { opacity: 0.75 },
   disabled: { opacity: 0.4 },

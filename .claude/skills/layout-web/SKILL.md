@@ -62,6 +62,21 @@ Quando a implementação diverge de verdade, prefira split por extensão
   tab (badge de contagem, etc.).
 - **`PressableStateCallbackType` não tem `hovered`** nos tipos do RN. Para hover use
   `onHoverIn`/`onHoverOut` (esses são tipados) com estado local no item.
+- **O `title` das telas não chega à aba do browser.** `ExpoRoot` roda com
+  `documentTitle: { enabled: false }`, então `options.title` serve só ao header. Quem
+  escreve a aba é o `<Head>` de `expo-router/head` (react-helmet) — há um `<Head>` padrão
+  no layout raiz. Não adianta pôr `<title>` no `+html.tsx`: o helmet renderiza o dele
+  antes, e com dois `<title>` o browser usa o primeiro.
+
+## O que o react-native-web já resolve (não reimplementar)
+
+Verificado no `node_modules`, não suposto:
+
+- **Foco de teclado já funciona.** `Pressable` recebe `tabIndex = disabled ? -1 : 0` e o RNW
+  não reseta `outline` em lugar nenhum — o browser desenha o anel padrão. O `+html.tsx` só
+  troca esse padrão por um anel da marca via `:focus-visible`.
+- **`cursor: pointer` já vem** em `Pressable` e em `Text` com `onPress`.
+- **Hover não vem de graça** — esse é o gap real, e é por componente.
 
 ## Tokens: tema × domínio
 
@@ -86,23 +101,23 @@ Concluído:
 - [x] `useBreakpoint` + limite de 1200px no shell de `(app)`
 - [x] Sidebar no desktop com tab bar escondida; gráficos medindo container
 - [x] `tokens.ts` + migração de `src/components/ui/*`
+- [x] **A.1** — `CenteredColumn` + limite de 420px nos formulários de `(auth)`
+- [x] **C.6 / D.9 / D.8** — `+html.tsx` com `lang="pt-BR"` e anel de foco da marca;
+  `<Head>` no layout raiz dando título à aba (que estava **vazia**, não com o nome do app)
+- [x] **C.5 parcial** — hover no `Button`
 
 Pendente, em ordem recomendada:
 
-- [ ] **A.1 — `(auth)` fora do shell.** `login`, `cadastro`, `convidado`, `confirmacao` e
-  `+not-found` são irmãos de `(app)` no Stack raiz, então não pegam o limite de largura.
-  `login.tsx` é `justifyContent: 'center'` sem `maxWidth`: num monitor 2560px os campos têm
-  2512px. É a primeira tela do desktop e hoje é a pior. Extrair o shell para reuso.
-- [ ] **C.5/C.6 — hover e foco de teclado.** Só a sidebar tem hover; foco não existe em
-  lugar nenhum (Tab é invisível). Transversal — fazer **antes** do redesenho de telas, senão
-  as telas são redesenhadas duas vezes.
 - [ ] **B.3 — dashboard em grid.** Os 4 resumos são linhas `space-between` empilhadas.
 - [ ] **B.4 — gastos como tabela + master-detail.** Os 4 campos do card já são colunas
   querendo existir; `gastos/[id]` pode renderizar ao lado da lista.
 - [ ] **C.7 — selectors deixam de ser bottom sheet no desktop.** Os 3 usam
   `animationType="slide"` colado no rodapé com `maxHeight: 70%`.
-- [ ] **D.8/D.9 — web como produto.** Título da aba é `se-controle-rn` (o `expo.name`) e
-  igual em toda rota; não existe `app/+html.tsx`, então a página não declara `lang="pt-BR"`.
+- [ ] **C.5 restante — hover nas linhas de lista e nas ações de texto** ("Editar",
+  "Excluir", "+ Nova compra"). Feito junto com B, quando as linhas forem reconstruídas —
+  adiantar agora seria refazer depois.
+- [ ] **Título por rota.** Hoje toda aba do browser diz "Se Controle". Cada tela precisaria
+  do próprio `<Head>`; vale fazer junto com o redesenho de cada uma.
 - [ ] **A.2 — sidebar absorve os destinos de "Mais".** No desktop, "Mais" é um item de
   sidebar que leva a outro menu. Decidir depois de B, quando o formato desktop estiver claro.
 - [ ] **E.11 — escala de espaçamento/tipografia nos tokens**, quando B pedir.
