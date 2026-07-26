@@ -1,4 +1,5 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 
 // Barras de gasto total por mês (série única — sem legenda). Tocar numa
@@ -41,7 +42,9 @@ function barPath(x: number, y: number, w: number, h: number): string {
 }
 
 export function GastosMensalChart({ dados, mesSelecionado, onSelecionarMes }: Props) {
-  const largura = useWindowDimensions().width - 32;
+  // Mede o container, não a janela: no desktop o gráfico vive numa coluna
+  // limitada ao lado da sidebar, então largura de tela não vale como proxy.
+  const [largura, setLargura] = useState(0);
 
   if (dados.length === 0) return null;
 
@@ -58,7 +61,8 @@ export function GastosMensalChart({ dados, mesSelecionado, onSelecionarMes }: Pr
   const saltoRotulo = Math.ceil(dados.length / 8);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={(e) => setLargura(e.nativeEvent.layout.width)}>
+      {largura > 0 && (
       <Svg width={largura} height={ALTURA}>
         {gridY.map((v, i) => (
           <Line
@@ -136,6 +140,7 @@ export function GastosMensalChart({ dados, mesSelecionado, onSelecionarMes }: Pr
           ) : null
         )}
       </Svg>
+      )}
     </View>
   );
 }
