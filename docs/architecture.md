@@ -1,65 +1,80 @@
+# Arquitetura do app
+
+> Atualizado em 2026-07-26 (contrato 3.8.0 do backend). O que cada tela
+> FAZ está em `fluxo-telas.md`; este documento é o mapa técnico.
+
+## Rotas (Expo Router)
+
+```
 app/
-├── (auth)/
-│   ├── _layout
-│   ├── login
-│   └── cadastro
+├── (auth)/                    ← login, cadastro, confirmacao, convidado
 │
 ├── (app)/
-│   ├── _layout               ← tab navigator (4 abas)
-│   ├── dashboard/
-│   │   └── index
-│   ├── gastos/
-│   │   ├── index             ← lista de gastos
-│   │   └── [id]              ← detalhe / edição
-│   ├── orcamento/
-│   │   └── index
-│   └── mais/
-│       ├── index             ← menu de opções
-│       ├── receitas/
-│       │   ├── index
-│       │   └── [id]
-│       └── relatorios/
-│           └── index
+│   ├── _layout                ← 5 abas (mobile) / sidebar (desktop) — fonte única em src/navigation/abas.ts
+│   ├── dashboard/index
+│   ├── gastos/                ← index (lista), novo, [id] (detalhe/edição)
+│   ├── projecao/index         ← saldo projetado
+│   ├── metas/                 ← index, novo, [id]
+│   └── mais/                  ← hub de gestão
+│       ├── index              ← menu
+│       ├── receitas/          ← index, novo, [id]
+│       ├── cartoes-contas/    ← index, novo, [id], faturas, fatura, visibilidade
+│       ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
+│       ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
+│       ├── relatorios/        ← index (fechamento mensal), gastos (matriz categoria×pessoa)
+│       ├── casas/             ← index, nova, [id], combinado (custeio), acerto
+│       ├── convidar
+│       ├── perfil
+│       └── administracao      ← catálogos; só admin_sistema
 │
-└── index                     ← redireciona auth → (app) ou (auth)
+└── index                      ← redireciona auth → (app) ou (auth)
+```
 
+- `(auth)` e `(app)` são route groups — não viram segmento de URL.
+- **Uma árvore de rotas só para mobile e desktop**: o layout de `(app)`
+  alterna abas embaixo × sidebar lateral pelo breakpoint
+  (`useBreakpoint`); nenhuma rota é duplicada.
 
+## src/
+
+```
 src/
 ├── components/
-│   ├── ui/                   ← componentes genéricos (Button, Input, Card)
-│   └── domain/               ← componentes de negócio (GastoCard, OrcamentoBar)
+│   ├── ui/                    ← agnóstico de negócio: Button, Sheet, Sidebar,
+│   │                            CurrencyInput, DatePickerField, MonthPicker,
+│   │                            selectors (Categoria/CartaoConta/FormaPagamento —
+│   │                            chip + bottom sheet, usam icone/cor do banco)
+│   └── domain/                ← conhece o domínio: forms de compra/receita/
+│                                contratos/meta/cartão, charts (projeção, gastos)
 │
-├── hooks/                    ← useGastos, useReceitas, useOrcamento
+├── context/                   ← AuthContext (sessão, pessoa logada)
+├── hooks/                     ← useBreakpoint, useDashboard, useHover
+├── navigation/abas.ts         ← fonte única das abas (Tabs + Sidebar leem daqui)
 │
 ├── services/
-│   ├── api/                  ← chamadas ao Express (gastos, receitas, etc)
-│   └── supabase/             ← client do supabase, auth
+│   ├── api/                   ← 1 módulo por recurso do backend (client.ts é o
+│   │                            fetch autenticado); espelha o contrato OpenAPI
+│   └── supabase/              ← client do Supabase (auth)
 │
-├── context/                  ← AuthContext, GrupoContext
-│
-├── utils/                    ← formatadores de moeda, data, etc
-│
-└── types/                    ← tipos TypeScript do domínio
+├── theme/                     ← tokens visuais
+├── types/                     ← tipos do domínio (espelham o contrato)
+└── utils/                     ← competência (MMM-AA), formatadores, confirmar
+```
 
-(auth) e (app) são route groups do Expo Router — não viram segmento de URL
-Todo acesso a dados passa por services/ — componentes nunca chamam API diretamente
-context/ guarda estado global (usuário logado, grupo familiar)
-components/ui/ é agnóstico de negócio — components/domain/ conhece o domínio
+## Regras que valem no repo todo
 
-Vercel sugere:
-frontend/
-├── src/
-│   ├── screens/
-│   ├── components/
-│   ├── App.js
-│   └── index.web.js    ← entrada web
-├── web/
-│   └── index.html
-├── package.json
-├── babel.config.js
-└── metro.config.js     (pode ignorar para web)
+- **Todo acesso a dados passa por `services/api`** — componente nunca
+  chama fetch direto; `client.ts` injeta o token.
+- **Contrato manda**: tipos e services seguem o OpenAPI do backend
+  (`se-controle-backend/openapi.yml`); mudanças chegam via
+  handoffs (`se-controle-backend/docs/handoff-frontend-*.md`).
+- **`components/ui` não conhece negócio**; o que conhece domínio vive em
+  `components/domain`.
+- **Competência** é `MMM-AA` em português (JAN..DEZ) — helpers em
+  `utils/competencia.ts`; a competência default de um lançamento deriva
+  da DATA escolhida, não de hoje.
 
-Cuidados com Expo na Vercel
-⚠️ Dependências nativas: Se seu Expo usa bibliotecas nativas (câmera, localização, etc), certifique que funcionam no web também
-⚠️ Assets: Caminho de imagens/fontes — use paths relativos ou imports
-⚠️ Tempo de build: Expo pode demorar um pouco (2-3 min), fique atento ao timeout Vercel
+## Deploy
+
+Web na Vercel (`vercel.json`; FRONTEND_URL do backend aponta para lá) e
+APK Android via EAS (`eas.json`).
