@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
+import { CenteredColumn, LARGURA_MAX } from '@/src/components/ui/CenteredColumn';
 import { supabaseSignUp } from '@/src/services/supabase/auth';
 import { criarPessoa, vincularConta } from '@/src/services/api/convite';
 
@@ -48,49 +49,51 @@ export default function CadastroScreen() {
       style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.titulo}>Criar conta</Text>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
+          <Text style={styles.titulo}>Criar conta</Text>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nome"
-            value={nome}
-            onChangeText={setNome}
-            autoCapitalize="words"
-            autoFocus
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="E-mail"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Senha"
-            value={senha}
-            onChangeText={setSenha}
-            secureTextEntry
-            autoComplete="new-password"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Confirmar senha"
-            value={confirmarSenha}
-            onChangeText={setConfirmarSenha}
-            secureTextEntry
-            autoComplete="new-password"
-          />
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Nome"
+              value={nome}
+              onChangeText={setNome}
+              autoCapitalize="words"
+              autoFocus
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="E-mail"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Senha"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirmar senha"
+              value={confirmarSenha}
+              onChangeText={setConfirmarSenha}
+              secureTextEntry
+              autoComplete="new-password"
+            />
 
-          {erro && <Text style={styles.erro}>{erro}</Text>}
+            {erro && <Text style={styles.erro}>{erro}</Text>}
 
-          <Button label="Criar conta" onPress={handleCadastro} loading={loading} />
-          <Button label="Já tenho conta" variant="ghost" onPress={() => router.back()} />
-        </View>
+            <Button label="Criar conta" onPress={handleCadastro} loading={loading} />
+            <Button label="Já tenho conta" variant="ghost" onPress={() => router.back()} />
+          </View>
+        </CenteredColumn>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -98,7 +101,8 @@ export default function CadastroScreen() {
 
 const styles = StyleSheet.create({
   wrapper:    { flex: 1 },
-  container:  { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  scroll:     { flexGrow: 1 },
+  container:  { justifyContent: 'center', padding: 24 },
   titulo:     { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 24 },
   form:       { gap: 12 },
   input: {

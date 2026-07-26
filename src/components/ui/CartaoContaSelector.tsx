@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { CartaoConta, TipoCartaoConta } from '@/src/types';
+import { cores, raio } from '@/src/theme/tokens';
 
 // tipo é um enum fixo de 3 valores — ao contrário de categoria, não há
 // icone/cor por linha vindos do backend, então o mapeamento é local.
@@ -47,10 +48,10 @@ export function CartaoContaSelector({ contas, contaSelecionadaId, onSelect, nenh
     <>
       <Pressable style={styles.chip} onPress={() => setAberto(true)}>
         <View style={[styles.circulo, { backgroundColor: cor }]}>
-          <MaterialCommunityIcons name={icone} size={18} color="#fff" />
+          <MaterialCommunityIcons name={icone} size={18} color={cores.textoInverso} />
         </View>
         <Text style={styles.chipTexto} numberOfLines={1}>{label}</Text>
-        <MaterialCommunityIcons name="chevron-down" size={20} color="#777" />
+        <MaterialCommunityIcons name="chevron-down" size={20} color={cores.textoSuave} />
       </Pressable>
 
       <Modal visible={aberto} transparent animationType="slide" onRequestClose={() => setAberto(false)}>
@@ -62,7 +63,7 @@ export function CartaoContaSelector({ contas, contaSelecionadaId, onSelect, nenh
           <ScrollView contentContainerStyle={styles.lista}>
             <Pressable style={styles.item} onPress={() => selecionar(null)}>
               <View style={[styles.itemCirculo, { backgroundColor: '#9E9E9E' }]}>
-                <MaterialCommunityIcons name="circle-off-outline" size={22} color="#fff" />
+                <MaterialCommunityIcons name="circle-off-outline" size={22} color={cores.textoInverso} />
               </View>
               <Text style={[styles.itemTexto, contaSelecionadaId === null && styles.itemTextoSelecionado]}>
                 {nenhumLabel}
@@ -74,7 +75,7 @@ export function CartaoContaSelector({ contas, contaSelecionadaId, onSelect, nenh
               return (
                 <Pressable key={conta.id} style={styles.item} onPress={() => selecionar(conta.id)}>
                   <View style={[styles.itemCirculo, { backgroundColor: COR_POR_TIPO[conta.tipo] }]}>
-                    <MaterialCommunityIcons name={ICONE_POR_TIPO[conta.tipo]} size={22} color="#fff" />
+                    <MaterialCommunityIcons name={ICONE_POR_TIPO[conta.tipo]} size={22} color={cores.textoInverso} />
                   </View>
                   <View style={styles.itemTextos}>
                     <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]}>
@@ -98,15 +99,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: cores.borda,
+    borderRadius: raio.md,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
   circulo:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  chipTexto:  { flex: 1, fontSize: 16, color: '#000' },
+  chipTexto:  { flex: 1, fontSize: 16, color: cores.texto },
 
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)' },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cores.overlay },
 
   sheet: {
     position: 'absolute',
@@ -114,9 +115,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     maxHeight: '70%',
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: cores.fundo,
+    borderTopLeftRadius: raio.lg,
+    borderTopRightRadius: raio.lg,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 24,
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   item:                    { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, paddingVertical: 6 },
   itemCirculo:             { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   itemTextos:              { flex: 1 },
-  itemTexto:               { fontSize: 15, color: '#333' },
-  itemTextoSelecionado:    { color: '#6200ee', fontWeight: '700' },
-  itemSubtexto:            { fontSize: 12, color: '#888' },
+  itemTexto:               { fontSize: 15, color: cores.textoForte },
+  itemTextoSelecionado:    { color: cores.primaria, fontWeight: '700' },
+  itemSubtexto:            { fontSize: 12, color: cores.textoSuave },
 });

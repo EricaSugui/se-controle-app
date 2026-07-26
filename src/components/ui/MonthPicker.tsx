@@ -1,5 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESES_COMPETENCIA } from '@/src/utils/competencia';
+import { cores, raio } from '@/src/theme/tokens';
 
 // Meses em português — mesmo formato que o backend gera e valida (AGO-26).
 const MESES = MESES_COMPETENCIA;
@@ -82,14 +83,14 @@ export function MonthPicker({ visivel, valor, onSelecionar, onFechar }: Props) {
 }
 
 const styles = StyleSheet.create({
-  backdrop:             { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)' },
+  backdrop:             { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cores.overlay },
 
   card: {
     position: 'absolute',
     alignSelf: 'center',
     top: '30%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: cores.fundo,
+    borderRadius: raio.lg,
     padding: 20,
     width: 300,
     shadowColor: '#000',
@@ -100,19 +101,19 @@ const styles = StyleSheet.create({
 
   anoRow:               { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   anoBtn:               { padding: 8 },
-  anoBtnTexto:          { fontSize: 24, color: '#6200ee', lineHeight: 28 },
+  anoBtnTexto:          { fontSize: 24, color: cores.primaria, lineHeight: 28 },
   anoTexto:             { fontSize: 18, fontWeight: 'bold' },
 
   grid:                 { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   mes: {
     width: '30%',
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: raio.md,
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: cores.fundoSuave,
   },
-  mesSelecionado:       { backgroundColor: '#6200ee' },
-  mesTexto:             { fontSize: 14, fontWeight: '500', color: '#333' },
-  mesTextoSelecionado:  { color: '#fff', fontWeight: '700' },
-  mesHoje:              { color: '#6200ee', fontWeight: '700' },
+  mesSelecionado:       { backgroundColor: cores.primaria },
+  mesTexto:             { fontSize: 14, fontWeight: '500', color: cores.textoForte },
+  mesTextoSelecionado:  { color: cores.textoInverso, fontWeight: '700' },
+  mesHoje:              { color: cores.primaria, fontWeight: '700' },
 });

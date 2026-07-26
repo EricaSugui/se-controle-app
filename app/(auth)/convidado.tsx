@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
+import { CenteredColumn, LARGURA_MAX } from '@/src/components/ui/CenteredColumn';
 import { aceitarConvite } from '@/src/services/api/convite';
 import { supabaseUpdatePassword } from '@/src/services/supabase/auth';
 
@@ -86,66 +87,69 @@ export default function ConvidadoScreen() {
 
   if (!token || !accessToken) {
     return (
-      <View style={styles.container}>
+      <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
         <Text style={styles.erro}>Link de convite inválido ou expirado.</Text>
-      </View>
+      </CenteredColumn>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.titulo}>Criar sua conta</Text>
-      <Text style={styles.emailTexto}>{contexto?.email}</Text>
+      <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
+        <Text style={styles.titulo}>Criar sua conta</Text>
+        <Text style={styles.emailTexto}>{contexto?.email}</Text>
 
-      {(contexto?.casaNome || contexto?.convidadoPorNome) && (
-        <View style={styles.card}>
-          <Text style={styles.cardTexto}>
-            {contexto.convidadoPorNome ? `${contexto.convidadoPorNome} te convidou` : 'Você foi convidado'}
-            {contexto.casaNome ? ` para fazer parte de "${contexto.casaNome}"` : ''}
-            {contexto.papel ? ` como ${contexto.papel}` : ''}.
-          </Text>
+        {(contexto?.casaNome || contexto?.convidadoPorNome) && (
+          <View style={styles.card}>
+            <Text style={styles.cardTexto}>
+              {contexto.convidadoPorNome ? `${contexto.convidadoPorNome} te convidou` : 'Você foi convidado'}
+              {contexto.casaNome ? ` para fazer parte de "${contexto.casaNome}"` : ''}
+              {contexto.papel ? ` como ${contexto.papel}` : ''}.
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Seu nome"
+            value={nome}
+            onChangeText={setNome}
+            autoCapitalize="words"
+            autoFocus
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Senha"
+            value={senha}
+            onChangeText={setSenha}
+            secureTextEntry
+            autoComplete="new-password"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmar senha"
+            value={confirmarSenha}
+            onChangeText={setConfirmarSenha}
+            secureTextEntry
+            autoComplete="new-password"
+          />
+
+          {erro && <Text style={styles.erro}>{erro}</Text>}
+
+          <Button label="Confirmar conta" onPress={handleConfirmar} loading={loading} />
         </View>
-      )}
-
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Seu nome"
-          value={nome}
-          onChangeText={setNome}
-          autoCapitalize="words"
-          autoFocus
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Senha"
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirmar senha"
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-          secureTextEntry
-          autoComplete="new-password"
-        />
-
-        {erro && <Text style={styles.erro}>{erro}</Text>}
-
-        <Button label="Confirmar conta" onPress={handleConfirmar} loading={loading} />
-      </View>
+      </CenteredColumn>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container:  { flex: 1, justifyContent: 'center', padding: 24 },
+  wrapper:    { flex: 1 },
+  container:  { justifyContent: 'center', padding: 24 },
   titulo:     { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 },
   emailTexto: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 },
   card:       { backgroundColor: '#e3f2fd', borderRadius: 8, padding: 14, marginBottom: 16 },

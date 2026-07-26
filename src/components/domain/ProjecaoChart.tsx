@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Polyline, Text as SvgText } from 'react-native-svg';
 import { formatDate } from '@/src/utils/formatters';
 import type { ContaProjetada } from '@/src/types';
@@ -34,7 +35,9 @@ function valorCompacto(v: number): string {
 }
 
 export function ProjecaoChart({ contas, hoje, ate }: Props) {
-  const largura = useWindowDimensions().width - 32;
+  // Mede o container, não a janela: no desktop o gráfico vive numa coluna
+  // limitada ao lado da sidebar, então largura de tela não vale como proxy.
+  const [largura, setLargura] = useState(0);
 
   // Série por conta: saldo_base no ponto inicial, soma progressiva dos
   // eventos (valor_indefinido entra como 0, igual ao backend) e ponto final
@@ -74,7 +77,8 @@ export function ProjecaoChart({ contas, hoje, ate }: Props) {
   const hojeVisivel = xHoje >= xMin && xHoje <= xMax;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={(e) => setLargura(e.nativeEvent.layout.width)}>
+      {largura > 0 && (
       <Svg width={largura} height={ALTURA}>
         {gridY.map((y, i) => (
           <Line
@@ -138,6 +142,7 @@ export function ProjecaoChart({ contas, hoje, ate }: Props) {
           {formatDate(ate)}
         </SvgText>
       </Svg>
+      )}
 
       <View style={styles.legenda}>
         {series.map((s, i) => (

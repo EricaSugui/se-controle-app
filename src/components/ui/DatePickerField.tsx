@@ -2,6 +2,7 @@ import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useState, type CSSProperties } from 'react';
 import { formatDate } from '@/src/utils/formatters';
+import { cores, raio } from '@/src/theme/tokens';
 
 type Props = {
   valor: string; // formato "AAAA-MM-DD" ou ''
@@ -77,18 +78,18 @@ export function DatePickerField({ valor, onSelecionar, placeholder = 'Selecionar
 }
 
 const styles = StyleSheet.create({
-  input:       { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12 },
-  texto:       { fontSize: 16, color: '#000' },
-  placeholder: { fontSize: 16, color: '#999' },
+  input:       { borderWidth: 1, borderColor: cores.borda, borderRadius: raio.md, padding: 12 },
+  texto:       { fontSize: 16, color: cores.texto },
+  placeholder: { fontSize: 16, color: cores.textoSuave },
 });
 
 // Espelha styles.input para o elemento DOM usado no web.
 const webInputStyle: CSSProperties = {
-  border: '1px solid #ccc',
-  borderRadius: 8,
+  border: `1px solid ${cores.borda}`,
+  borderRadius: raio.md,
   padding: 12,
   fontSize: 16,
   fontFamily: 'inherit',
-  color: '#000',
+  color: cores.texto,
   backgroundColor: 'transparent',
 };

@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
+import { cores, raio } from '@/src/theme/tokens';
 
 type Variant = 'primary' | 'outline' | 'ghost';
 
@@ -24,7 +25,7 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#6200ee'} />
+        <ActivityIndicator color={variant === 'primary' ? cores.textoInverso : cores.primaria} />
       ) : (
         <Text style={[styles.label, styles[`${variant}Label`]]}>{label}</Text>
       )}
@@ -36,21 +37,21 @@ const styles = StyleSheet.create({
   base: {
     paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: raio.md,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
   },
 
-  primary: { backgroundColor: '#6200ee' },
-  outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#6200ee' },
+  primary: { backgroundColor: cores.primaria },
+  outline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: cores.primaria },
   ghost:   { backgroundColor: 'transparent' },
 
   pressed:  { opacity: 0.75 },
   disabled: { opacity: 0.4 },
 
   label:        { fontSize: 16, fontWeight: '600' },
-  primaryLabel: { color: '#fff' },
-  outlineLabel: { color: '#6200ee' },
-  ghostLabel:   { color: '#6200ee' },
+  primaryLabel: { color: cores.textoInverso },
+  outlineLabel: { color: cores.primaria },
+  ghostLabel:   { color: cores.primaria },
 });
