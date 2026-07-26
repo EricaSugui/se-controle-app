@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { CartaoConta, TipoCartaoConta } from '@/src/types';
+import { Sheet } from '@/src/components/ui/Sheet';
 import { cores, raio } from '@/src/theme/tokens';
 
 // tipo é um enum fixo de 3 valores — ao contrário de categoria, não há
@@ -54,41 +55,35 @@ export function CartaoContaSelector({ contas, contaSelecionadaId, onSelect, nenh
         <MaterialCommunityIcons name="chevron-down" size={20} color={cores.textoSuave} />
       </Pressable>
 
-      <Modal visible={aberto} transparent animationType="slide" onRequestClose={() => setAberto(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setAberto(false)} />
+      <Sheet visivel={aberto} titulo="Cartão/conta" onFechar={() => setAberto(false)}>
+        <ScrollView contentContainerStyle={styles.lista}>
+          <Pressable style={styles.item} onPress={() => selecionar(null)}>
+            <View style={[styles.itemCirculo, { backgroundColor: '#9E9E9E' }]}>
+              <MaterialCommunityIcons name="circle-off-outline" size={22} color={cores.textoInverso} />
+            </View>
+            <Text style={[styles.itemTexto, contaSelecionadaId === null && styles.itemTextoSelecionado]}>
+              {nenhumLabel}
+            </Text>
+          </Pressable>
 
-        <View style={styles.sheet}>
-          <Text style={styles.titulo}>Cartão/conta</Text>
-
-          <ScrollView contentContainerStyle={styles.lista}>
-            <Pressable style={styles.item} onPress={() => selecionar(null)}>
-              <View style={[styles.itemCirculo, { backgroundColor: '#9E9E9E' }]}>
-                <MaterialCommunityIcons name="circle-off-outline" size={22} color={cores.textoInverso} />
-              </View>
-              <Text style={[styles.itemTexto, contaSelecionadaId === null && styles.itemTextoSelecionado]}>
-                {nenhumLabel}
-              </Text>
-            </Pressable>
-
-            {contas.map((conta) => {
-              const selecionado = conta.id === contaSelecionadaId;
-              return (
-                <Pressable key={conta.id} style={styles.item} onPress={() => selecionar(conta.id)}>
-                  <View style={[styles.itemCirculo, { backgroundColor: COR_POR_TIPO[conta.tipo] }]}>
-                    <MaterialCommunityIcons name={ICONE_POR_TIPO[conta.tipo]} size={22} color={cores.textoInverso} />
-                  </View>
-                  <View style={styles.itemTextos}>
-                    <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]}>
-                      {conta.nome}
-                    </Text>
-                    <Text style={styles.itemSubtexto}>{LABEL_TIPO[conta.tipo]}</Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </Modal>
+          {contas.map((conta) => {
+            const selecionado = conta.id === contaSelecionadaId;
+            return (
+              <Pressable key={conta.id} style={styles.item} onPress={() => selecionar(conta.id)}>
+                <View style={[styles.itemCirculo, { backgroundColor: COR_POR_TIPO[conta.tipo] }]}>
+                  <MaterialCommunityIcons name={ICONE_POR_TIPO[conta.tipo]} size={22} color={cores.textoInverso} />
+                </View>
+                <View style={styles.itemTextos}>
+                  <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]}>
+                    {conta.nome}
+                  </Text>
+                  <Text style={styles.itemSubtexto}>{LABEL_TIPO[conta.tipo]}</Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </Sheet>
     </>
   );
 }
@@ -106,23 +101,6 @@ const styles = StyleSheet.create({
   },
   circulo:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   chipTexto:  { flex: 1, fontSize: 16, color: cores.texto },
-
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cores.overlay },
-
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    maxHeight: '70%',
-    backgroundColor: cores.fundo,
-    borderTopLeftRadius: raio.lg,
-    borderTopRightRadius: raio.lg,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  titulo: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
 
   lista: { gap: 4, paddingBottom: 8 },
   item:                    { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, paddingVertical: 6 },

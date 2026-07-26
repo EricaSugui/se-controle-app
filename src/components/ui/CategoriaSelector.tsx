@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Categoria } from '@/src/types';
+import { Sheet } from '@/src/components/ui/Sheet';
 import { cores, raio } from '@/src/theme/tokens';
 
 // Defaults espelham os defaults de coluna no backend (icone/cor de "Outros")
@@ -50,33 +51,27 @@ export function CategoriaSelector({ categorias, categoriaSelecionadaId, onSelect
         <MaterialCommunityIcons name="chevron-down" size={20} color={cores.textoSuave} />
       </Pressable>
 
-      <Modal visible={aberto} transparent animationType="slide" onRequestClose={() => setAberto(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setAberto(false)} />
-
-        <View style={styles.sheet}>
-          <Text style={styles.titulo}>Categoria</Text>
-
-          <ScrollView contentContainerStyle={styles.grid}>
-            {itens.map((item) => {
-              const selecionado = item.id === categoriaSelecionadaId;
-              return (
-                <Pressable
-                  key={String(item.id)}
-                  style={[styles.item, { width: itemLargura }]}
-                  onPress={() => selecionar(item.id)}
-                >
-                  <View style={[styles.itemCirculo, { backgroundColor: item.cor || COR_PADRAO }, selecionado && styles.itemCirculoSelecionado]}>
-                    <MaterialCommunityIcons name={(item.icone || ICONE_PADRAO) as never} size={26} color={cores.textoInverso} />
-                  </View>
-                  <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]} numberOfLines={2}>
-                    {item.nome}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
-      </Modal>
+      <Sheet visivel={aberto} titulo="Categoria" onFechar={() => setAberto(false)}>
+        <ScrollView contentContainerStyle={styles.grid}>
+          {itens.map((item) => {
+            const selecionado = item.id === categoriaSelecionadaId;
+            return (
+              <Pressable
+                key={String(item.id)}
+                style={[styles.item, { width: itemLargura }]}
+                onPress={() => selecionar(item.id)}
+              >
+                <View style={[styles.itemCirculo, { backgroundColor: item.cor || COR_PADRAO }, selecionado && styles.itemCirculoSelecionado]}>
+                  <MaterialCommunityIcons name={(item.icone || ICONE_PADRAO) as never} size={26} color={cores.textoInverso} />
+                </View>
+                <Text style={[styles.itemTexto, selecionado && styles.itemTextoSelecionado]} numberOfLines={2}>
+                  {item.nome}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </Sheet>
     </>
   );
 }
@@ -94,23 +89,6 @@ const styles = StyleSheet.create({
   },
   circulo:    { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   chipTexto:  { flex: 1, fontSize: 16, color: cores.texto },
-
-  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: cores.overlay },
-
-  sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    maxHeight: '70%',
-    backgroundColor: cores.fundo,
-    borderTopLeftRadius: raio.lg,
-    borderTopRightRadius: raio.lg,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  titulo: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingBottom: 8 },
   item: { minHeight: 44, alignItems: 'center', gap: 6 },
