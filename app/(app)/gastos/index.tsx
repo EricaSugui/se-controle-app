@@ -1,16 +1,19 @@
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { CompraEditor } from '@/src/components/domain/CompraEditor';
+import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
-import { formatCurrency, formatDate } from '@/src/utils/formatters';
-import { competenciaAtual } from '@/src/utils/competencia';
-import { confirmar, notificar } from '@/src/utils/confirmar';
 import { cores, raio } from '@/src/theme/tokens';
 import type { Compra } from '@/src/types';
+import { competenciaAtual } from '@/src/utils/competencia';
+import { confirmar, notificar } from '@/src/utils/confirmar';
+import { formatCurrency, formatDate } from '@/src/utils/formatters';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+
+type CampoOrdenacao = 'data' | 'descricao' | 'categoria' | 'pessoa' | 'cartao' | 'valor';
+type DirecaoOrdenacao = 'asc' | 'desc';
 
 export default function GastosScreen() {
   // Competência e gasto aberto vivem na URL, não em useState: assim o mês
@@ -26,8 +29,27 @@ export default function GastosScreen() {
   const [error, setError] = useState<string | null>(null);
   // Os 4 campos de cada card já são colunas querendo existir; acima de
   // 768px eles viram tabela de verdade.
+  const [ordenacao, setOrdenacao] = useState<{ campo: CampoOrdenacao; direcao: DirecaoOrdenacao }>({
+    campo: 'data',
+    direcao: 'desc',
+  });
   const { compacto, painelDuplo } = useBreakpoint();
   const mostrandoPainel = painelDuplo && editandoId != null;
+
+  const itensOrdenados = useMemo(() => ordenarCompras(itens, ordenacao), [itens, ordenacao]);
+
+  function alternarOrdenacao(campo: CampoOrdenacao) {
+    setOrdenacao((atual) => {
+      if (atual.campo === campo) {
+        return { campo, direcao: atual.direcao === 'asc' ? 'desc' : 'asc' };
+      }
+
+      return {
+        campo,
+        direcao: campo === 'data' || campo === 'valor' ? 'desc' : 'asc',
+      };
+    });
+  }
 
   function irPara(competenciaNova: string) {
     router.setParams({ competencia: competenciaNova });
@@ -115,10 +137,14 @@ export default function GastosScreen() {
 
       <View style={styles.corpo}>
         <FlatList
-          data={itens}
+          data={itensOrdenados}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={compacto ? styles.lista : styles.tabela}
-          ListHeaderComponent={compacto || itens.length === 0 ? null : <CabecalhoTabela />}
+          ListHeaderComponent={
+            compacto || itensOrdenados.length === 0 ? null : (
+              <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
+            )
+          }
           ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra nesta competência.</Text>}
           renderItem={({ item }: { item: Compra }) =>
             compacto ? (
@@ -186,18 +212,126 @@ function BotaoNova() {
   );
 }
 
-function CabecalhoTabela() {
+function CabecalhoTabela({
+  ordenacao,
+  onOrdenar,
+}: {
+  ordenacao: { campo: CampoOrdenacao; direcao: DirecaoOrdenacao };
+  onOrdenar: (campo: CampoOrdenacao) => void;
+}) {
   return (
     <View style={styles.thead}>
-      <Text style={[styles.th, COL.data]}>Data</Text>
-      <Text style={[styles.th, COL.descricao]}>Descrição</Text>
-      <Text style={[styles.th, COL.categoria]}>Categoria</Text>
-      <Text style={[styles.th, COL.pessoa]}>Pessoa</Text>
-      <Text style={[styles.th, COL.cartao]}>Cartão/conta</Text>
-      <Text style={[styles.th, COL.valor, styles.thDireita]}>Valor</Text>
+      <CabecalhoOrdenavel
+        label="Data"
+        campo="data"
+        estiloColuna={COL.data}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
+      <CabecalhoOrdenavel
+        label="Descrição"
+        campo="descricao"
+        estiloColuna={COL.descricao}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
+      <CabecalhoOrdenavel
+        label="Categoria"
+        campo="categoria"
+        estiloColuna={COL.categoria}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
+      <CabecalhoOrdenavel
+        label="Pessoa"
+        campo="pessoa"
+        estiloColuna={COL.pessoa}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
+      <CabecalhoOrdenavel
+        label="Cartão/conta"
+        campo="cartao"
+        estiloColuna={COL.cartao}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
+      <CabecalhoOrdenavel
+        label="Valor"
+        campo="valor"
+        estiloColuna={[COL.valor, styles.thDireita]}
+        ordenacao={ordenacao}
+        onOrdenar={onOrdenar}
+      />
       <View style={COL.acoes} />
     </View>
   );
+}
+
+function CabecalhoOrdenavel({
+  label,
+  campo,
+  estiloColuna,
+  ordenacao,
+  onOrdenar,
+}: {
+  label: string;
+  campo: CampoOrdenacao;
+  estiloColuna: object;
+  ordenacao: { campo: CampoOrdenacao; direcao: DirecaoOrdenacao };
+  onOrdenar: (campo: CampoOrdenacao) => void;
+}) {
+  const selecionado = ordenacao.campo === campo;
+  const seta = selecionado ? (ordenacao.direcao === 'asc' ? ' ▲' : ' ▼') : '';
+
+  return (
+    <Pressable onPress={() => onOrdenar(campo)} style={estiloColuna} accessibilityRole="button">
+      <Text style={[styles.th, selecionado && styles.thAtivo]}>{`${label}${seta}`}</Text>
+    </Pressable>
+  );
+}
+
+function ordenarCompras(itens: Compra[], ordenacao: { campo: CampoOrdenacao; direcao: DirecaoOrdenacao }) {
+  const fator = ordenacao.direcao === 'asc' ? 1 : -1;
+
+  return [...itens].sort((a, b) => {
+    let comparacao = 0;
+
+    switch (ordenacao.campo) {
+      case 'data':
+        comparacao = compararTexto(a.data, b.data);
+        break;
+      case 'descricao':
+        comparacao = compararTexto(a.descricao || '', b.descricao || '');
+        break;
+      case 'categoria':
+        comparacao = compararTexto(a.categoria_nome || '', b.categoria_nome || '');
+        break;
+      case 'pessoa':
+        comparacao = compararTexto(a.pessoa_nome || '', b.pessoa_nome || '');
+        break;
+      case 'cartao':
+        comparacao = compararTexto(a.cartao_conta_nome || '', b.cartao_conta_nome || '');
+        break;
+      case 'valor':
+        comparacao = compararNumero(a.valor_parcela * a.total_parcelas, b.valor_parcela * b.total_parcelas);
+        break;
+    }
+
+    if (comparacao === 0) {
+      comparacao = a.id - b.id;
+    }
+
+    return comparacao * fator;
+  });
+}
+
+function compararTexto(a: string, b: string) {
+  return a.localeCompare(b, 'pt-BR', { sensitivity: 'base' });
+}
+
+function compararNumero(a: number, b: number) {
+  return a - b;
 }
 
 function LinhaTabela({
@@ -332,6 +466,7 @@ const styles = StyleSheet.create({
   // Tabela (desktop)
   thead:             { flexDirection: 'row', gap: 12, paddingHorizontal: 12, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
   th:                { fontSize: 12, fontWeight: '600', color: cores.textoSuave, textTransform: 'uppercase', letterSpacing: 0.4 },
+  thAtivo:           { color: cores.primaria },
   thDireita:         { textAlign: 'right' },
   tr:                { flexDirection: 'row', gap: 12, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: raio.md, borderBottomWidth: 1, borderBottomColor: cores.bordaSuave },
   trHover:           { backgroundColor: cores.fundoHover },

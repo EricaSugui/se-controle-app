@@ -1,0 +1,94 @@
+# Backlog — se-controle-backend
+
+> Atualizado em 2026-07-25. Fonte da verdade dos pendentes; as decisões já
+> tomadas estão em `decisoes-superficie-api.md`.
+
+## Entregue recentemente
+
+- ✅ **Projeção de saldo** (`GET /saldo-projetado`, PR #28) — evolução de
+  cartoes_contas (tipo aplicacao, saldo_base, conta_debito_id), conta destino
+  nos contratos com herança, PIX exige conta, compartilhamento de saldo
+  opt-in. **Frontend concluído** (jul/2026), incluindo os handoffs
+  anteriores (despesas/receitas fixas, fuso, exceções).
+- ✅ **Ícone e cor em categorias e formas_pagamento** (PRs #35/#36,
+  jul/2026) — colunas curadas no banco em vez de mapa fixo no cliente.
+  Consumido no app pelos selectors (CategoriaSelector, CartaoContaSelector,
+  FormaPagamentoSelector — PRs #34–#36 do se-controle-rn).
+- ✅ **Competência default deriva da data** (handoff PR #34; fix no app na
+  PR #33 do se-controle-rn) — dados históricos já corrigidos no banco.
+- ✅ **Reajuste atômico** (jul/2026, contrato 3.8.0) —
+  POST /despesas-fixas/:id/reajustar e /receitas-fixas/:id/reajustar:
+  encerrar + criar sucessora numa transação. Robustez pré-onboarding da
+  família. **Frontend concluído** (PR #40 do se-controle-rn, jul/2026).
+- ✅ **Relatório de gastos** (jul/2026, contrato 3.7.0) —
+  GET /relatorios/gastos: matriz mês × categoria × pessoa por casa, eixo
+  competência|caixa, ícone/cor de categoria na resposta. **Frontend
+  concluído** (PR #38 do se-controle-rn, jul/2026).
+- ✅ **Acerto de contas / reembolso** (jul/2026, contrato 3.6.0) —
+  GET /casas/:id/acerto (conta corrente entre pessoas) + POST/DELETE de
+  pagamentos/adiantamentos; eixo competência|caixa com precedência
+  casa→compra. Implementa em código a regra de `regra-rateio-custeio.md`.
+  Dados de produção: Karina criada (pessoa 39, admin da casa 2, sem login)
+  e combinado JUL-26 registrado (Karina 100 / Erica 0). **Frontend
+  concluído** (PR #37 do se-controle-rn, jul/2026).
+
+## Próximos candidatos
+
+- **Motor de cenários** — formalizar o motor de projeção como camada pura e
+  isolada: recebe estado real (contratos vigentes de despesa_fixa/
+  receita_fixa, faturas, saldos) + conjunto de **deltas hipotéticos**,
+  devolve linha do tempo projetada, sem efeitos colaterais e sem persistir
+  nada no ledger. Sobre ele, introduzir a entidade **`cenario`** = estado
+  real + deltas (transação fictícia, contrato alterado, contrato encerrado),
+  persistível e comparável lado a lado. Responde às três perguntas-tese:
+  comprometimento de renda (agregação), "posso comprar X?" (transação
+  simulada), "e se a renda cair 20%?" (contrato modificado).
+  **Pré-requisito**: desacoplar a lógica de projeção da tela atual de saldo
+  projetado (hoje o cálculo vive em `services/saldoProjetado.ts` acoplado ao
+  escopo/params do endpoint). Coerente com os princípios existentes:
+  derived views over stored state; comportamento ≠ classificação.
+- **Projeção no tempo (gráfico)**: o endpoint já devolve a timeline de
+  eventos por conta — a UI decide granularidade; se precisar de série diária
+  agregada pelo backend, é evolução pequena do service.
+- **Despesa fixa esperada em cartão de crédito**: hoje projetada na
+  data_esperada (simplificação); refinamento futuro é projetá-la no
+  vencimento da fatura em que cairia.
+
+## Backlog de features (sem urgência, já com contexto)
+
+- **Hash chain** — intenção antiga de adicionar uma cadeia de hash ao
+  backend (integridade/auditoria de lançamentos). Nunca escopado.
+- **Checagem de coerência de valor nas exceções** — o status compara
+  existência, não valor; `valor_ocorrido`/`valor_esperado_original` já
+  gravados preparam essa checagem.
+- **Motivos categorizados de exceção** — hoje texto livre (`motivo`).
+- **Suavização de valor de receitas variáveis** — média de meses anteriores
+  para `valor_esperado` de freelance (decisão da modelagem de receitas fixas).
+
+## Micro-melhorias (fazer quando incomodar)
+
+- **`pode_editar` nos GETs de despesas/receitas fixas** — compras/receitas
+  têm; fixas não. Adicionar se o frontend sentir falta (o app pode inferir
+  pelo papel na casa enquanto isso).
+- ~~Aba de performance do linter do Supabase~~ — revisada em jul/2026:
+  auth_rls_initplan (2, pessoas) corrigidos e as 30 FKs sem índice
+  indexadas. Os 4 `unused_index` são os índices intencionais de gap
+  detection/projeção — mantidos de propósito (base pequena usa seq scan;
+  pagam quando o volume crescer). Ignorar `unused_index` enquanto a base
+  for pequena. Segurança já tratada na PR #26.
+
+## Riscos aceitos (reavaliar se o contexto mudar)
+
+- **Leaked Password Protection desligada** — exige plano pago; aceito no
+  free tier. Ligar no dashboard (Auth → senha) se migrar de plano; nesse
+  caso, conferir se o cadastro do app exibe o erro `weak_password`.
+- **Pool do backend é superuser e bypassa RLS** — por design; a autorização
+  efetiva é a da camada de app, e o RLS é defesa em profundidade para o
+  acesso direto via Supabase.
+
+## Do lado do frontend (se-controle-rn)
+
+- ✅ Todos os handoffs consumidos (despesas/receitas fixas, fuso, exceções,
+  saldo projetado, competência default, ícone/cor, acerto de contas,
+  relatório de gastos e reajuste atômico) — app em dia com o contrato
+  3.8.0.
