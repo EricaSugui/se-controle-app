@@ -12,14 +12,18 @@ type State =
 export function useDashboard(competencia = competenciaAtual(), eixo: 'caixa' | 'competencia' = 'caixa') {
   const [state, setState] = useState<State>({ status: 'loading' });
 
+  const recarregar = useCallback(() => {
+    setState({ status: 'loading' });
+    return getDashboard(competencia, eixo)
+      .then((data) => setState({ status: 'success', data }))
+      .catch((err: Error) => setState({ status: 'error', error: err.message }));
+  }, [competencia, eixo]);
+
   useFocusEffect(
     useCallback(() => {
-      setState({ status: 'loading' });
-      getDashboard(competencia, eixo)
-        .then((data) => setState({ status: 'success', data }))
-        .catch((err: Error) => setState({ status: 'error', error: err.message }));
-    }, [competencia, eixo])
+      void recarregar();
+    }, [recarregar])
   );
 
-  return state;
+  return { ...state, recarregar };
 }

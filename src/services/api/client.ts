@@ -4,6 +4,16 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 let authToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
 
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
@@ -29,7 +39,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!response.ok) {
     if (response.status === 401) onUnauthorized?.();
     const corpo = await response.json().catch(() => null) as { erro?: string } | null;
-    throw new Error(corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
+    throw new ApiError(response.status, corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
   }
 
   if (response.status === 204) {

@@ -79,9 +79,14 @@ export default function CasaDetalhesScreen() {
 
     setConvidando(true);
     try {
-      await convidarMembro(casaId, emailTrimmed, papel);
+      const convite = await convidarMembro(casaId, emailTrimmed, papel);
       setEmail('');
-      notificar('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
+      notificar(
+        'Convite enviado',
+        convite.entrega === 'dashboard'
+          ? `${emailTrimmed} já usa o Se Controle e verá o convite no dashboard.`
+          : `Enviamos um e-mail de convite para ${emailTrimmed} criar a conta e entrar na casa.`
+      );
       carregar();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
@@ -134,46 +139,53 @@ export default function CasaDetalhesScreen() {
           ))
         )}
 
-        <View style={styles.divider} />
+        {souAdmin && (
+          <>
+            <View style={styles.divider} />
 
-        <Text style={styles.secaoTitulo}>Convidar pessoa</Text>
+            <Text style={styles.secaoTitulo}>Convidar pessoa</Text>
+            <Text style={styles.conviteAjuda}>
+              Informe o e-mail. Quem já usa o app aceita pelo dashboard; quem ainda não tem conta recebe um convite por e-mail.
+            </Text>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="E-mail do convidado"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+            <View style={styles.form}>
+              <TextInput
+                style={styles.input}
+                placeholder="E-mail da pessoa"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
 
-          <View style={styles.papelContainer}>
-            {PAPEIS.map((p) => (
+              <View style={styles.papelContainer}>
+                {PAPEIS.map((p) => (
+                  <Pressable
+                    key={p.valor}
+                    style={[styles.papelOpcao, papel === p.valor && styles.papelOpcaoAtiva]}
+                    onPress={() => setPapel(p.valor)}
+                  >
+                    <Text style={[styles.papelTexto, papel === p.valor && styles.papelTextoAtivo]}>
+                      {p.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
               <Pressable
-                key={p.valor}
-                style={[styles.papelOpcao, papel === p.valor && styles.papelOpcaoAtiva]}
-                onPress={() => setPapel(p.valor)}
+                style={[styles.botao, (!email.trim() || convidando) && styles.botaoDesabilitado]}
+                onPress={convidar}
+                disabled={!email.trim() || convidando}
               >
-                <Text style={[styles.papelTexto, papel === p.valor && styles.papelTextoAtivo]}>
-                  {p.label}
-                </Text>
+                {convidando
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.botaoTexto}>Enviar convite</Text>
+                }
               </Pressable>
-            ))}
-          </View>
-
-          <Pressable
-            style={[styles.botao, (!email.trim() || convidando) && styles.botaoDesabilitado]}
-            onPress={convidar}
-            disabled={!email.trim() || convidando}
-          >
-            {convidando
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.botaoTexto}>Enviar convite</Text>
-            }
-          </Pressable>
-        </View>
+            </View>
+          </>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -205,6 +217,7 @@ const styles = StyleSheet.create({
   divider:          { height: 1, backgroundColor: '#e0e0e0', marginVertical: 16 },
 
   form:             { gap: 10 },
+  conviteAjuda:     { fontSize: 13, color: '#666', marginTop: -4, marginBottom: 10 },
   input:            { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16 },
 
   papelContainer:   { flexDirection: 'row', gap: 8 },

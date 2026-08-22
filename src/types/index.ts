@@ -40,6 +40,21 @@ export type Usuario = {
   fuso_horario: string; // IANA, ex. America/Sao_Paulo
 };
 
+export type ConviteRecebido = {
+  id: number;
+  email: string;
+  convidado_por_id: number;
+  casa_id: number | null;
+  papel: 'admin' | 'membro';
+  status: 'pendente' | 'aceito' | 'expirado' | 'cancelado';
+  expires_at: string | null;
+  created_at: string;
+};
+
+export type ConviteCriado = ConviteRecebido & {
+  entrega: 'dashboard' | 'email_onboarding';
+};
+
 export type Casa = {
   id: number;
   nome: string;

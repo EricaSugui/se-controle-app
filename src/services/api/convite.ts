@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { ConviteRecebido } from '../../types';
 
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
@@ -37,4 +38,13 @@ export function aceitarConvite(conviteToken: string, nome: string, accessToken: 
 export function convidarPessoa(email: string): Promise<void> {
   const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   return api.post<void>('/convites', { email, expires_at });
+}
+
+// Fluxo autenticado: o token público do link de onboarding não participa aqui.
+export function getConvitesRecebidos(): Promise<ConviteRecebido[]> {
+  return api.get<ConviteRecebido[]>('/convites/recebidos');
+}
+
+export function aceitarConviteRecebido(id: number): Promise<ConviteRecebido> {
+  return api.patch<ConviteRecebido>(`/convites/recebidos/${id}/aceitar`);
 }

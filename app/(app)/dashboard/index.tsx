@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { useDashboard } from '@/src/hooks/useDashboard';
+import { useConvitesRecebidos } from '@/src/hooks/useConvitesRecebidos';
+import { useAuth } from '@/src/context/AuthContext';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
@@ -10,6 +12,10 @@ import { getStatusReceitasFixas } from '@/src/services/api/receitasFixas';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
 import { cores, raio } from '@/src/theme/tokens';
+import { Button } from '@/src/components/ui/Button';
+import { confirmar, notificar } from '@/src/utils/confirmar';
+import { ApiError } from '@/src/services/api/client';
+import type { ConviteRecebido } from '@/src/types';
 
 const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
   { valor: 'caixa', label: 'Caixa' },
@@ -25,6 +31,48 @@ export default function DashboardScreen() {
   // Acima de 768px os 4 resumos cabem lado a lado; abaixo, viram linhas.
   const { compacto } = useBreakpoint();
   const state = useDashboard(competencia, eixo);
+  const convites = useConvitesRecebidos();
+  const { refreshUser } = useAuth();
+
+  function conviteExpirado(convite: ConviteRecebido) {
+    return convite.expires_at != null && new Date(convite.expires_at).getTime() < Date.now();
+  }
+
+  function aceitarConvite(convite: ConviteRecebido) {
+    confirmar(
+      {
+        titulo: 'Aceitar convite?',
+        mensagem: 'Você passará a fazer parte desta casa.',
+        textoConfirmar: 'Aceitar convite',
+        destrutivo: false,
+      },
+      () => {
+        void (async () => {
+          try {
+            const resultado = await convites.aceitar(convite.id);
+            if (resultado !== 'aceito') return;
+
+            await Promise.all([refreshUser(), state.recarregar()]);
+            notificar('Convite aceito', 'A casa já está disponível no seu dashboard.');
+          } catch (error) {
+            if (error instanceof ApiError && (error.status === 404 || error.status === 409)) {
+              await convites.removerERecarregar(convite.id);
+              notificar('Convite indisponível', 'Este convite expirou, já foi usado ou não existe mais.');
+              return;
+            }
+            if (error instanceof ApiError && error.status === 403) {
+              notificar('Convite para outra conta', 'Este convite foi enviado para um email diferente do vinculado à sua conta.');
+              return;
+            }
+            // O cliente encerra a sessão e leva ao login quando recebe 401.
+            if (!(error instanceof ApiError && error.status === 401)) {
+              notificar('Não foi possível aceitar', error instanceof Error ? error.message : undefined);
+            }
+          }
+        })();
+      }
+    );
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -115,6 +163,46 @@ export default function DashboardScreen() {
             }
             onPress={() => router.push('/(app)/mais/receitas-fixas')}
           />
+        )}
+
+        {(convites.carregando || convites.convites.length > 0 || convites.erro) && (
+          <View style={styles.convitesBloco}>
+            <Text style={styles.secao}>Convites pendentes</Text>
+            {convites.carregando && (
+              <View style={styles.convitesCarregando}>
+                <ActivityIndicator size="small" color={cores.primaria} />
+                <Text style={styles.conviteDescricao}>Buscando convites...</Text>
+              </View>
+            )}
+            {!convites.carregando && convites.convites.map((convite) => {
+              const expirado = conviteExpirado(convite);
+              const nomeCasa = data.casas.find((casa) => casa.id === convite.casa_id)?.nome;
+              const aceitando = convites.aceitandoId === convite.id;
+
+              return (
+                <View key={convite.id} style={styles.convite}>
+                  <View style={styles.conviteTextoBloco}>
+                    <Text style={styles.conviteTitulo}>
+                      {nomeCasa ? `Convite para ${nomeCasa}` : 'Você recebeu um convite para participar de uma casa'}
+                    </Text>
+                    <Text style={styles.conviteDescricao}>
+                      Papel: {convite.papel === 'admin' ? 'administrador' : 'membro'}
+                      {expirado ? '. Este convite expirou; atualize a lista.' : '.'}
+                    </Text>
+                  </View>
+                  <Button
+                    label={expirado ? 'Atualizar lista' : 'Aceitar convite'}
+                    variant={expirado ? 'outline' : 'primary'}
+                    loading={aceitando}
+                    disabled={convites.aceitandoId !== null && !aceitando}
+                    onPress={expirado ? () => void convites.removerERecarregar(convite.id) : () => aceitarConvite(convite)}
+                    style={styles.conviteBotao}
+                  />
+                </View>
+              );
+            })}
+            {convites.erro && <Text style={styles.conviteErro}>Não foi possível atualizar os convites: {convites.erro}</Text>}
+          </View>
         )}
 
         <View style={[styles.resumo, !compacto && styles.resumoGrid]}>
@@ -257,6 +345,15 @@ const styles = StyleSheet.create({
   alerta:             { borderRadius: raio.md, padding: 12 },
   alertaHover:        { opacity: 0.85 },
   alertaTexto:        { fontWeight: '600', fontSize: 14, textAlign: 'center' },
+
+  convitesBloco:      { gap: 8 },
+  convite:            { backgroundColor: cores.primariaSuave, borderRadius: raio.md, padding: 12, gap: 12 },
+  conviteTextoBloco:  { gap: 4 },
+  conviteTitulo:      { fontSize: 15, fontWeight: '600', color: cores.textoForte },
+  conviteDescricao:   { fontSize: 13, color: cores.textoMedio },
+  conviteBotao:       { alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 16, minHeight: 40 },
+  conviteErro:        { color: cores.negativo, fontSize: 13 },
+  convitesCarregando: { flexDirection: 'row', alignItems: 'center', gap: 8 },
 
   resumo:             { backgroundColor: cores.fundoSuave, borderRadius: raio.md, padding: 16, gap: 8 },
   // Some a caixa cinza: no desktop cada resumo vira seu próprio card.
