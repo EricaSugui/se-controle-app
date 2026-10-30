@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import { Link } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
 import { CenteredColumn, LARGURA_MAX } from '@/src/components/ui/CenteredColumn';
@@ -9,7 +8,6 @@ import { useAuth } from '@/src/context/AuthContext';
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,10 +18,8 @@ export default function LoginScreen() {
       setErro('Preencha e-mail e senha.');
       return;
     }
-
     setErro(null);
     setLoading(true);
-
     try {
       await signIn(email, password);
       router.replace('/(app)/dashboard');
@@ -35,13 +31,9 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.wrapper}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.wrapper} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
         <Text style={styles.titulo}>Se Controle</Text>
-
         <View style={styles.form}>
           <TextInput
             style={styles.input}
@@ -60,11 +52,9 @@ export default function LoginScreen() {
             secureTextEntry
             autoComplete="password"
           />
-
+          <Link href="/(auth)/recuperar-senha" style={styles.link}>Esqueci minha senha</Link>
           {erro && <Text style={styles.erro}>{erro}</Text>}
-
           <Button label="Entrar" onPress={handleLogin} loading={loading} />
-
           <Link href="/(auth)/cadastro" asChild>
             <Button label="Criar conta" variant="outline" />
           </Link>
@@ -75,10 +65,10 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrapper:   { flex: 1 },
+  wrapper: { flex: 1 },
   container: { justifyContent: 'center', padding: 24 },
-  titulo:    { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 32 },
-  form:      { gap: 12 },
+  titulo: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 32 },
+  form: { gap: 12 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -87,5 +77,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
+  link: { color: '#555', textAlign: 'right', fontSize: 14, paddingVertical: 4 },
   erro: { color: '#c62828', fontSize: 14, textAlign: 'center' },
 });
