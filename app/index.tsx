@@ -19,28 +19,25 @@ export default function Index() {
 
   useEffect(() => {
     if (Platform.OS !== 'web') { setHashChecado(true); return; }
-
     const hash = window.location.hash;
     if (!hash) { setHashChecado(true); return; }
-
     const params = parseHash(hash);
 
     if (params.access_token && params.type === 'invite') {
-      // Só chega aqui se o link de convite cair na Site URL em vez de
-      // /convidado (redirect_to não configurado/aceito no Supabase). Sem o
-      // token do convite não dá pra aceitar — manda sem params pra tela
-      // mostrar "link inválido" em vez de um 404 confuso no backend.
       router.replace('/(auth)/convidado');
       return;
-    } else if (params.access_token && params.type === 'signup') {
+    }
+    if (params.access_token && params.type === 'signup') {
       router.replace({ pathname: '/(auth)/confirmacao', params: { token: params.access_token } });
       return;
     }
-
+    if (params.access_token && params.type === 'recovery') {
+      router.replace({ pathname: '/(auth)/redefinir-senha', params: { token: params.access_token } });
+      return;
+    }
     setHashChecado(true);
   }, []);
 
   if (!hashChecado) return null;
-
   return <Redirect href={user ? '/(app)/dashboard' : '/(auth)/login'} />;
 }
