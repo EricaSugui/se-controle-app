@@ -1,5 +1,6 @@
 const SUPABASE_URL = 'https://ytjputnezihknmfeccok.supabase.co';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_API_KEY ?? '';
+const APP_URL = 'https://se-controle-app.vercel.app';
 
 type SupabaseSession = {
   access_token: string;
@@ -13,6 +14,26 @@ type SupabaseError = {
   error_description?: string;
   msg?: string;
 };
+
+export async function supabaseRecoverPassword(email: string): Promise<void> {
+  const redirectTo = `${APP_URL}/`;
+  const response = await fetch(
+    `${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ email }),
+    }
+  );
+
+  if (!response.ok) {
+    const err: SupabaseError = await response.json();
+    throw new Error(err.error_description ?? err.msg ?? 'Não foi possível enviar o e-mail de recuperação.');
+  }
+}
 
 export async function supabaseUpdatePassword(novaSenha: string, token: string): Promise<void> {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
