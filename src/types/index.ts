@@ -434,6 +434,73 @@ export type AcertoContas = {
   avisos: AvisoAcerto[];
 };
 
+export type AcertoRelatorioResumo = {
+  id: number;
+  casa_id: number;
+  confirmado_em: string;
+  moeda: string;
+  precisao_moeda: number;
+  nome_casa: string;
+  total: number;
+  nome_arquivo_base: string;
+};
+
+export type AcertoRelatorioParticipante = {
+  pessoa_id: number;
+  nome: string;
+  devido: number;
+  desembolsado: number;
+  pagamentos_enviados: number;
+  pagamentos_recebidos: number;
+  saldo: number;
+};
+
+export type AcertoRelatorioMes = {
+  mes: string;
+  pessoa_id: number;
+  nome: string;
+  devido: number;
+  desembolsado: number;
+  acerto: number;
+};
+
+export type AcertoRelatorioDespesa = {
+  descricao: string;
+  data: string;
+  competencia: string;
+  valor: number;
+  pessoa_id: number;
+  nome_pessoa: string;
+  categoria_nome: string | null;
+  modo_acerto: EixoAcerto;
+};
+
+export type AcertoRelatorioTransferencia = {
+  de_pessoa_id: number;
+  de_nome: string;
+  para_pessoa_id: number;
+  para_nome: string;
+  valor: number;
+  data: string;
+  observacao: string | null;
+  tipo: 'pagamento' | 'estorno';
+};
+
+export type AcertoRelatorioEvento = {
+  tipo: 'confirmado' | 'pdf_gerado' | 'csv_gerado' | 'pdf_erro' | 'csv_erro' | 'compartilhado';
+  pessoa_id: number;
+  created_at: string;
+  metadados: Record<string, unknown> | null;
+};
+
+export type AcertoRelatorio = AcertoRelatorioResumo & {
+  participantes: AcertoRelatorioParticipante[];
+  meses: AcertoRelatorioMes[];
+  despesas: AcertoRelatorioDespesa[];
+  transferencias: AcertoRelatorioTransferencia[];
+  eventos: AcertoRelatorioEvento[];
+};
+
 // ---- Relatório de gastos (GET /relatorios/gastos) ----
 
 // A matriz mês × categoria × pessoa de UMA casa — o app deriva as visões
