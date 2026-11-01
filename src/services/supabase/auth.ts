@@ -1,4 +1,4 @@
-const SUPABASE_URL = 'https://ytjputnezihknmfeccok.supabase.co';
+const SUPABASE_URL =process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_API_KEY ?? '';
 const APP_URL = 'https://se-controle-app.vercel.app';
 

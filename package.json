@@ -8,9 +8,11 @@
     "expo": "~56.0.12",
     "expo-constants": "~56.0.18",
     "expo-dev-client": "~56.0.22",
+    "expo-file-system": "~56.0.11",
     "expo-font": "~56.0.7",
     "expo-linking": "~56.0.14",
     "expo-router": "~56.2.11",
+    "expo-sharing": "~56.0.27",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.6",
@@ -26,7 +28,11 @@
     "react-native-worklets": "0.8.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
+    "dotenv-cli": "^11.1.0",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -36,7 +42,16 @@
     "build:web": "expo export -p web",
     "web": "expo start --web",
     "eas:prod": "npx eas-cli@latest build --profile production",
-    "eas:dev": "expo start --dev-client"
+    "eas:dev": "expo start --dev-client",
+    "test": "jest",
+    "web:hml": "EXPO_NO_DOTENV=1 dotenv -e .env.hml -- expo start --web",
+    "start:hml": "EXPO_NO_DOTENV=1 dotenv -e .env.hml -- expo start",
+    "android:hml": "EXPO_NO_DOTENV=1 dotenv -e .env.hml -- expo start --android",
+    "ios:hml": "EXPO_NO_DOTENV=1 dotenv -e .env.hml -- expo start --ios",
+    "web:prod": "EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --web",
+    "start:prod": "EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start",
+    "android:prod": "EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --android",
+    "ios:prod": "EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --ios"
   },
   "private": true
 }

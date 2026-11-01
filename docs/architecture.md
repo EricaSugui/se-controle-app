@@ -74,6 +74,27 @@ src/
   `utils/competencia.ts`; a competência default de um lançamento deriva
   da DATA escolhida, não de hoje.
 
+## Testes e desenvolvimento
+
+- **TDD é a prática preferencial para código novo e mudanças relevantes**:
+  escrever um teste que expresse o comportamento esperado, implementar a
+  menor mudança necessária e refatorar mantendo os testes passando.
+- **Jest** é o runner padrão para testes unitários.
+- Testes unitários devem priorizar regras de domínio, utils, hooks e
+  componentes com comportamento observável, usando dependências externas
+  isoladas por mocks ou fakes.
+- Testes de integração devem validar a interação entre tela, services/api e
+  contrato da API quando esse comportamento não puder ser coberto de forma
+  confiável por um teste unitário.
+- O código legado será coberto progressivamente, começando por regras
+  financeiras e fluxos alterados. A ausência atual de testes não deve impedir
+  melhorias incrementais.
+- Toda correção de bug deve incluir um teste de regressão sempre que o
+  comportamento puder ser reproduzido automaticamente.
+- Uma mudança só deve ser considerada concluída quando os testes direcionados
+  passarem; o conjunto completo deve ser executado quando a alteração afetar
+  contratos ou infraestrutura compartilhada.
+
 ## Deploy
 
 Web na Vercel (`vercel.json`; FRONTEND_URL do backend aponta para lá) e
