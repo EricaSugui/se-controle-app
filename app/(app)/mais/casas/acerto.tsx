@@ -133,11 +133,13 @@ export default function AcertoContasScreen() {
   }
 
   function pedirConfirmacaoAcerto() {
+    const total = acerto?.saldos.reduce((soma, pessoa) => soma + pessoa.devido, 0) ?? 0;
+    const participantes = acerto?.saldos.length ?? 0;
     confirmar(
       {
         titulo: 'Confirmar acerto de contas',
         mensagem:
-          'Esta ação é definitiva. O acerto atual será salvo como um relatório e não poderá ser cancelado. Compras incluídas posteriormente só poderão ser ajustadas por estorno.',
+          `${participantes} participante(s), total de ${formatCurrency(total)}. Esta ação é definitiva: o acerto será salvo como um relatório e não poderá ser cancelado. Compras incluídas posteriormente só poderão ser ajustadas por estorno.`,
         textoConfirmar: 'Confirmar acerto',
         destrutivo: false,
       },

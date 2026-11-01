@@ -1,25 +1,19 @@
 import { Platform } from 'react-native';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { nomeArquivoRelatorio } from './nomeArquivoRelatorio';
 
 type ArquivoRelatorio = {
   data: ArrayBuffer;
   filename: string | null;
 };
 
-const nomesSeguros = /^[a-zA-Z0-9._-]+$/;
-
-function nomeArquivoSeguro(nome: string | null, extensao: string): string {
-  if (nome && nomesSeguros.test(nome)) return nome;
-  return `relatorio-acerto.${extensao}`;
-}
-
 export async function salvarArquivoRelatorio(
   arquivo: ArquivoRelatorio,
   extensao: 'pdf' | 'csv',
   mimeType: string,
 ): Promise<void> {
-  const nome = nomeArquivoSeguro(arquivo.filename, extensao);
+  const nome = nomeArquivoRelatorio(arquivo.filename, extensao);
 
   if (Platform.OS === 'web') {
     const blob = new Blob([arquivo.data], { type: mimeType });

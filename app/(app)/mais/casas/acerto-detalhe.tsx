@@ -15,6 +15,7 @@ export default function AcertoDetalheScreen() {
   const [baixando, setBaixando] = useState<'pdf' | 'csv' | null>(null);
 
   const carregar = useCallback(() => {
+    setError(null);
     obterAcerto(Number(id), Number(acertoId))
       .then(setAcerto)
       .catch((e: Error) => setError(e.message));
@@ -43,7 +44,16 @@ export default function AcertoDetalheScreen() {
     }
   }
 
-  if (error) return <View style={styles.center}><Text style={styles.error}>{error}</Text></View>;
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>{error}</Text>
+        <Pressable onPress={carregar} style={styles.retry}>
+          <Text style={styles.retryText}>Tentar novamente</Text>
+        </Pressable>
+      </View>
+    );
+  }
   if (!acerto) return <View style={styles.center}><ActivityIndicator size="large" /></View>;
 
   return (
@@ -87,6 +97,23 @@ export default function AcertoDetalheScreen() {
         </>
       )}
 
+      {acerto.meses.length > 0 && (
+        <>
+          <Text style={styles.section}>Distribuição mensal</Text>
+          {acerto.meses.map((mes, index) => (
+            <View key={`${mes.mes}-${mes.pessoa_id}-${index}`} style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.name}>{mes.mes} · {mes.nome}</Text>
+                <Text style={styles.balance}>{formatCurrency(mes.acerto)}</Text>
+              </View>
+              <Text style={styles.detail}>
+                Devido {formatCurrency(mes.devido)} · Desembolsado {formatCurrency(mes.desembolsado)}
+              </Text>
+            </View>
+          ))}
+        </>
+      )}
+
       <Text style={styles.section}>Despesas incluídas: {acerto.despesas.length}</Text>
       {acerto.despesas.map((d, index) => (
         <View key={`${d.data}-${index}`} style={styles.card}>
@@ -102,6 +129,8 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 8 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
   error: { color: '#c62828', textAlign: 'center' },
+  retry: { padding: 10 },
+  retryText: { color: '#1565c0', fontWeight: '600' },
   title: { fontSize: 20, fontWeight: '700' },
   subtitle: { color: '#666', fontSize: 14 },
   section: { color: '#555', fontSize: 14, fontWeight: '600', marginTop: 16, textTransform: 'uppercase' },
