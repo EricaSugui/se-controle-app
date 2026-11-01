@@ -15,6 +15,8 @@ export default function MaisLayout() {
       <Stack.Screen name="casas/nova" options={{ title: 'Nova casa' }} />
       <Stack.Screen name="casas/[id]" options={{ title: 'Casa' }} />
       <Stack.Screen name="casas/acerto" options={{ title: 'Acerto de contas' }} />
+      <Stack.Screen name="casas/acertos" options={{ title: 'Histórico de acertos' }} />
+      <Stack.Screen name="casas/acerto-detalhe" options={{ title: 'Relatório de acerto' }} />
       <Stack.Screen name="casas/combinado" options={{ title: 'Combinado do mês' }} />
 
       <Stack.Screen name="cartoes-contas/index" options={{ title: 'Cartões e contas' }} />

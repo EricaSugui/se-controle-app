@@ -151,10 +151,12 @@ export default function AcertoContasScreen() {
     setChaveConfirmacao(chave);
     setConfirmandoAcerto(true);
     try {
-      await confirmarAcerto(casaId, chave);
+      const relatorio = await confirmarAcerto(casaId, chave);
       setChaveConfirmacao(null);
-      notificar('Acerto confirmado', 'O relatório foi salvo com sucesso.');
-      carregar();
+      router.replace({
+        pathname: '/(app)/mais/casas/acerto-detalhe',
+        params: { id: casaId, acertoId: relatorio.id, nome },
+      });
     } catch (e: unknown) {
       notificar(
         'Não foi possível confirmar o acerto',
@@ -256,6 +258,12 @@ export default function AcertoContasScreen() {
             }
           </Pressable>
         </View>
+        <Pressable
+          style={styles.linkHistorico}
+          onPress={() => router.push({ pathname: '/(app)/mais/casas/acertos', params: { id: casaId, nome } })}
+        >
+          <Text style={styles.linkCombinadoTexto}>Histórico de acertos confirmados ›</Text>
+        </Pressable>
 
         <Text style={styles.secaoTitulo}>Saldo por pessoa</Text>
         {acerto.saldos.length === 0 && (
@@ -439,6 +447,7 @@ const styles = StyleSheet.create({
   confirmacaoTitulo:  { color: '#0d47a1', fontSize: 15, fontWeight: '700' },
   confirmacaoTexto:   { color: '#345', fontSize: 13, lineHeight: 18 },
   botaoConfirmar:     { backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 4 },
+  linkHistorico:      { paddingVertical: 4 },
 
   secaoTitulo:        { fontSize: 14, fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 2 },
   vazio:              { color: '#888', textAlign: 'center', fontStyle: 'italic', paddingVertical: 8 },
