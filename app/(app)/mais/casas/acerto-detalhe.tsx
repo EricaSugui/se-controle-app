@@ -7,6 +7,18 @@ import { notificar } from '@/src/utils/confirmar';
 import { salvarArquivoRelatorio } from '@/src/utils/arquivoRelatorio';
 import type { AcertoRelatorio } from '@/src/types';
 
+function rotuloEvento(tipo: AcertoRelatorio['eventos'][number]['tipo']): string {
+  const rotulos = {
+    confirmado: 'Relatório confirmado',
+    pdf_gerado: 'PDF gerado',
+    csv_gerado: 'CSV gerado',
+    pdf_erro: 'Falha ao gerar PDF',
+    csv_erro: 'Falha ao gerar CSV',
+    compartilhado: 'Relatório compartilhado',
+  };
+  return rotulos[tipo];
+}
+
 export default function AcertoDetalheScreen() {
   const { id, acertoId, nome } = useLocalSearchParams<{ id: string; acertoId: string; nome?: string }>();
   const navigation = useNavigation();
@@ -59,7 +71,7 @@ export default function AcertoDetalheScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Acerto de {formatDate(acerto.confirmado_em)}</Text>
-      <Text style={styles.subtitle}>{acerto.nome_casa} · {acerto.moeda}</Text>
+      <Text style={styles.subtitle}>{acerto.nome_casa} · {acerto.moeda} · Confirmado</Text>
       <View style={styles.arquivos}>
         <Pressable
           style={[styles.arquivoBotao, baixando === 'pdf' && styles.disabled]}
@@ -91,7 +103,9 @@ export default function AcertoDetalheScreen() {
           {acerto.transferencias.map((t, index) => (
             <View key={`${t.de_pessoa_id}-${t.para_pessoa_id}-${index}`} style={styles.card}>
               <Text style={styles.name}>{t.de_nome} → {t.para_nome}</Text>
-              <Text style={styles.detail}>{formatCurrency(t.valor)} · {t.tipo}</Text>
+              <Text style={[styles.detail, t.tipo === 'estorno' && styles.estorno]}>
+                {formatCurrency(t.valor)} · {t.tipo === 'estorno' ? 'Estorno aplicado' : 'Pagamento'}
+              </Text>
             </View>
           ))}
         </>
@@ -121,6 +135,18 @@ export default function AcertoDetalheScreen() {
           <Text style={styles.detail}>{formatDate(d.data)} · {d.nome_pessoa}</Text>
         </View>
       ))}
+
+      {acerto.eventos.length > 0 && (
+        <>
+          <Text style={styles.section}>Eventos do relatório</Text>
+          {acerto.eventos.map((evento, index) => (
+            <View key={`${evento.tipo}-${evento.created_at}-${index}`} style={styles.card}>
+              <Text style={styles.name}>{rotuloEvento(evento.tipo)}</Text>
+              <Text style={styles.detail}>{formatDate(evento.created_at)}</Text>
+            </View>
+          ))}
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -139,6 +165,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
   balance: { fontWeight: '700' },
   detail: { color: '#666', fontSize: 13 },
+  estorno: { color: '#8e24aa', fontWeight: '600' },
   arquivos: { flexDirection: 'row', gap: 8, marginTop: 12 },
   arquivoBotao: { backgroundColor: '#1565c0', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14 },
   arquivoTexto: { color: '#fff', fontWeight: '600' },
