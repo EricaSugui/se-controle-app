@@ -11,12 +11,18 @@ import {
   View,
 } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { getAcerto, registrarPagamentoAcerto, excluirPagamentoAcerto } from '@/src/services/api/acerto';
+import {
+  confirmarAcerto,
+  getAcerto,
+  registrarPagamentoAcerto,
+  excluirPagamentoAcerto,
+} from '@/src/services/api/acerto';
 import { getMembros, updateCasa } from '@/src/services/api/casas';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { useAuth } from '@/src/context/AuthContext';
 import { confirmar, notificar } from '@/src/utils/confirmar';
+import { criarChaveIdempotencia } from '@/src/utils/acertoRelatorio';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import type { AcertoContas, AvisoAcerto, EixoAcerto, MembroCasa, PagamentoAcerto, SaldoAcertoPessoa } from '@/src/types';
 
@@ -53,6 +59,8 @@ export default function AcertoContasScreen() {
   const [data, setData] = useState(hojeISO());
   const [observacao, setObservacao] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [confirmandoAcerto, setConfirmandoAcerto] = useState(false);
+  const [chaveConfirmacao, setChaveConfirmacao] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     if (!casaId) return;
@@ -120,6 +128,40 @@ export default function AcertoContasScreen() {
       notificar('Erro', (e as Error).message);
     } finally {
       setSalvando(false);
+    }
+
+  }
+
+  function pedirConfirmacaoAcerto() {
+    confirmar(
+      {
+        titulo: 'Confirmar acerto de contas',
+        mensagem:
+          'Esta ação é definitiva. O acerto atual será salvo como um relatório e não poderá ser cancelado. Compras incluídas posteriormente só poderão ser ajustadas por estorno.',
+        textoConfirmar: 'Confirmar acerto',
+        destrutivo: false,
+      },
+      confirmarAcertoAtual,
+    );
+  }
+
+  async function confirmarAcertoAtual() {
+    if (confirmandoAcerto) return;
+    const chave = chaveConfirmacao ?? criarChaveIdempotencia();
+    setChaveConfirmacao(chave);
+    setConfirmandoAcerto(true);
+    try {
+      await confirmarAcerto(casaId, chave);
+      setChaveConfirmacao(null);
+      notificar('Acerto confirmado', 'O relatório foi salvo com sucesso.');
+      carregar();
+    } catch (e: unknown) {
+      notificar(
+        'Não foi possível confirmar o acerto',
+        `${(e as Error).message} Você pode tentar novamente sem criar outro acerto.`,
+      );
+    } finally {
+      setConfirmandoAcerto(false);
     }
   }
 
@@ -196,6 +238,24 @@ export default function AcertoContasScreen() {
         ))}
 
         {resumo && <Text style={styles.resumo}>{resumo}</Text>}
+
+        <View style={styles.confirmacaoCard}>
+          <Text style={styles.confirmacaoTitulo}>Salvar este acerto</Text>
+          <Text style={styles.confirmacaoTexto}>
+            Gere um relatório permanente com os valores e participantes deste momento.
+            Depois da confirmação, o acerto não poderá ser cancelado.
+          </Text>
+          <Pressable
+            style={[styles.botaoConfirmar, confirmandoAcerto && styles.botaoDesabilitado]}
+            onPress={pedirConfirmacaoAcerto}
+            disabled={confirmandoAcerto}
+          >
+            {confirmandoAcerto
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.botaoTexto}>Confirmar acerto e gerar relatório</Text>
+            }
+          </Pressable>
+        </View>
 
         <Text style={styles.secaoTitulo}>Saldo por pessoa</Text>
         {acerto.saldos.length === 0 && (
@@ -374,6 +434,11 @@ const styles = StyleSheet.create({
   avisoTexto:         { color: '#e65100', fontWeight: '600', fontSize: 14 },
 
   resumo:             { fontSize: 16, fontWeight: '700', textAlign: 'center', marginVertical: 8 },
+
+  confirmacaoCard:    { backgroundColor: '#e3f2fd', borderRadius: 8, padding: 12, gap: 6, marginVertical: 8 },
+  confirmacaoTitulo:  { color: '#0d47a1', fontSize: 15, fontWeight: '700' },
+  confirmacaoTexto:   { color: '#345', fontSize: 13, lineHeight: 18 },
+  botaoConfirmar:     { backgroundColor: '#1565c0', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 4 },
 
   secaoTitulo:        { fontSize: 14, fontWeight: '600', color: '#555', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 2 },
   vazio:              { color: '#888', textAlign: 'center', fontStyle: 'italic', paddingVertical: 8 },
