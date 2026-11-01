@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { obterAcerto } from '@/src/services/api/acerto';
+import { baixarArquivoAcerto, obterAcerto } from '@/src/services/api/acerto';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
+import { notificar } from '@/src/utils/confirmar';
+import { salvarArquivoRelatorio } from '@/src/utils/arquivoRelatorio';
 import type { AcertoRelatorio } from '@/src/types';
 
 export default function AcertoDetalheScreen() {
@@ -10,6 +12,7 @@ export default function AcertoDetalheScreen() {
   const navigation = useNavigation();
   const [acerto, setAcerto] = useState<AcertoRelatorio | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [baixando, setBaixando] = useState<'pdf' | 'csv' | null>(null);
 
   const carregar = useCallback(() => {
     obterAcerto(Number(id), Number(acertoId))
@@ -22,6 +25,24 @@ export default function AcertoDetalheScreen() {
     navigation.setOptions({ title: `Relatório — ${nome ?? 'Acerto'}` });
   }, [navigation, nome]));
 
+  async function baixar(formato: 'pdf' | 'csv') {
+    if (baixando) return;
+    setBaixando(formato);
+    try {
+      const arquivo = await baixarArquivoAcerto(Number(id), Number(acertoId), formato);
+      await salvarArquivoRelatorio(
+        arquivo,
+        formato,
+        formato === 'pdf' ? 'application/pdf' : 'text/csv',
+      );
+      notificar('Arquivo pronto', `${formato.toUpperCase()} salvo ou compartilhado com sucesso.`);
+    } catch (e: unknown) {
+      notificar('Não foi possível gerar o arquivo', (e as Error).message);
+    } finally {
+      setBaixando(null);
+    }
+  }
+
   if (error) return <View style={styles.center}><Text style={styles.error}>{error}</Text></View>;
   if (!acerto) return <View style={styles.center}><ActivityIndicator size="large" /></View>;
 
@@ -29,6 +50,22 @@ export default function AcertoDetalheScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Acerto de {formatDate(acerto.confirmado_em)}</Text>
       <Text style={styles.subtitle}>{acerto.nome_casa} · {acerto.moeda}</Text>
+      <View style={styles.arquivos}>
+        <Pressable
+          style={[styles.arquivoBotao, baixando === 'pdf' && styles.disabled]}
+          onPress={() => baixar('pdf')}
+          disabled={baixando !== null}
+        >
+          <Text style={styles.arquivoTexto}>{baixando === 'pdf' ? 'Gerando PDF...' : 'Baixar PDF'}</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.arquivoBotao, baixando === 'csv' && styles.disabled]}
+          onPress={() => baixar('csv')}
+          disabled={baixando !== null}
+        >
+          <Text style={styles.arquivoTexto}>{baixando === 'csv' ? 'Gerando CSV...' : 'Baixar CSV'}</Text>
+        </Pressable>
+      </View>
 
       <Text style={styles.section}>Resumo por pessoa</Text>
       {acerto.participantes.map((p) => (
@@ -73,4 +110,8 @@ const styles = StyleSheet.create({
   name: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
   balance: { fontWeight: '700' },
   detail: { color: '#666', fontSize: 13 },
+  arquivos: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  arquivoBotao: { backgroundColor: '#1565c0', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 14 },
+  arquivoTexto: { color: '#fff', fontWeight: '600' },
+  disabled: { opacity: 0.5 },
 });
