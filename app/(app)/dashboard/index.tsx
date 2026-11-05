@@ -5,6 +5,7 @@ import { useDashboard } from '@/src/hooks/useDashboard';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { EmptyState } from '@/src/components/ui/EmptyState';
 import { OnboardingChecklist } from '@/src/components/domain/OnboardingChecklist';
 import { getStatusDespesasFixas } from '@/src/services/api/despesasFixas';
 import { getStatusReceitasFixas } from '@/src/services/api/receitasFixas';
@@ -140,9 +141,12 @@ export default function DashboardScreen() {
 
         <Text style={styles.secao}>Casas</Text>
         {data.casas.length === 0 && (
-          <Text style={styles.vazio}>
-            Nenhuma casa vinculada. Acesse Mais {'>'} Gerenciar casas para cadastrar.
-          </Text>
+          <EmptyState
+            titulo="Você ainda não participa de uma casa"
+            descricao="Crie uma casa ou aceite um convite para começar a organizar seus gastos."
+            acaoLabel="Gerenciar casas"
+            onAcao={() => router.push('/(app)/mais/casas')}
+          />
         )}
         {/* flexWrap resolve a grade sozinho: com flexBasis 260 cabe 1 card no
             celular e 3-4 no desktop, sem precisar de breakpoint. */}
@@ -283,6 +287,5 @@ const styles = StyleSheet.create({
   casaLinha:          { flexDirection: 'row', justifyContent: 'space-between' },
   casaLabel:          { fontSize: 13, color: cores.textoMedio },
   casaValor:          { fontSize: 13, color: cores.textoForte },
-  vazio:              { color: cores.textoSuave, textAlign: 'center', fontStyle: 'italic', paddingVertical: 8 },
   error:              { color: cores.negativo, textAlign: 'center', padding: 16 },
 });
