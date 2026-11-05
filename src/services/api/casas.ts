@@ -5,10 +5,14 @@ export function createCasa(nome: string): Promise<Casa> {
   return api.post<Casa>('/casas', { nome });
 }
 
+export function getCasas(): Promise<Casa[]> {
+  return api.get<Casa[]>('/casas?ativo=true');
+}
+
 // nome é obrigatório no PUT; acerto_eixo omitido preserva o valor atual.
 export function updateCasa(
   id: number,
-  input: { nome: string; acerto_eixo?: EixoAcerto }
+  input: { nome: string; acerto_eixo?: EixoAcerto; usa_custeio?: boolean }
 ): Promise<Casa> {
   return api.put<Casa>(`/casas/${id}`, input);
 }
