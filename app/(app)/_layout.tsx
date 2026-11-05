@@ -5,6 +5,7 @@ import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { Sidebar } from '@/src/components/ui/Sidebar';
 import { CenteredColumn } from '@/src/components/ui/CenteredColumn';
 import { ABAS } from '@/src/navigation/abas';
+import { EnvironmentBanner } from '@/src/components/ui/EnvironmentBanner';
 import { useOnboarding } from '@/src/context/OnboardingContext';
 import { router, useSegments } from 'expo-router';
 import { useEffect } from 'react';
@@ -30,6 +31,7 @@ export default function AppLayout() {
       {amplo && <Sidebar />}
 
       <CenteredColumn>
+        <EnvironmentBanner />
         <Tabs screenOptions={amplo ? { tabBarStyle: styles.tabBarOculta } : undefined}>
           {ABAS.map((aba) => (
             <Tabs.Screen
