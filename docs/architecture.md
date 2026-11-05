@@ -48,7 +48,8 @@ src/
 │   │                            selectors (Categoria/CartaoConta/FormaPagamento —
 │   │                            chip + bottom sheet, usam icone/cor do banco)
 │   └── domain/                ← conhece o domínio: forms de compra/receita/
-│                                contratos/meta/cartão, charts (projeção, gastos)
+│                                contratos/meta/cartão, onboarding e charts
+│                                (projeção, gastos)
 │
 ├── context/                   ← AuthContext (sessão, pessoa logada)
 ├── hooks/                     ← useBreakpoint, useDashboard, useHover
@@ -63,6 +64,10 @@ src/
 ├── types/                     ← tipos do domínio (espelham o contrato)
 └── utils/                     ← competência (MMM-AA), formatadores, confirmar
 ```
+
+`NotificationBell` consulta convites internos pendentes e é exibido no
+cabeçalho das telas autenticadas. O convite de uma pessoa já cadastrada não
+envia e-mail: a aceitação explícita cria `casa_pessoas`.
 
 ### Recuperação de senha e e-mail da pessoa
 
