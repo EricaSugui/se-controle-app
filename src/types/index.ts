@@ -38,6 +38,7 @@ export type Usuario = {
   grupoId?: string;
   admin_sistema: boolean;
   fuso_horario: string; // IANA, ex. America/Sao_Paulo
+  casa_principal_id: number | null;
 };
 
 export type Casa = {
