@@ -58,7 +58,8 @@ Lista, criação e edição de metas.
 - **Gerenciar casas** — lista, nova, detalhe (membros e papéis),
   **combinado de custeio** (percentuais por mês) e **acerto de contas**
   (saldo corrente entre as pessoas, extrato mensal, registrar
-  pagamento/adiantamento).
+  pagamento/adiantamento), histórico de acertos confirmados e detalhe do
+  snapshot persistido. O usuário pode exportar o snapshot em PDF ou CSV.
 - **Convidar** — gera convite para entrar numa casa.
 - **Perfil** — dados da pessoa, fuso horário.
 - **Administração** — só para admin do sistema: gestão dos catálogos
@@ -74,8 +75,9 @@ Lista, criação e edição de metas.
 3. **Reajuste de contrato**: Despesas/Receitas fixas → contrato →
    Reajuste → informa valor novo + a partir de quando. Uma ação só.
 4. **Acerto entre pessoas** (casa compartilhada): Mais → Casas → casa →
-   Acerto → vê quem deve quanto → registra o pagamento/adiantamento
-   quando a transferência acontece.
+   Acerto → vê quem deve quanto → confirma o snapshot irreversível ou
+   registra o pagamento/adiantamento quando a transferência acontece.
+   Depois, o histórico permite abrir o detalhe e gerar novamente PDF/CSV.
 5. **Onboarding de um familiar**: quem convida gera o convite em Mais →
    Convidar; quem entra cadastra-se pelo link e já cai na casa certa.
 

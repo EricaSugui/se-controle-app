@@ -22,7 +22,8 @@ app/
 │       ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
 │       ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
 │       ├── relatorios/        ← index (fechamento mensal), gastos (matriz categoria×pessoa)
-│       ├── casas/             ← index, nova, [id], combinado (custeio), acerto
+│       ├── casas/             ← index, nova, [id], combinado (custeio), acerto,
+│       │                         acertos (histórico), acerto-detalhe (snapshot)
 │       ├── convidar
 │       ├── perfil
 │       └── administracao      ← catálogos; só admin_sistema
