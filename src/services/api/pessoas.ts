@@ -14,7 +14,12 @@ export function getPessoasRelacionadas(ativo?: boolean): Promise<Pessoa[]> {
 // PUT é replace de nome/email — enviar sempre os valores atuais junto.
 export function updatePessoa(
   id: number,
-  input: { nome: string; email: string | null; fuso_horario?: string }
+  input: {
+    nome: string;
+    email: string | null;
+    fuso_horario?: string;
+    casa_principal_id?: number | null;
+  }
 ): Promise<Pessoa> {
   return api.put<Pessoa>(`/pessoas/${id}`, input);
 }

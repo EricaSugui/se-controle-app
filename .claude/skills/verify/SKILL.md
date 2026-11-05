@@ -7,8 +7,10 @@ description: Como verificar mudanças do se-controle-rn em runtime (Expo web + b
 
 ## Superfície
 
-App Expo (expo-router) com backend Express em `../se-controle-backend`. O app aponta para a
-API via `EXPO_PUBLIC_API_URL` no `.env.local` (hoje `http://localhost:3000`).
+App Expo (expo-router) com backend Express em `../se-controle-backend`. Para
+homologação, o app aponta para a API via `EXPO_PUBLIC_API_URL` em `.env.hml`;
+produção usa `.env.prod`. O desenvolvimento local deve usar o ambiente
+explicitamente escolhido, nunca uma configuração implícita.
 
 ## Subir o app (web — iteração mais rápida)
 
@@ -30,11 +32,13 @@ O Metro só compila sob demanda. Para forçar e pegar erros de bundle/import:
 
 ## Limites conhecidos (bloqueiam E2E automatizado)
 
-- **Auth**: backend valida token Supabase real (`src/middleware/auth.ts` do backend) e exige
-  pessoa vinculada. Não há conta de teste; login precisa da usuária.
-- **Banco**: o `DATABASE_URL` do backend aponta para o Postgres de produção (pooler
-  compartilhado). NÃO criar dados de teste — flows de escrita devem ser dirigidos pela
-  usuária ou contra um banco local que ela providencie.
+- **Auth**: backend valida token Supabase real (`src/middleware/auth.ts` do
+  backend) e exige pessoa vinculada. O login de homologação usa os usuários
+  fixture documentados no `back/.env.hml`; senhas não devem ser registradas
+  neste arquivo.
+- **Banco**: os testes de escrita devem usar o Supabase HML e a casa fixture.
+  Nunca criar dados de teste na produção. Use `db:reset:homolog` e
+  `db:clean:homolog` no backend para preparar e limpar os dados experimentais.
 - **Dev client nativo**: módulos nativos novos (ex. react-native-svg) exigem rebuild EAS do
   dev client; web e Expo Go funcionam sem rebuild.
 

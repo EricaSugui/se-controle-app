@@ -6,6 +6,7 @@ import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
 import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
 import { FormaPagamentoSelector } from '@/src/components/ui/FormaPagamentoSelector';
+import { ContextualHelp } from '@/src/components/ui/ContextualHelp';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, EixoAcerto, FormaPagamento, MembroCasa } from '@/src/types';
@@ -29,6 +30,19 @@ const OPCOES_ACERTO_EIXO: { valor: EixoAcerto | null; label: string }[] = [
   { valor: 'competencia', label: 'Mês da compra' },
   { valor: 'caixa', label: 'Por parcela' },
 ];
+
+function normalizarNomeFormaPagamento(nome: string): string {
+  return nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+const NOMES_FORMA_POR_TIPO: Record<CartaoConta['tipo'], string> = {
+  credito: 'credito',
+  debito: 'debito',
+  aplicacao: 'aplicacao',
+};
 
 type Props = {
   values: CompraFormValues;
@@ -55,6 +69,19 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
 
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
   const formaSelecionada = formas.find((f) => f.id === values.formaPagamentoId);
+
+  function selecionarCartaoConta(id: number | null) {
+    const cartao = cartoes.find((c) => c.id === id);
+    const formaCorrespondente = cartao == null
+      ? undefined
+      : formas.find((forma) => normalizarNomeFormaPagamento(forma.nome) === NOMES_FORMA_POR_TIPO[cartao.tipo]);
+
+    onChange({
+      ...values,
+      cartaoContaId: id,
+      ...(formaCorrespondente == null ? {} : { formaPagamentoId: formaCorrespondente.id }),
+    });
+  }
 
   return (
     <View style={styles.form}>
@@ -124,7 +151,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
           <CartaoContaSelector
             contas={cartoes}
             contaSelecionadaId={values.cartaoContaId}
-            onSelect={(id) => set('cartaoContaId', id)}
+            onSelect={selecionarCartaoConta}
           />
           {cartaoSelecionado?.tipo === 'credito' && (
             <Text style={styles.hint}>As parcelas serão atribuídas às faturas do cartão.</Text>
@@ -160,6 +187,10 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>
         <Text>{values.competencia}</Text>
       </Pressable>
+      <ContextualHelp
+        titulo="O que é competência?"
+        texto="É o mês ao qual a compra pertence. O pagamento pode acontecer em outro mês."
+      />
 
       <Text style={styles.label}>Acerto de contas</Text>
       <View style={styles.opcoesContainer}>
@@ -179,6 +210,10 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
         Quando a compra entra no acerto entre as pessoas da casa: valor cheio no mês da compra
         ou parcela a parcela.
       </Text>
+      <ContextualHelp
+        titulo="O que é o acerto?"
+        texto="Ele compara quanto cada pessoa deveria pagar com quanto realmente desembolsou."
+      />
 
       <Text style={styles.label}>Descrição</Text>
       <TextInput

@@ -5,6 +5,10 @@ import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { Sidebar } from '@/src/components/ui/Sidebar';
 import { CenteredColumn } from '@/src/components/ui/CenteredColumn';
 import { ABAS } from '@/src/navigation/abas';
+import { EnvironmentBanner } from '@/src/components/ui/EnvironmentBanner';
+import { useOnboarding } from '@/src/context/OnboardingContext';
+import { router, useSegments } from 'expo-router';
+import { useEffect } from 'react';
 
 // Uma árvore de rotas só para mobile e desktop: o que muda com a largura é a
 // moldura (abas embaixo × sidebar na lateral) e o limite de largura do
@@ -12,13 +16,22 @@ import { ABAS } from '@/src/navigation/abas';
 
 export default function AppLayout() {
   const { user } = useAuth();
+  const { onboarding, loading } = useOnboarding();
+  const segments = useSegments() as string[];
   const { amplo } = useBreakpoint();
+
+  useEffect(() => {
+    if (!user || loading || onboarding?.status !== 'not_started') return;
+    if (segments.includes('onboarding')) return;
+    router.replace('/(app)/onboarding' as never);
+  }, [user, loading, onboarding?.status, segments]);
 
   return (
     <View style={[styles.shell, amplo && styles.shellAmplo]}>
       {amplo && <Sidebar />}
 
       <CenteredColumn>
+        <EnvironmentBanner />
         <Tabs screenOptions={amplo ? { tabBarStyle: styles.tabBarOculta } : undefined}>
           {ABAS.map((aba) => (
             <Tabs.Screen

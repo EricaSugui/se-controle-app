@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { router, useFocusEffect } from 'expo-router';
 import { desativarCasa } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
+import { EmptyState } from '@/src/components/ui/EmptyState';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard } from '@/src/types';
@@ -64,7 +65,14 @@ export default function CasasScreen() {
         data={casas}
         keyExtractor={(c) => String(c.id)}
         contentContainerStyle={styles.lista}
-        ListEmptyComponent={<Text style={styles.vazio}>Nenhuma casa cadastrada.</Text>}
+        ListEmptyComponent={(
+          <EmptyState
+            titulo="Você ainda não tem uma casa"
+            descricao="Crie uma casa para organizar seus gastos e acompanhar o dashboard."
+            acaoLabel="Criar uma casa"
+            onAcao={() => router.push('/(app)/mais/casas/nova')}
+          />
+        )}
         renderItem={({ item }: { item: CasaDashboard }) => (
           <View style={styles.item}>
             <Text style={styles.itemNome}>{item.nome}</Text>
@@ -93,8 +101,6 @@ const styles = StyleSheet.create({
   center:          { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   container:       { flex: 1 },
   lista:           { padding: 16, gap: 8, flexGrow: 1 },
-  vazio:           { textAlign: 'center', color: '#888', marginTop: 32 },
-
   item:            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14 },
   itemNome:        { fontSize: 15, fontWeight: '500', flex: 1 },
   acoes:           { flexDirection: 'row', gap: 16 },

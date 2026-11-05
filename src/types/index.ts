@@ -38,6 +38,22 @@ export type Usuario = {
   grupoId?: string;
   admin_sistema: boolean;
   fuso_horario: string; // IANA, ex. America/Sao_Paulo
+  casa_principal_id: number | null;
+};
+
+export type OnboardingPerfil = 'individual' | 'responsavel' | 'convidado';
+export type OnboardingEtapa = 'intencao' | 'casa' | 'essencial' | 'primeiro_gasto' | 'resultado';
+export type OnboardingStatus = 'not_started' | 'in_progress' | 'dismissed' | 'completed';
+
+export type Onboarding = {
+  pessoa_id: number;
+  perfil: OnboardingPerfil | null;
+  etapa_atual: OnboardingEtapa;
+  status: OnboardingStatus;
+  dispensado_em: string | null;
+  concluido_em: string | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Casa = {

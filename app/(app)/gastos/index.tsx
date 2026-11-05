@@ -1,5 +1,6 @@
 import { CompraEditor } from '@/src/components/domain/CompraEditor';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { EmptyState } from '@/src/components/ui/EmptyState';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
@@ -145,7 +146,14 @@ export default function GastosScreen() {
               <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
             )
           }
-          ListEmptyComponent={<Text style={styles.vazio}>Nenhuma compra nesta competência.</Text>}
+          ListEmptyComponent={(
+            <EmptyState
+              titulo="Nenhum gasto neste mês"
+              descricao="Registre uma compra para acompanhar seus gastos por competência."
+              acaoLabel="Registrar primeiro gasto"
+              onAcao={() => router.push('/(app)/gastos/novo')}
+            />
+          )}
           renderItem={({ item }: { item: Compra }) =>
             compacto ? (
               <CardGasto item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
@@ -455,7 +463,6 @@ const styles = StyleSheet.create({
   corpo:             { flex: 1, flexDirection: 'row' },
   lista:             { padding: 16, gap: 8, flexGrow: 1 },
   tabela:            { padding: 16, flexGrow: 1 },
-  vazio:             { textAlign: 'center', color: cores.textoSuave, marginTop: 32 },
 
   painel:            { width: 420, borderLeftWidth: 1, borderLeftColor: cores.bordaSuave, backgroundColor: cores.fundo },
   painelCabecalho:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 4 },

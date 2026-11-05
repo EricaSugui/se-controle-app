@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { updatePessoa } from '@/src/services/api/pessoas';
+import { getDashboard } from '@/src/services/api/dashboard';
 import { useAuth } from '@/src/context/AuthContext';
 import { confirmar, notificar } from '@/src/utils/confirmar';
+import { competenciaAtual } from '@/src/utils/competencia';
+import type { CasaDashboard } from '@/src/types';
 
 const FUSOS_BR = [
   { valor: 'America/Sao_Paulo', label: 'São Paulo (Brasília)' },
@@ -19,20 +22,37 @@ export default function PerfilScreen() {
   const { user, refreshUser, signOut } = useAuth();
 
   const [fusoSelecionado, setFusoSelecionado] = useState<string | null>(null);
+  const [casaPrincipalId, setCasaPrincipalId] = useState<number | null>(null);
+  const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [salvando, setSalvando] = useState(false);
 
   const fusoDispositivo = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     setFusoSelecionado(user?.fuso_horario ?? null);
-  }, [user?.fuso_horario]);
+    setCasaPrincipalId(user?.casa_principal_id ?? null);
+  }, [user?.fuso_horario, user?.casa_principal_id]);
+
+  useEffect(() => {
+    getDashboard(competenciaAtual())
+      .then((dashboard) => setCasas(dashboard.casas))
+      .catch(() => setCasas([]));
+  }, []);
+
+  useEffect(() => {
+    if (casaPrincipalId === null && casas.length === 1) {
+      setCasaPrincipalId(casas[0].id);
+    }
+  }, [casaPrincipalId, casas]);
 
   // O fuso do aparelho entra como opção extra quando não está na lista BR.
   const opcoes = FUSOS_BR.some((f) => f.valor === fusoDispositivo)
     ? FUSOS_BR
     : [...FUSOS_BR, { valor: fusoDispositivo, label: fusoDispositivo }];
 
-  const alterado = fusoSelecionado != null && fusoSelecionado !== user?.fuso_horario;
+  const fusoAlterado = fusoSelecionado != null && fusoSelecionado !== user?.fuso_horario;
+  const casaPrincipalAlterada = casaPrincipalId !== (user?.casa_principal_id ?? null);
+  const alterado = fusoAlterado || casaPrincipalAlterada;
   const podeSalvar = alterado && !salvando;
 
   async function salvar() {
@@ -45,12 +65,10 @@ export default function PerfilScreen() {
         nome: user.nome,
         email: user.email || null,
         fuso_horario: fusoSelecionado,
+        casa_principal_id: casaPrincipalId,
       });
       await refreshUser();
-      notificar(
-        'Fuso horário atualizado',
-        'O novo fuso passa a valer nos status de despesas e receitas fixas.'
-      );
+      notificar('Perfil atualizado', 'Suas configurações foram salvas.');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {
@@ -102,6 +120,32 @@ export default function PerfilScreen() {
             <Text style={[styles.opcaoTexto, fusoSelecionado === f.valor && styles.opcaoTextoAtivo]}>
               {f.label}
               {f.valor === fusoDispositivo ? ' 📍' : ''}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <Text style={styles.secao}>Casa principal</Text>
+      <Text style={styles.hint}>
+        Usada como contexto padrão do dashboard. Você continuará podendo acessar as outras casas.
+      </Text>
+      <View style={styles.opcoesContainer}>
+        <Pressable
+          style={[styles.opcao, casaPrincipalId === null && styles.opcaoAtiva]}
+          onPress={() => setCasaPrincipalId(null)}
+        >
+          <Text style={[styles.opcaoTexto, casaPrincipalId === null && styles.opcaoTextoAtivo]}>
+            Nenhuma
+          </Text>
+        </Pressable>
+        {casas.map((casa) => (
+          <Pressable
+            key={casa.id}
+            style={[styles.opcao, casaPrincipalId === casa.id && styles.opcaoAtiva]}
+            onPress={() => setCasaPrincipalId(casa.id)}
+          >
+            <Text style={[styles.opcaoTexto, casaPrincipalId === casa.id && styles.opcaoTextoAtivo]}>
+              {casa.nome}
             </Text>
           </Pressable>
         ))}

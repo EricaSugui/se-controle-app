@@ -5,11 +5,14 @@ import { useDashboard } from '@/src/hooks/useDashboard';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { EmptyState } from '@/src/components/ui/EmptyState';
+import { OnboardingChecklist } from '@/src/components/domain/OnboardingChecklist';
 import { getStatusDespesasFixas } from '@/src/services/api/despesasFixas';
 import { getStatusReceitasFixas } from '@/src/services/api/receitasFixas';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
 import { cores, raio } from '@/src/theme/tokens';
+import { useAuth } from '@/src/context/AuthContext';
 
 const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
   { valor: 'caixa', label: 'Caixa' },
@@ -17,6 +20,7 @@ const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
 ];
 
 export default function DashboardScreen() {
+  const { user } = useAuth();
   const [competencia, setCompetencia] = useState(competenciaAtual);
   const [eixo, setEixo] = useState<'caixa' | 'competencia'>('caixa');
   const [seletorVisivel, setSeletorVisivel] = useState(false);
@@ -24,7 +28,7 @@ export default function DashboardScreen() {
   const [recebimentosAtrasados, setRecebimentosAtrasados] = useState(0);
   // Acima de 768px os 4 resumos cabem lado a lado; abaixo, viram linhas.
   const { compacto } = useBreakpoint();
-  const state = useDashboard(competencia, eixo);
+  const state = useDashboard(competencia, eixo, user?.casa_principal_id ?? undefined);
 
   useFocusEffect(
     useCallback(() => {
@@ -117,6 +121,12 @@ export default function DashboardScreen() {
           />
         )}
 
+        <OnboardingChecklist
+          casa={data.casas[0]}
+          casaPrincipalConfigurada={user?.casa_principal_id != null}
+          competencia={competencia}
+        />
+
         <View style={[styles.resumo, !compacto && styles.resumoGrid]}>
           <ResumoItem label="Receitas" valor={receitas_total} cor={cores.positivo} card={!compacto} />
           <ResumoItem label="Gastos" valor={gastos_total} cor={cores.negativo} card={!compacto} />
@@ -131,9 +141,12 @@ export default function DashboardScreen() {
 
         <Text style={styles.secao}>Casas</Text>
         {data.casas.length === 0 && (
-          <Text style={styles.vazio}>
-            Nenhuma casa vinculada. Acesse Mais {'>'} Gerenciar casas para cadastrar.
-          </Text>
+          <EmptyState
+            titulo="Você ainda não participa de uma casa"
+            descricao="Crie uma casa ou aceite um convite para começar a organizar seus gastos."
+            acaoLabel="Gerenciar casas"
+            onAcao={() => router.push('/(app)/mais/casas')}
+          />
         )}
         {/* flexWrap resolve a grade sozinho: com flexBasis 260 cabe 1 card no
             celular e 3-4 no desktop, sem precisar de breakpoint. */}
@@ -274,6 +287,5 @@ const styles = StyleSheet.create({
   casaLinha:          { flexDirection: 'row', justifyContent: 'space-between' },
   casaLabel:          { fontSize: 13, color: cores.textoMedio },
   casaValor:          { fontSize: 13, color: cores.textoForte },
-  vazio:              { color: cores.textoSuave, textAlign: 'center', fontStyle: 'italic', paddingVertical: 8 },
   error:              { color: cores.negativo, textAlign: 'center', padding: 16 },
 });

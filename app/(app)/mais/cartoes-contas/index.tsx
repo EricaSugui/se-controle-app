@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { EmptyState } from '@/src/components/ui/EmptyState';
 import { ativarCartaoConta, desativarCartaoConta, getCartoesContas } from '@/src/services/api/cartoesContas';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import type { CartaoConta } from '@/src/types';
@@ -95,7 +96,14 @@ export default function CartoesContasScreen() {
         data={itens}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.lista}
-        ListEmptyComponent={<Text style={styles.vazio}>Nenhum cartão ou conta cadastrado.</Text>}
+        ListEmptyComponent={(
+          <EmptyState
+            titulo="Nenhum cartão ou conta cadastrado"
+            descricao="Adicione uma conta ou cartão para identificar como seus gastos foram pagos."
+            acaoLabel="Adicionar conta ou cartão"
+            onAcao={() => router.push('/(app)/mais/cartoes-contas/novo')}
+          />
+        )}
         renderItem={({ item }: { item: CartaoConta }) => (
           <View style={[styles.item, !item.ativo && styles.itemInativo]}>
             <View style={styles.itemInfo}>
@@ -142,7 +150,6 @@ const styles = StyleSheet.create({
   center:          { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   container:       { flex: 1 },
   lista:           { padding: 16, gap: 8, flexGrow: 1 },
-  vazio:           { textAlign: 'center', color: '#888', marginTop: 32 },
 
   item:            { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f5f5f5', borderRadius: 8, padding: 14 },
   itemInativo:     { opacity: 0.5 },
