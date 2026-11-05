@@ -1,4 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button } from '@/src/components/ui/Button';
+import { router } from 'expo-router';
+import { useOnboarding } from '@/src/context/OnboardingContext';
 import { cores, raio } from '@/src/theme/tokens';
 
 const SECOES = [
@@ -33,12 +36,20 @@ const SECOES = [
 ] as const;
 
 export default function AjudaScreen() {
+  const { reabrir } = useOnboarding();
+
+  async function reverPrimeirosPassos() {
+    await reabrir();
+    router.push('/(app)/onboarding' as never);
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>Ajuda e como usar</Text>
       <Text style={styles.introducao}>
         Consulte os conceitos principais do Se Controle e reveja os primeiros passos quando precisar.
       </Text>
+      <Button label="Rever primeiros passos" variant="outline" onPress={reverPrimeirosPassos} />
 
       {SECOES.map((secao) => (
         <View key={secao.titulo} style={styles.card}>

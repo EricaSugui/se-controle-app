@@ -8,6 +8,7 @@ type OnboardingContextValue = {
   loading: boolean;
   error: string | null;
   atualizar: (input: { perfil?: OnboardingPerfil | null; etapa_atual?: OnboardingEtapa }) => Promise<void>;
+  concluir: () => Promise<void>;
   dispensar: () => Promise<void>;
   reabrir: () => Promise<void>;
 };
@@ -48,12 +49,16 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setOnboarding(await dispensarOnboarding());
   }
 
+  async function concluir() {
+    setOnboarding(await updateOnboarding({ status: 'completed', etapa_atual: 'resultado' }));
+  }
+
   async function reabrir() {
     setOnboarding(await reabrirOnboarding());
   }
 
   return (
-    <OnboardingContext.Provider value={{ onboarding, loading, error, atualizar, dispensar, reabrir }}>
+    <OnboardingContext.Provider value={{ onboarding, loading, error, atualizar, concluir, dispensar, reabrir }}>
       {children}
     </OnboardingContext.Provider>
   );
