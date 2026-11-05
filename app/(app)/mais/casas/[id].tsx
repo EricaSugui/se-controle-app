@@ -79,9 +79,14 @@ export default function CasaDetalhesScreen() {
 
     setConvidando(true);
     try {
-      await convidarMembro(casaId, emailTrimmed, papel);
+      const convite = await convidarMembro(casaId, emailTrimmed, papel);
       setEmail('');
-      notificar('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
+      notificar(
+        convite.interno ? 'Convite enviado' : 'E-mail enviado',
+        convite.interno
+          ? `${emailTrimmed} receberá uma notificação para aceitar o convite.`
+          : `Um convite foi enviado para ${emailTrimmed}.`
+      );
       carregar();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);

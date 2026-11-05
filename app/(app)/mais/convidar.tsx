@@ -13,9 +13,14 @@ export default function ConvidarAmigoScreen() {
 
     setEnviando(true);
     try {
-      await convidarPessoa(emailTrimmed);
+      const convite = await convidarPessoa(emailTrimmed);
       setEmail('');
-      notificar('Convite enviado', `Um convite foi enviado para ${emailTrimmed}.`);
+      notificar(
+        convite.interno ? 'Convite enviado' : 'E-mail enviado',
+        convite.interno
+          ? `${emailTrimmed} receberá uma notificação para aceitar o convite.`
+          : `Um convite foi enviado para ${emailTrimmed}.`
+      );
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {
