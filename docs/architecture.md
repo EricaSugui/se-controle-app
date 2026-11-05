@@ -8,7 +8,8 @@
 
 ```
 app/
-├── (auth)/                    ← login, cadastro, confirmacao, convidado
+├── (auth)/                    ← login, cadastro, confirmacao, convidado,
+│                                recuperar-senha, redefinir-senha
 │
 ├── (app)/
 │   ├── _layout                ← 5 abas (mobile) / sidebar (desktop) — fonte única em src/navigation/abas.ts
@@ -47,7 +48,8 @@ src/
 │   │                            selectors (Categoria/CartaoConta/FormaPagamento —
 │   │                            chip + bottom sheet, usam icone/cor do banco)
 │   └── domain/                ← conhece o domínio: forms de compra/receita/
-│                                contratos/meta/cartão, charts (projeção, gastos)
+│                                contratos/meta/cartão, onboarding e charts
+│                                (projeção, gastos)
 │
 ├── context/                   ← AuthContext (sessão, pessoa logada)
 ├── hooks/                     ← useBreakpoint, useDashboard, useHover
@@ -62,6 +64,25 @@ src/
 ├── types/                     ← tipos do domínio (espelham o contrato)
 └── utils/                     ← competência (MMM-AA), formatadores, confirmar
 ```
+
+`NotificationBell` consulta convites internos pendentes e é exibido no
+cabeçalho das telas autenticadas. O convite de uma pessoa já cadastrada não
+envia e-mail: a aceitação explícita cria `casa_pessoas`.
+
+### Recuperação de senha e e-mail da pessoa
+
+A recuperação de senha é feita pelo Supabase Auth. O link enviado para
+`auth.users.email` abre `redefinir-senha`, que atualiza a senha da conta.
+
+Quando uma pessoa já cadastrada no sistema recebe um e-mail pela primeira vez,
+o endereço deve ser atualizado nos dois registros:
+
+- `auth.users.email`, usando o usuário Supabase vinculado;
+- `pessoas.email`, usando a pessoa correspondente.
+
+O vínculo continua sendo `pessoas.supabase_user_id`; alterar o e-mail não cria
+uma nova pessoa. Manter os dois e-mails iguais é necessário para recuperação
+de senha, convites internos e exibição dos membros da casa.
 
 ## Regras que valem no repo todo
 

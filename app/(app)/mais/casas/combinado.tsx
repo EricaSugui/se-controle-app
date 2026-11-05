@@ -6,12 +6,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { getMembros } from '@/src/services/api/casas';
+import { getCasas, getMembros, updateCasa } from '@/src/services/api/casas';
 import { getPercentuaisCusteio, setPercentualCusteio } from '@/src/services/api/percentuaisCusteio';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { competenciaAtual } from '@/src/utils/competencia';
@@ -36,13 +37,15 @@ export default function CombinadoScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [usaCusteio, setUsaCusteio] = useState(true);
 
   const carregar = useCallback(() => {
     if (!casaId) return;
     setLoading(true);
     setError(null);
-    Promise.all([getMembros(casaId), getPercentuaisCusteio(casaId, competencia)])
-      .then(([membrosResp, percentuais]) => {
+    Promise.all([getCasas(), getMembros(casaId), getPercentuaisCusteio(casaId, competencia)])
+      .then(([casasResp, membrosResp, percentuais]) => {
+        setUsaCusteio(casasResp.find((casa) => casa.id === casaId)?.usa_custeio ?? true);
         setMembros(membrosResp);
         const iniciais: Record<number, string> = {};
         for (const m of membrosResp) {
@@ -78,8 +81,22 @@ export default function CombinadoScreen() {
           percentual: parsePercentual(valores[m.pessoa_id] ?? ''),
         });
       }
+
       notificar('Combinado salvo', `Percentuais de ${competencia} registrados.`);
       carregar();
+    } catch (e: unknown) {
+      notificar('Erro', (e as Error).message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function mudarUsoCusteio(valor: boolean) {
+    setSalvando(true);
+    try {
+      await updateCasa(casaId, { nome: nome ?? '', usa_custeio: valor });
+      setUsaCusteio(valor);
+      notificar('Configuração salva', valor ? 'O rateio de custeio foi ativado.' : 'Esta casa não usará rateio de custeio.');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {
@@ -115,13 +132,23 @@ export default function CombinadoScreen() {
           daquele mês ficam fora do acerto.
         </Text>
 
-        <Text style={styles.label}>Competência</Text>
-        <Pressable style={styles.input} onPress={() => setPickerVisivel(true)}>
-          <Text style={styles.inputTexto}>{competencia}</Text>
-        </Pressable>
+        <View style={styles.opcaoCusteio}>
+          <View style={styles.opcaoTexto}>
+            <Text style={styles.label}>Usar rateio de custeio</Text>
+            <Text style={styles.hint}>Desative para deixar cada gasto integralmente no nome de quem pagou.</Text>
+          </View>
+          <Switch value={usaCusteio} onValueChange={mudarUsoCusteio} disabled={salvando} />
+        </View>
 
-        <Text style={styles.label}>Percentual por pessoa</Text>
-        {membros.map((m) => (
+        {usaCusteio && <Text style={styles.label}>Competência</Text>}
+        {usaCusteio && (
+          <Pressable style={styles.input} onPress={() => setPickerVisivel(true)}>
+            <Text style={styles.inputTexto}>{competencia}</Text>
+          </Pressable>
+        )}
+
+        {usaCusteio && <Text style={styles.label}>Percentual por pessoa</Text>}
+        {usaCusteio && membros.map((m) => (
           <View key={m.pessoa_id} style={styles.linha}>
             <Text style={styles.linhaNome}>{m.nome}</Text>
             <View style={styles.percentualBox}>
@@ -137,12 +164,12 @@ export default function CombinadoScreen() {
           </View>
         ))}
 
-        <Text style={[styles.total, !soma100 && algumPreenchido && styles.totalErrado]}>
+        {usaCusteio && <Text style={[styles.total, !soma100 && algumPreenchido && styles.totalErrado]}>
           Total: {total.toLocaleString('pt-BR')}%
           {!soma100 && algumPreenchido ? ' — deveria somar 100%' : ''}
-        </Text>
+        </Text>}
 
-        <Pressable
+        {usaCusteio && <Pressable
           style={[styles.botao, (!algumPreenchido || salvando) && styles.botaoDesabilitado]}
           onPress={salvar}
           disabled={!algumPreenchido || salvando}
@@ -151,7 +178,7 @@ export default function CombinadoScreen() {
             ? <ActivityIndicator color="#fff" />
             : <Text style={styles.botaoTexto}>Salvar combinado</Text>
           }
-        </Pressable>
+        </Pressable>}
         <Text style={styles.hint}>Somente admins da casa podem definir o combinado.</Text>
 
         <MonthPicker
@@ -190,4 +217,6 @@ const styles = StyleSheet.create({
   erro:              { color: '#c62828', textAlign: 'center', padding: 16 },
   retry:             { padding: 10 },
   retryTexto:        { color: '#1565c0' },
+  opcaoCusteio:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 8 },
+  opcaoTexto:       { flex: 1 },
 });

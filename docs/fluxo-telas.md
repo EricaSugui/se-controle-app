@@ -16,13 +16,16 @@
 - Acesso: login por e-mail/senha (Supabase). Cadastro novo, confirmação de
   e-mail e entrada por **convite** (link que já vincula a pessoa à casa).
   Pessoa criada sem login (ex.: Karina) entra depois vinculando a conta.
+  Usuários já cadastrados recebem convites de casa no sino de notificações;
+  novos usuários continuam recebendo convite por e-mail.
 
 ## As 5 abas
 
 ### 1. Dashboard
 Estado do mês por casa: receitas, gastos, saldo e "minha parte" (pelo
 combinado de custeio). Alterna eixo **competência/caixa** e mês. É o mapa,
-não o tribunal — mostra situação, não julga.
+não o tribunal — mostra situação, não julga. O sino da barra superior permite
+consultar e aceitar convites pendentes.
 
 ### 2. Gastos
 - **Lista** de compras (filtros por casa/período), com categoria (ícone e
@@ -62,7 +65,9 @@ Lista, criação e edição de metas.
   **combinado de custeio** (percentuais por mês) e **acerto de contas**
   (saldo corrente entre as pessoas, extrato mensal, registrar
   pagamento/adiantamento), histórico de acertos confirmados e detalhe do
-  snapshot persistido. O usuário pode exportar o snapshot em PDF ou CSV.
+  relatório persistente. O usuário pode exportar o snapshot em PDF ou CSV.
+  O combinado pode ser desativado para a casa quando não houver rateio entre
+  pessoas.
 - **Convidar** — gera convite para entrar numa casa.
 - **Perfil** — dados da pessoa, fuso horário.
 - **Administração** — só para admin do sistema: gestão dos catálogos
@@ -82,7 +87,8 @@ Lista, criação e edição de metas.
    registra o pagamento/adiantamento quando a transferência acontece. O
    histórico permite consultar o snapshot e gerar novamente PDF/CSV.
 5. **Onboarding de um familiar**: quem convida gera o convite em Mais →
-   Convidar; quem entra cadastra-se pelo link e já cai na casa certa.
+   Convidar; usuários existentes aceitam pelo sino e novos usuários
+   cadastram-se pelo link de e-mail para entrar na casa certa.
 
 ## Onboarding planejado
 

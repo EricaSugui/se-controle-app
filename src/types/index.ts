@@ -60,6 +60,7 @@ export type Casa = {
   id: number;
   nome: string;
   ativo: boolean;
+  usa_custeio: boolean;
   acerto_eixo: EixoAcerto;
   created_at: string;
 };
@@ -75,6 +76,7 @@ export type MembroCasa = {
 export type CasaDashboard = {
   id: number;
   nome: string;
+  usa_custeio: boolean;
   receitas_total: number;
   gastos_total: number;
   saldo_casa: number;

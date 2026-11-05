@@ -123,7 +123,9 @@ export default function CasaDetalhesScreen() {
             <View key={String(item.id)} style={styles.membroItem}>
               <View>
                 <Text style={styles.membroNome}>{item.nome}</Text>
-                <Text style={styles.membroEmail}>{item.email}</Text>
+                <Text style={styles.membroEmail}>
+                  E-mail: {item.email || 'não informado'}
+                </Text>
               </View>
               <View style={styles.membroAcoes}>
                 <View style={[styles.badge, item.papel === 'admin' ? styles.badgeAdmin : styles.badgeMembro]}>

@@ -2,7 +2,7 @@
 
 > Decisão de produto registrada em 2026-11-01.
 > Este documento descreve a experiência recomendada para o primeiro uso e
-> separa o que existe hoje do que deve ser implementado.
+> registra o que já foi implementado.
 
 ## Decisão resumida
 
@@ -69,6 +69,11 @@ Abrir convite
 ```
 
 O usuário convidado não deve passar pelo fluxo de criação de casa.
+
+Para um usuário que já possui conta, o convite é interno: aparece no sino de
+notificações e só cria o vínculo com a casa depois da aceitação. Para um
+endereço ainda não cadastrado, o convite continua sendo enviado por e-mail e
+segue o fluxo de criação de conta.
 
 ## Wizard de primeiro uso
 
@@ -201,6 +206,22 @@ O texto não deve presumir que a pessoa conhece o domínio financeiro.
 - não bloquear o uso até conta, cartão, categoria ou combinado estarem
   configurados;
 - respeitar a separação de dados entre casas.
+
+## Estado atual da implementação
+
+Já estão implementados:
+
+- wizard pulável, persistido e reabrível pela central de ajuda;
+- checklist no dashboard baseado na casa principal;
+- estados vazios orientados e ajuda contextual;
+- opção de casa sem rateio de custeio, que conclui essa etapa sem exigir
+  percentuais;
+- sino de notificações para convites internos;
+- indicador explícito de homologação.
+
+Quando o rateio é desativado para uma casa, o acerto considera cada gasto
+integralmente de quem pagou e o formulário de gasto oculta o bloco
+“Acerto de contas”.
 
 ## Fora do escopo inicial
 

@@ -37,8 +37,14 @@ export function OnboardingChecklist({ casa, casaPrincipalConfigurada, competenci
     { label: 'Categorias disponíveis', concluido: temCategoria, rota: '/(app)/gastos/novo' },
     { label: 'Conta ou cartão', concluido: temConta, rota: '/(app)/mais/cartoes-contas' },
     { label: 'Primeiro gasto', concluido: (casa?.gastos_total ?? 0) > 0, rota: '/(app)/gastos/novo' },
-    { label: 'Combinado de custeio (opcional)', concluido: temCusteio, rota: casa ? { pathname: '/(app)/mais/casas/combinado', params: { id: casa.id, nome: casa.nome } } : '/(app)/mais/casas' },
+    {
+      label: 'Combinado de custeio (opcional)',
+      concluido: casa?.usa_custeio === false || temCusteio,
+      rota: casa ? { pathname: '/(app)/mais/casas/combinado', params: { id: casa.id, nome: casa.nome } } : '/(app)/mais/casas',
+    },
   ];
+
+  if (itens.every((item) => item.concluido)) return null;
 
   return (
     <View style={styles.container}>

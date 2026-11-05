@@ -69,6 +69,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
 
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
   const formaSelecionada = formas.find((f) => f.id === values.formaPagamentoId);
+  const casaSelecionada = casas.find((casa) => casa.id === values.casaId);
 
   function selecionarCartaoConta(id: number | null) {
     const cartao = cartoes.find((c) => c.id === id);
@@ -192,28 +193,32 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
         texto="É o mês ao qual a compra pertence. O pagamento pode acontecer em outro mês."
       />
 
-      <Text style={styles.label}>Acerto de contas</Text>
-      <View style={styles.opcoesContainer}>
-        {OPCOES_ACERTO_EIXO.map((o) => (
-          <Pressable
-            key={String(o.valor)}
-            style={[styles.opcao, values.acertoEixo === o.valor && styles.opcaoAtiva]}
-            onPress={() => set('acertoEixo', o.valor)}
-          >
-            <Text style={[styles.opcaoTexto, values.acertoEixo === o.valor && styles.opcaoTextoAtivo]}>
-              {o.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text style={styles.hint}>
-        Quando a compra entra no acerto entre as pessoas da casa: valor cheio no mês da compra
-        ou parcela a parcela.
-      </Text>
-      <ContextualHelp
-        titulo="O que é o acerto?"
-        texto="Ele compara quanto cada pessoa deveria pagar com quanto realmente desembolsou."
-      />
+      {casaSelecionada?.usa_custeio !== false && (
+        <>
+          <Text style={styles.label}>Acerto de contas</Text>
+          <View style={styles.opcoesContainer}>
+            {OPCOES_ACERTO_EIXO.map((o) => (
+              <Pressable
+                key={String(o.valor)}
+                style={[styles.opcao, values.acertoEixo === o.valor && styles.opcaoAtiva]}
+                onPress={() => set('acertoEixo', o.valor)}
+              >
+                <Text style={[styles.opcaoTexto, values.acertoEixo === o.valor && styles.opcaoTextoAtivo]}>
+                  {o.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={styles.hint}>
+            Quando a compra entra no acerto entre as pessoas da casa: valor cheio no mês da compra
+            ou parcela a parcela.
+          </Text>
+          <ContextualHelp
+            titulo="O que é o acerto?"
+            texto="Ele compara quanto cada pessoa deveria pagar com quanto realmente desembolsou."
+          />
+        </>
+      )}
 
       <Text style={styles.label}>Descrição</Text>
       <TextInput
