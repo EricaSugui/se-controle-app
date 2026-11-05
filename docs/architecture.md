@@ -1,7 +1,8 @@
 # Arquitetura do app
 
-> Atualizado em 2026-07-26 (contrato 3.8.0 do backend). O que cada tela
+> Atualizado em 2026-11-01. O que cada tela
 > FAZ está em `fluxo-telas.md`; este documento é o mapa técnico.
+> A proposta de onboarding e ajuda está em [`onboarding.md`](./onboarding.md).
 
 ## Rotas (Expo Router)
 
@@ -22,7 +23,7 @@ app/
 │       ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
 │       ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
 │       ├── relatorios/        ← index (fechamento mensal), gastos (matriz categoria×pessoa)
-│       ├── casas/             ← index, nova, [id], combinado (custeio), acerto,
+│       ├── casas/             ← index, nova, [id], combinado, acerto,
 │       │                         acertos (histórico), acerto-detalhe (snapshot)
 │       ├── convidar
 │       ├── perfil
@@ -98,5 +99,9 @@ src/
 
 ## Deploy
 
-Web na Vercel (`vercel.json`; FRONTEND_URL do backend aponta para lá) e
-APK Android via EAS (`eas.json`).
+Web na Vercel (`vercel.json`) e APK Android via EAS (`eas.json`). Produção e
+homologação devem ter projetos, variáveis públicas e backends separados.
+O deploy web usa a raiz `front`, `npx expo export -p web` e a saída `dist`.
+As variáveis do bundle são `EXPO_PUBLIC_API_URL`,
+`EXPO_PUBLIC_SUPABASE_URL` e `EXPO_PUBLIC_SUPABASE_API_KEY`; `REACT_APP_*`
+não é consumida pelo app.

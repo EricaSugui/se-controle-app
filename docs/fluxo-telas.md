@@ -5,6 +5,9 @@
 > como EXISTEM hoje, sem detalhes de implementação. Par de negócio no
 > backend: `se-controle-backend/docs/visao-dominio.md` (modelo mental),
 > `tenencia.md` (posicionamento) e `backlog.md` (roadmap).
+>
+> A estratégia planejada para primeiro uso, ajuda contextual e estados vazios
+> está em [`onboarding.md`](./onboarding.md).
 
 ## Moldura
 
@@ -75,11 +78,23 @@ Lista, criação e edição de metas.
 3. **Reajuste de contrato**: Despesas/Receitas fixas → contrato →
    Reajuste → informa valor novo + a partir de quando. Uma ação só.
 4. **Acerto entre pessoas** (casa compartilhada): Mais → Casas → casa →
-   Acerto → vê quem deve quanto → confirma o snapshot irreversível ou
-   registra o pagamento/adiantamento quando a transferência acontece.
-   Depois, o histórico permite abrir o detalhe e gerar novamente PDF/CSV.
+   Acerto → vê quem deve quanto → confirma o acerto de forma irreversível ou
+   registra o pagamento/adiantamento quando a transferência acontece. O
+   histórico permite consultar o snapshot e gerar novamente PDF/CSV.
 5. **Onboarding de um familiar**: quem convida gera o convite em Mais →
    Convidar; quem entra cadastra-se pelo link e já cai na casa certa.
+
+## Onboarding planejado
+
+O primeiro uso deverá combinar um wizard curto e pulável com ajuda contextual
+e uma central permanente "Como usar". O objetivo é levar a pessoa ao primeiro
+gasto sem exigir a configuração de todos os recursos avançados. O fluxo deve
+ser adaptado ao perfil: usuário individual, responsável por uma casa ou
+usuário convidado.
+
+O detalhamento da decisão, etapas, critérios de aceite e fases de
+implementação está em [`onboarding.md`](./onboarding.md). Esta seção não
+representa telas já implementadas.
 
 ## O que a tela NÃO faz (por design)
 

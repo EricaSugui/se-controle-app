@@ -30,6 +30,19 @@ const OPCOES_ACERTO_EIXO: { valor: EixoAcerto | null; label: string }[] = [
   { valor: 'caixa', label: 'Por parcela' },
 ];
 
+function normalizarNomeFormaPagamento(nome: string): string {
+  return nome
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+const NOMES_FORMA_POR_TIPO: Record<CartaoConta['tipo'], string> = {
+  credito: 'credito',
+  debito: 'debito',
+  aplicacao: 'aplicacao',
+};
+
 type Props = {
   values: CompraFormValues;
   onChange: (values: CompraFormValues) => void;
@@ -55,6 +68,19 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
 
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
   const formaSelecionada = formas.find((f) => f.id === values.formaPagamentoId);
+
+  function selecionarCartaoConta(id: number | null) {
+    const cartao = cartoes.find((c) => c.id === id);
+    const formaCorrespondente = cartao == null
+      ? undefined
+      : formas.find((forma) => normalizarNomeFormaPagamento(forma.nome) === NOMES_FORMA_POR_TIPO[cartao.tipo]);
+
+    onChange({
+      ...values,
+      cartaoContaId: id,
+      ...(formaCorrespondente == null ? {} : { formaPagamentoId: formaCorrespondente.id }),
+    });
+  }
 
   return (
     <View style={styles.form}>
@@ -124,7 +150,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
           <CartaoContaSelector
             contas={cartoes}
             contaSelecionadaId={values.cartaoContaId}
-            onSelect={(id) => set('cartaoContaId', id)}
+            onSelect={selecionarCartaoConta}
           />
           {cartaoSelecionado?.tipo === 'credito' && (
             <Text style={styles.hint}>As parcelas serão atribuídas às faturas do cartão.</Text>
