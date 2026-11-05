@@ -6,6 +6,7 @@ import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { CategoriaSelector } from '@/src/components/ui/CategoriaSelector';
 import { CartaoContaSelector } from '@/src/components/ui/CartaoContaSelector';
 import { FormaPagamentoSelector } from '@/src/components/ui/FormaPagamentoSelector';
+import { ContextualHelp } from '@/src/components/ui/ContextualHelp';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, Categoria, EixoAcerto, FormaPagamento, MembroCasa } from '@/src/types';
@@ -186,6 +187,10 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>
         <Text>{values.competencia}</Text>
       </Pressable>
+      <ContextualHelp
+        titulo="O que é competência?"
+        texto="É o mês ao qual a compra pertence. O pagamento pode acontecer em outro mês."
+      />
 
       <Text style={styles.label}>Acerto de contas</Text>
       <View style={styles.opcoesContainer}>
@@ -205,6 +210,10 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
         Quando a compra entra no acerto entre as pessoas da casa: valor cheio no mês da compra
         ou parcela a parcela.
       </Text>
+      <ContextualHelp
+        titulo="O que é o acerto?"
+        texto="Ele compara quanto cada pessoa deveria pagar com quanto realmente desembolsou."
+      />
 
       <Text style={styles.label}>Descrição</Text>
       <TextInput
