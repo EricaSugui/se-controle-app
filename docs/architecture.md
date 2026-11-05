@@ -8,7 +8,8 @@
 
 ```
 app/
-├── (auth)/                    ← login, cadastro, confirmacao, convidado
+├── (auth)/                    ← login, cadastro, confirmacao, convidado,
+│                                recuperar-senha, redefinir-senha
 │
 ├── (app)/
 │   ├── _layout                ← 5 abas (mobile) / sidebar (desktop) — fonte única em src/navigation/abas.ts
@@ -62,6 +63,21 @@ src/
 ├── types/                     ← tipos do domínio (espelham o contrato)
 └── utils/                     ← competência (MMM-AA), formatadores, confirmar
 ```
+
+### Recuperação de senha e e-mail da pessoa
+
+A recuperação de senha é feita pelo Supabase Auth. O link enviado para
+`auth.users.email` abre `redefinir-senha`, que atualiza a senha da conta.
+
+Quando uma pessoa já cadastrada no sistema recebe um e-mail pela primeira vez,
+o endereço deve ser atualizado nos dois registros:
+
+- `auth.users.email`, usando o usuário Supabase vinculado;
+- `pessoas.email`, usando a pessoa correspondente.
+
+O vínculo continua sendo `pessoas.supabase_user_id`; alterar o e-mail não cria
+uma nova pessoa. Manter os dois e-mails iguais é necessário para recuperação
+de senha, convites internos e exibição dos membros da casa.
 
 ## Regras que valem no repo todo
 
