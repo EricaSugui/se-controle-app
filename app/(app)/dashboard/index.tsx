@@ -5,11 +5,13 @@ import { useDashboard } from '@/src/hooks/useDashboard';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
+import { OnboardingChecklist } from '@/src/components/domain/OnboardingChecklist';
 import { getStatusDespesasFixas } from '@/src/services/api/despesasFixas';
 import { getStatusReceitasFixas } from '@/src/services/api/receitasFixas';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
 import { cores, raio } from '@/src/theme/tokens';
+import { useAuth } from '@/src/context/AuthContext';
 
 const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
   { valor: 'caixa', label: 'Caixa' },
@@ -17,6 +19,7 @@ const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
 ];
 
 export default function DashboardScreen() {
+  const { user } = useAuth();
   const [competencia, setCompetencia] = useState(competenciaAtual);
   const [eixo, setEixo] = useState<'caixa' | 'competencia'>('caixa');
   const [seletorVisivel, setSeletorVisivel] = useState(false);
@@ -24,7 +27,7 @@ export default function DashboardScreen() {
   const [recebimentosAtrasados, setRecebimentosAtrasados] = useState(0);
   // Acima de 768px os 4 resumos cabem lado a lado; abaixo, viram linhas.
   const { compacto } = useBreakpoint();
-  const state = useDashboard(competencia, eixo);
+  const state = useDashboard(competencia, eixo, user?.casa_principal_id ?? undefined);
 
   useFocusEffect(
     useCallback(() => {
@@ -116,6 +119,12 @@ export default function DashboardScreen() {
             onPress={() => router.push('/(app)/mais/receitas-fixas')}
           />
         )}
+
+        <OnboardingChecklist
+          casa={data.casas[0]}
+          casaPrincipalConfigurada={user?.casa_principal_id != null}
+          competencia={competencia}
+        />
 
         <View style={[styles.resumo, !compacto && styles.resumoGrid]}>
           <ResumoItem label="Receitas" valor={receitas_total} cor={cores.positivo} card={!compacto} />
