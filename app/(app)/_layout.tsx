@@ -9,6 +9,7 @@ import { EnvironmentBanner } from '@/src/components/ui/EnvironmentBanner';
 import { useOnboarding } from '@/src/context/OnboardingContext';
 import { router, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { NotificationBell } from '@/src/components/ui/NotificationBell';
 
 // Uma árvore de rotas só para mobile e desktop: o que muda com a largura é a
 // moldura (abas embaixo × sidebar na lateral) e o limite de largura do
@@ -42,6 +43,7 @@ export default function AppLayout() {
                   aba.segmento === 'dashboard' && user ? `Dashboard - ${user.nome}` : aba.titulo,
                 // Abas com Stack próprio já desenham o header delas.
                 headerShown: !aba.headerProprio,
+                headerRight: () => <NotificationBell />,
               }}
             />
           ))}
