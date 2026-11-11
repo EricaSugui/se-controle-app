@@ -16,7 +16,7 @@ import { NotificationBell } from '@/src/components/ui/NotificationBell';
 // conteúdo. Nenhuma rota é duplicada — a URL é a mesma nos dois casos.
 
 export default function AppLayout() {
-  const { user } = useAuth();
+  const { user, initializing } = useAuth();
   const { onboarding, loading } = useOnboarding();
   const segments = useSegments() as string[];
   const { amplo } = useBreakpoint();
@@ -26,6 +26,7 @@ export default function AppLayout() {
     if (segments.includes('onboarding')) return;
     router.replace('/(app)/onboarding' as never);
   }, [user, loading, onboarding?.status, segments]);
+  if (initializing) return null;
 
   return (
     <View style={[styles.shell, amplo && styles.shellAmplo]}>
