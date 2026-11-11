@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
@@ -13,31 +14,55 @@ function parseHash(hash: string): Record<string, string> {
 }
 
 export default function Index() {
-  const { user } = useAuth();
+  const { user, initializing } = useAuth();
   const router = useRouter();
   const [hashChecado, setHashChecado] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') { setHashChecado(true); return; }
+    if (Platform.OS !== 'web') {
+      setHashChecado(true);
+      return;
+    }
+
     const hash = window.location.hash;
-    if (!hash) { setHashChecado(true); return; }
+
+    if (!hash) {
+      setHashChecado(true);
+      return;
+    }
+
     const params = parseHash(hash);
 
     if (params.access_token && params.type === 'invite') {
       router.replace('/(auth)/convidado');
       return;
     }
+
     if (params.access_token && params.type === 'signup') {
-      router.replace({ pathname: '/(auth)/confirmacao', params: { token: params.access_token } });
+      router.replace({
+        pathname: '/(auth)/confirmacao',
+        params: { token: params.access_token },
+      });
       return;
     }
+
     if (params.access_token && params.type === 'recovery') {
-      router.replace({ pathname: '/(auth)/redefinir-senha', params: { token: params.access_token } });
+      router.replace({
+        pathname: '/(auth)/redefinir-senha',
+        params: { token: params.access_token },
+      });
       return;
     }
+
     setHashChecado(true);
   }, []);
+  
 
-  if (!hashChecado) return null;
-  return <Redirect href={user ? '/(app)/dashboard' : '/(auth)/login'} />;
+  if (!hashChecado || initializing) return null;
+
+  return (
+    <Redirect
+      href={user ? '/(app)/dashboard' : '/(auth)/login'}
+    />
+  );
 }

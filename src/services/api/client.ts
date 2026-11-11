@@ -22,6 +22,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     if (response.status === 401) onUnauthorized?.();
+    
     const corpo = await response.json().catch(() => null) as { erro?: string } | null;
     throw new Error(corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
   }
@@ -36,6 +37,7 @@ async function requestBinary(path: string): Promise<{ data: ArrayBuffer; filenam
   const response = await fetch(`${BASE_URL}${path}`, { headers });
   if (!response.ok) {
     if (response.status === 401) onUnauthorized?.();
+    
     const corpo = await response.json().catch(() => null) as { erro?: string } | null;
     throw new Error(corpo?.erro ?? `${response.status} ${response.statusText} — ${path}`);
   }
