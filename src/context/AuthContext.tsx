@@ -16,7 +16,7 @@ type AuthContextValue = {
   user: Usuario | null;
   initializing: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
 
@@ -42,10 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setInitializing(false);
   }
 
-  function signOut() {
-    setAuthToken(null);
-    setUser(null);
-    void supabase.auth.signOut();
+  async function signOut(): Promise<void> {
+    try {
+      const { error } = await supabase.auth.signOut({
+        scope: 'local',
+      });
+
+      if (error) throw error;
+    } finally {
+      setAuthToken(null);
+      setUser(null);
+    }
   }
 
   async function refreshUser() {

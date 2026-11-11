@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/src/components/ui/Button';
 import { CenteredColumn, LARGURA_MAX } from '@/src/components/ui/CenteredColumn';
+import { useAuth } from '@/src/context/AuthContext';
 import { aceitarConvite } from '@/src/services/api/convite';
 import { supabaseUpdatePassword } from '@/src/services/supabase/auth';
 
@@ -44,7 +45,7 @@ function contextoDoAccessToken(accessToken: string): ConviteContexto {
 export default function ConvidadoScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const router = useRouter();
-
+  const { signOut } = useAuth();
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [hashChecado, setHashChecado] = useState(false);
 
@@ -73,6 +74,7 @@ export default function ConvidadoScreen() {
     setLoading(true);
 
     try {
+      await signOut();
       await supabaseUpdatePassword(senha, accessToken);
       await aceitarConvite(token, nome.trim(), accessToken);
       router.replace('/(auth)/login');
