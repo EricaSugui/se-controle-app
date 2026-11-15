@@ -1,27 +1,48 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
 import * as SplashScreen from 'expo-splash-screen';
-import { AuthProvider } from '@/src/context/AuthContext';
-import { OnboardingProvider } from '@/src/context/OnboardingContext';
+
+import { AuthProvider, useAuth } from '@/src/context/AuthContext';
+import { OnboardingProvider, useOnboarding } from '@/src/context/OnboardingContext';
 
 SplashScreen.preventAutoHideAsync();
+
+function AppInitializer() {
+  const { initializing } = useAuth();
+  const { initialized } = useOnboarding();
+
+  const ready = !initializing && initialized;
+
+  useEffect(() => {
+    if (ready) {
+      void SplashScreen.hideAsync();
+    }
+  }, [ready]);
+
+  if (!ready) {
+    return null;
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Tenência</title>
+      </Head>
+
+      <Stack>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout() {
   return (
     <AuthProvider>
       <OnboardingProvider>
-        {/* Título padrão da aba. O expo-router roda com
-          `documentTitle: { enabled: false }`, então o `title` das telas serve
-          só ao header nativo e nunca chega ao browser — quem escreve a aba é
-          este <Head>. Telas podem sobrescrever com o próprio <Head>. */}
-        <Head>
-          <title>Se Controle</title>
-        </Head>
-
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        </Stack>
+        <AppInitializer />
       </OnboardingProvider>
     </AuthProvider>
   );

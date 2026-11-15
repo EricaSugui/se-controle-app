@@ -28,7 +28,17 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        {/* Identidade e instalação PWA */}
+        <meta name="theme-color" content="#FDF6EF" />
+        <meta name="application-name" content="Tenência" />
 
+        {/* Instalação na tela inicial do iPhone */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Tenência" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
         {/* Parity com native para o ScrollView raiz — vem do expo-router. */}
         <ScrollViewStyleReset />
 

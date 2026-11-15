@@ -34,7 +34,7 @@ export default function ConvidarAmigoScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Text style={styles.titulo}>Convide seus amigos</Text>
-      <Text style={styles.descricao}>Convide seus amigos para conhecer o app Se Controle!</Text>
+      <Text style={styles.descricao}>Convide seus amigos para conhecer o app Tenência!</Text>
 
       <TextInput
         style={styles.input}

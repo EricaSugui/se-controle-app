@@ -47,7 +47,7 @@ export default function AjudaScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>Ajuda e como usar</Text>
       <Text style={styles.introducao}>
-        Consulte os conceitos principais do Se Controle e reveja os primeiros passos quando precisar.
+        Consulte os conceitos principais do Tenência e reveja os primeiros passos quando precisar.
       </Text>
       <Button label="Rever primeiros passos" variant="outline" onPress={reverPrimeirosPassos} />
 

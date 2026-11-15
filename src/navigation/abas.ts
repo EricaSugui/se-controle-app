@@ -14,6 +14,7 @@ export type Aba = {
   icone: React.ComponentProps<typeof Ionicons>['name'];
   /** A aba tem Stack próprio e desenha o próprio header. */
   headerProprio?: boolean;
+   exibirNaSidebar?: boolean;
 };
 
 export const ABAS: Aba[] = [
@@ -22,4 +23,12 @@ export const ABAS: Aba[] = [
   { nome: 'projecao/index',  segmento: 'projecao',  titulo: 'Projeção',  href: '/(app)/projecao',  icone: 'trending-up-outline' },
   { nome: 'metas',           segmento: 'metas',     titulo: 'Metas',     href: '/(app)/metas',     icone: 'flag-outline',        headerProprio: true },
   { nome: 'mais',            segmento: 'mais',      titulo: 'Mais',      href: '/(app)/mais',      icone: 'ellipsis-horizontal',  headerProprio: true },
+  {
+    nome: 'onboarding/index',
+    segmento: 'onboarding',
+    titulo: 'Comece aqui',
+    href: '/(app)/onboarding',
+    icone: 'rocket-outline',
+    exibirNaSidebar: false,
+  }
 ];

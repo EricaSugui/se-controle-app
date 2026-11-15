@@ -6,6 +6,7 @@ import type { Onboarding, OnboardingEtapa, OnboardingPerfil } from '../types';
 type OnboardingContextValue = {
   onboarding: Onboarding | null;
   loading: boolean;
+  initialized: boolean;
   error: string | null;
   atualizar: (input: { perfil?: OnboardingPerfil | null; etapa_atual?: OnboardingEtapa }) => Promise<void>;
   concluir: () => Promise<void>;
@@ -20,20 +21,25 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const carregar = useCallback(async () => {
     if (user == null) {
       setOnboarding(null);
+      setInitialized(true);
       return;
     }
+
     setLoading(true);
     setError(null);
+
     try {
       setOnboarding(await getOnboarding());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Não foi possível carregar o onboarding.');
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
   }, [user]);
 
@@ -58,7 +64,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <OnboardingContext.Provider value={{ onboarding, loading, error, atualizar, concluir, dispensar, reabrir }}>
+    <OnboardingContext.Provider value={{ onboarding, loading, initialized, error, atualizar, concluir, dispensar, reabrir }}>
       {children}
     </OnboardingContext.Provider>
   );
