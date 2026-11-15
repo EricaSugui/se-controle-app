@@ -19,12 +19,12 @@ export function Sidebar() {
   return (
     <View style={[styles.sidebar, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 16 }]}>
       <View style={styles.marca}>
-        <Text style={styles.marcaTexto}>Se Controle</Text>
+        <Text style={styles.marcaTexto}>Tenência</Text>
         {user && <Text style={styles.usuario} numberOfLines={1}>{user.nome}</Text>}
       </View>
 
       <View style={styles.nav}>
-        {ABAS.map((aba) => (
+        {ABAS.filter((aba) => aba.exibirNaSidebar !== false).map((aba) => (
           <ItemNav key={aba.nome} aba={aba} ativo={segmentos.includes(aba.segmento)} />
         ))}
       </View>

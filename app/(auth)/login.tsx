@@ -33,7 +33,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.wrapper} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <CenteredColumn largura={LARGURA_MAX.formulario} style={styles.container}>
-        <Text style={styles.titulo}>Se Controle</Text>
+        <Text style={styles.titulo}>Tenência</Text>
         <View style={styles.form}>
           <TextInput
             style={styles.input}
