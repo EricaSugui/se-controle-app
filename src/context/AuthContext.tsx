@@ -105,10 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    console.log('[AUTH] Estado do usuário alterado:', user?.id ?? null);
-  }, [user]);
-
   return (
     <AuthContext.Provider
       value={{ user, initializing, signIn, signOut, refreshUser }}
