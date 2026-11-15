@@ -24,7 +24,7 @@ export function Sidebar() {
       </View>
 
       <View style={styles.nav}>
-        {ABAS.map((aba) => (
+        {ABAS.filter((aba) => aba.exibirNaSidebar !== false).map((aba) => (
           <ItemNav key={aba.nome} aba={aba} ativo={segmentos.includes(aba.segmento)} />
         ))}
       </View>

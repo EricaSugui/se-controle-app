@@ -37,9 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setAuthToken(data.session.access_token);
 
-    const me = await getMe();
-    setUser(me);
-    setInitializing(false);
+    try {
+      const me = await getMe();
+
+      setUser(me);
+      setInitializing(false);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async function signOut(): Promise<void> {
@@ -66,40 +71,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.replace('/(auth)/login');
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setAuthToken(session?.access_token ?? null);
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange((event, session) => {
 
-      if (event === 'INITIAL_SESSION') {
+        setAuthToken(session?.access_token ?? null);
 
-        if (!session) {
-          setUser(null);
-          setInitializing(false);
-          return;
+        if (event === 'INITIAL_SESSION') {
+          if (!session) {
+            setUser(null);
+            setInitializing(false);
+            return;
+          }
+
+          void getMe()
+            .then((me) => {
+              setUser(me);
+            })
+            .catch((error) => {
+              setUser(null);
+            })
+            .finally(() => setInitializing(false));
         }
 
-        void getMe()
-          .then((me) => {
-            setUser(me);
-          })
-          .catch((error) => {
-            setUser(null);
-          })
-          .finally(() => setInitializing(false));
-      }
-
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setInitializing(false);
-      }
-    });
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setInitializing(false);
+        }
+      });
 
     return () => {
       subscription.unsubscribe();
       setUnauthorizedHandler(null);
     };
   }, []);
+
+  useEffect(() => {
+    console.log('[AUTH] Estado do usuário alterado:', user?.id ?? null);
+  }, [user]);
 
   return (
     <AuthContext.Provider
