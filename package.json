@@ -54,7 +54,9 @@
     "ios:hml": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.hml -- expo start --ios",
     "web:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --web",
     "start:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start",
-    "android:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --android",
+    "android:create": "npx cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- ./android/gradlew -p android createBundleReleaseJsAndAssets --rerun-tasks --no-daemon",
+    "android:assemble": "npx cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- ./android/gradlew -p android assembleRelease --no-daemon",
+    "android:install": "adb install -r android/app/build/outputs/apk/release/app-release.apk",
     "ios:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --ios"
   },
   "private": true
