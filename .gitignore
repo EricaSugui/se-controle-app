@@ -43,6 +43,10 @@ yarn-error.*
 
 # generated native folders
 /ios
-/android
+/android/app/build/
+/android/app/.cxx/
+/android/app/debug.keystore
+/android/.gradle/
+/android/local.properties
 .vercel
 .env*
