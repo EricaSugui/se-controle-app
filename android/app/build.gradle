@@ -129,6 +129,13 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
+
+            // Firebase App Distribution
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "tenencia-vip"
+                releaseNotes = "Tenência 1.0.0 - Primeira versão para testes VIP."
+            }
         }
     }
     packagingOptions {

@@ -39,6 +39,7 @@
     "@types/react": "~19.2.2",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^11.1.0",
+    "firebase-tools": "^15.36.0",
     "jest": "~29.7.0",
     "ts-jest": "^29.4.15",
     "typescript": "~6.0.3"
@@ -61,7 +62,8 @@
     "android:create": "npx cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- ./android/gradlew -p android createBundleReleaseJsAndAssets --rerun-tasks --no-daemon",
     "android:assemble": "npx cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- ./android/gradlew -p android assembleRelease --no-daemon",
     "android:install": "adb install -r android/app/build/outputs/apk/release/app-release.apk",
-    "ios:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --ios"
+    "ios:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --ios",
+    "android:distribute": "bash ./scripts/firebase/distribute-android.sh"
   },
   "private": true
 }
