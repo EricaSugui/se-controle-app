@@ -24,8 +24,7 @@ export default function NovaCasaScreen() {
 
     setSalvando(true);
     try {
-      const casa = await createCasa(nomeTrimmed);
-      // await vincularPessoa(casa.id, Number(user.id));
+      await createCasa(nomeTrimmed);
       router.back();
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);

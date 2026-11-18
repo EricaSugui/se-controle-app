@@ -1,8 +1,10 @@
 # Onboarding e ajuda para novos usuários
 
-> Decisão de produto registrada em 2026-11-01.
+> Decisão de produto registrada em 2026-11-01; estado da implementação
+> revisado em 2026-11-18.
 > Este documento descreve a experiência recomendada para o primeiro uso e
-> registra o que já foi implementado.
+> registra o que já foi implementado. Rotas e contextos envolvidos:
+> [`architecture.md`](./architecture.md).
 
 ## Decisão resumida
 

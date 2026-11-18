@@ -63,7 +63,8 @@
     "android:assemble": "npx cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- ./android/gradlew -p android assembleRelease --no-daemon",
     "android:install": "adb install -r android/app/build/outputs/apk/release/app-release.apk",
     "ios:prod": "cross-env EXPO_NO_DOTENV=1 dotenv -e .env.prod -- expo start --ios",
-    "android:distribute": "bash ./scripts/firebase/distribute-android.sh"
+    "android:distribute": "bash ./scripts/firebase/distribute-android.sh",
+    "version:bump": "node ./scripts/bump-version.js"
   },
   "private": true
 }
