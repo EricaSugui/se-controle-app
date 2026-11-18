@@ -1,8 +1,5 @@
 {
   "buildCommand": "npx expo export -p web",
   "outputDirectory": "dist",
-  "cleanUrls": true,
-  "env": {
-    "EXPO_PUBLIC_API_URL": "https://se-controle-backend-production.up.railway.app"
-  }
+  "cleanUrls": true
 }

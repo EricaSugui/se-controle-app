@@ -118,7 +118,7 @@ futuro). Certificados SSL: automáticos e gratuitos (Let's Encrypt via Vercel)
 - [ ] Reservar handles nas redes sociais (@tenencia ou variação disponível)
 - [ ] Anotar titular e data de expiração do tenencia.com.br (whois no registro.br) para monitoramento
 - [ ] Migrar o produto de se-controle-app.vercel.app para tenencia.app (configurar domínio na Vercel + redirect URLs do Supabase Auth)
-- [ ] Atualizar nome no app, repositório e textos (remover "se-controle" antes que o codebase cresça)
+- [x] Atualizar nome no app e textos — feito em nov/2026. Decisão: "se-controle" permanece como nome técnico (repositório, pacote, slug Expo, `applicationId` Android, backend); ver `docs/architecture.md`
 - [ ] Revisar microtextos do app: eliminar resquícios de semântica "controle/restrição", adotar voz da tenência
 - [ ] (Depois, com calma) Construir landing em tenhatenencia.com.br
 

@@ -28,7 +28,20 @@ if [ ! -f "$APK_PATH" ]; then
   exit 1
 fi
 
+# Versão lida do app.json — a mesma fonte que o Gradle usa no build.
+VERSION_NAME=$(node -p "require('./app.json').expo.version")
+VERSION_CODE=$(node -p "require('./app.json').expo.android.versionCode")
+
+# Notas opcionais no 2º argumento: npm run android:distribute -- vip "Corrige login"
+NOTES="Tenência ${VERSION_NAME} (${VERSION_CODE}) - grupo ${GROUP^^}."
+if [ -n "${2:-}" ]; then
+  NOTES="${NOTES} ${2}"
+fi
+
+echo "Distribuindo ${NOTES}"
+echo "Confira se o APK foi gerado depois do último version:bump."
+
 npx firebase appdistribution:distribute "$APK_PATH" \
   --app "$FIREBASE_APP_ID" \
   --groups "$GROUP_ALIAS" \
-  --release-notes "Tenência 1.0.0 - Distribuição para o grupo ${GROUP^^}."
+  --release-notes "$NOTES"

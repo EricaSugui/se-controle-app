@@ -162,7 +162,7 @@ cards, sem hover, sem tokens, sem breakpoint:
 
 ### Pendente — resto
 
-- [ ] **Título por rota.** Toda aba do browser diz "Se Controle" (só o `<Head>` do layout
+- [ ] **Título por rota.** Toda aba do browser diz "Tenência" (só o `<Head>` do layout
   raiz existe). Cada tela precisa do próprio — passo 6 da receita acima.
 - [ ] **A.2 — sidebar absorve os destinos de "Mais".** No desktop, "Mais" é um item de
   sidebar que leva a outro menu com 9 links (`mais/index`). Melhor decidir depois que mais

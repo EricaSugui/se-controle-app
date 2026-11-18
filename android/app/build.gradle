@@ -8,6 +8,12 @@ apply plugin: "com.google.firebase.appdistribution"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
+// Versão do app: fonte única em app.json (expo.version e expo.android.versionCode).
+// Para subir a versão: npm run version:bump -- [patch|minor|major|build]
+def appJson = new groovy.json.JsonSlurper().parse(new File(projectRoot, "app.json"))
+def appVersionName = appJson.expo.version
+def appVersionCode = appJson.expo.android.versionCode as Integer
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -96,8 +102,8 @@ android {
         applicationId 'com.ericasugui.secontrole'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
+        versionCode appVersionCode
+        versionName appVersionName
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -134,7 +140,7 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 groups = "tenencia-vip"
-                releaseNotes = "Tenência 1.0.0 - Primeira versão para testes VIP."
+                releaseNotes = "Tenência ${appVersionName} (${appVersionCode})"
             }
         }
     }
