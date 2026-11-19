@@ -17,7 +17,7 @@ trocado sem uma migração planejada:
 | `package.json` → `name` | `se-controle-rn` | nome do pacote/repositório |
 | `app.json` → `slug` | `se-controle` | vinculado ao projeto EAS (`projectId`) |
 | `app.json` → `scheme` | `secontrolern` | deep links já emitidos |
-| Android `applicationId` / `namespace` | `com.ericasugui.secontrole` | identidade do app no Firebase e na loja; trocar = app novo |
+| Android `applicationId` / `namespace` | `com.ericasugui.secontrole` (flavor `prod`; `tcc` e `dev` usam sufixo `.tcc`/`.dev`) | identidade do app no Firebase e na loja; trocar = app novo |
 | Backend | `se-controle-backend` | repositório e URL da API |
 
 Texto visível ao usuário usa sempre "Tenência". Referência da decisão de
@@ -203,18 +203,14 @@ explícitos:
 | `start:tcc`, `web:tcc`, `android:tcc`, `ios:tcc` | tcc (`.env.tcc`) | dev server |
 | `start:prod`, `web:prod`, `ios:prod` | prod (`.env.prod`) | dev server |
 | `build:web:dev`, `build:web:tcc`, `build:web:prod` | conforme sufixo | `expo export -p web` local (a Vercel usa as próprias variáveis) |
-| `android:create:prod`, `android:assemble:prod`, `android:install`, `android:distribute` | prod | APK release (ver Android abaixo) |
+| `android:create:<amb>`, `android:assemble:<amb>`, `android:install:<amb>` | `prod`, `tcc` ou `dev` | APK release do flavor (ver Android abaixo) |
+| `android:distribute -- <amb> <grupo>` | conforme argumento | Firebase App Distribution |
 | `version:bump` | — | sobe versão/versionCode no `app.json` |
 
 DEV local, TCC e produção têm variáveis públicas e backends separados. O
 DEV usa backend e Supabase locais (`back`: `npm run dev`). O plano de
 ambientes completo fica no repositório `se-controle-workspace`
 (`docs/planos/estrategia-ambientes-e-roadmap-baseline-tcc.md`).
-
-> Pendente (Fase 0, passo 3 do plano): *product flavors* do Android
-> (`prod`, `tcc`, `dev`). Até lá, só existe APK de produção. **Não gere APK
-> com `.env.tcc` ou `.env.dev`**, porque ele teria o mesmo package de PROD e
-> substituiria o app instalado.
 
 ## Branches
 
@@ -257,7 +253,23 @@ release: o APK sai do Gradle local, não do EAS nem de `expo prebuild`.
 Ele carrega configuração que o `app.json` sozinho não gera (plugins Gradle
 do Firebase e App Distribution, assinatura).
 
-- Identidade: `applicationId` `com.ericasugui.secontrole`.
+- **Um app por ambiente (*product flavors*)**, instaláveis lado a lado
+  no mesmo aparelho:
+
+  | Flavor | `applicationId` | Nome no aparelho | Env | Firebase |
+  |---|---|---|---|---|
+  | `prod` | `com.ericasugui.secontrole` | Tenência | `.env.prod` | projeto de produção |
+  | `tcc` | `com.ericasugui.secontrole.tcc` | Tenência TCC | `.env.tcc` | projeto `tenencia-tcc` |
+  | `dev` | `com.ericasugui.secontrole.dev` | Tenência DEV | `.env.dev` | projeto de produção (junto com `prod`) |
+
+  Cada flavor tem o próprio `google-services.json` em
+  `android/app/src/<flavor>/` e o próprio nome em
+  `src/<flavor>/res/values/strings.xml` (o `prod` usa o de `src/main`). O
+  `namespace` (pacote Kotlin) continua `com.ericasugui.secontrole` em
+  todos. Só o flavor `dev` aceita `http://` no release (`src/dev/AndroidManifest.xml`),
+  para o APK falar com backend e Supabase locais pelo IP da máquina. As
+  variantes de debug estão listadas em `debuggableVariants` no
+  `react { }` do Gradle; sem isso, o bundle seria embutido no debug.
 - **Versão — fonte única no `app.json`**: `expo.version` (versionName) e
   `expo.android.versionCode`. O `android/app/build.gradle` lê esses dois
   valores do `app.json`, e o script de distribuição também; não edite
@@ -287,35 +299,66 @@ do Firebase e App Distribution, assinatura).
 
   Commitar apenas ícones, splash e recursos (`res/mipmap-*`, `drawable*`,
   `values*`). Se o prebuild tiver alterado ajustes manuais — assinatura,
-  bloco `firebaseAppDistribution` ou a leitura de versão no
-  `android/app/build.gradle` — descartar essa parte
+  `productFlavors`/`debuggableVariants`, blocos `firebaseAppDistribution`
+  ou a leitura de versão no `android/app/build.gradle`, ou ainda recriado
+  `android/app/google-services.json` (que agora fica por flavor) —
+  descartar essa parte
   (`git checkout -- android/app/build.gradle` ou `git restore -p`).
   Gerar um APK e conferir o ícone no aparelho antes de distribuir.
   Fora isso, o prebuild não faz parte do fluxo de release.
 - Firebase: `@react-native-firebase/app`, `crashlytics`, `analytics` e
-  `remote-config`. O `google-services.json` existe na raiz (lido pelo
-  `app.json`) e em `android/app/` (lido pelo Gradle); os dois precisam ser
-  iguais.
-- Build release local (variáveis de prod):
+  `remote-config`. O Gradle lê o `google-services.json` de
+  `android/app/src/<flavor>/`. O da raiz (`front/google-services.json`,
+  referenciado pelo `app.json`) só é usado pelo prebuild e deve ser igual
+  ao de `src/prod/`.
+
+  Remote Config e Analytics são por **projeto** Firebase. A divisão é:
+
+  | Projeto | Apps | Remote Config |
+  |---|---|---|
+  | Produção (`tenencia-b28c9`) | `prod` e `dev` | Compartilhado, **com condição por app** em cada parâmetro: liga primeiro no DEV, depois para parte dos testadores de PROD, e então para todos |
+  | `tenencia-tcc` | só `tcc` | Não usado. O TCC é acadêmico e congelado, isolado de qualquer configuração |
+
+  Por isso o `google-services.json` de `src/dev/` é do projeto de
+  produção (contém os apps `prod` e `dev`), e o de `src/tcc/` é do
+  `tenencia-tcc`. No Analytics de produção, os eventos do app DEV aparecem
+  separados por app e devem ser filtrados nas análises.
+- Build release local, por ambiente (`prod`, `tcc` ou `dev`):
 
   ```bash
-  npm run version:bump        # (ou -- patch/minor/major)
-  npm run android:create:prod     # gera o bundle JS e os assets
-  npm run android:assemble:prod   # gera android/app/build/outputs/apk/release/app-release.apk
-  npm run android:install     # instala o APK no aparelho via adb
+  npm run version:bump              # (ou -- patch/minor/major)
+  npm run android:create:prod       # gera o bundle JS e os assets
+  npm run android:assemble:prod     # gera android/app/build/outputs/apk/prod/release/app-prod-release.apk
+  npm run android:install:prod      # instala o APK no aparelho via adb
   ```
 
+  Para TCC e DEV, troque o sufixo (`:tcc`, `:dev`). O APK `dev` aponta
+  para o `.env.dev`. Para usar no celular, o `EXPO_PUBLIC_API_URL` e o
+  `EXPO_PUBLIC_SUPABASE_URL` precisam usar o IP da máquina na rede, não
+  `localhost`. No dia a dia, prefira o dev client (`npm run android`, que
+  roda a variante `devDebug`).
+
+  O flavor `dev` é o **app de pré-produção** no aparelho: serve ao DEV
+  local e, quando existir, ao HML na nuvem (sob demanda). O que muda é só
+  o arquivo de ambiente do build (`.env.dev` ou um futuro `.env.hml`). Não
+  há flavor `hml`: o flavor define o app (package, nome, Firebase), e o
+  arquivo de ambiente define o backend.
 - Distribuição para testadores via **Firebase App Distribution**:
 
   ```bash
-  npm run android:distribute -- vip                    # ou tcc | open
-  npm run android:distribute -- vip "Corrige o login"  # notas extras opcionais
+  npm run android:distribute -- prod vip                    # ou: prod open
+  npm run android:distribute -- prod vip "Corrige o login"  # notas extras opcionais
+  npm run android:distribute -- tcc tcc
+  npm run android:distribute -- dev dev
   ```
 
-  `scripts/firebase/distribute-android.sh` envia o APK release para o grupo
-  `tenencia-vip`, `tenencia-tcc` ou `tenencia-open`, com release notes
-  montadas a partir da versão do `app.json`. Exige `firebase login` feito
-  antes (o `firebase-tools` está nas devDependencies).
+  `scripts/firebase/distribute-android.sh` lê o App ID do Firebase no
+  `google-services.json` do flavor e só aceita combinações coerentes
+  (`prod`→`tenencia-vip`/`tenencia-open`, `tcc`→`tenencia-tcc`,
+  `dev`→`tenencia-dev`). Um APK de TCC nunca vai para os testadores VIP.
+  As release notes são montadas a partir da versão do `app.json`. Exige
+  `firebase login` feito antes (o `firebase-tools` está nas
+  devDependencies).
 - `eas.json` e `npm run eas:prod` existem, mas não são o caminho usado
   para lançamentos.
 

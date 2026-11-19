@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "368017815488",
+    "project_id": "tenencia-b28c9",
+    "storage_bucket": "tenencia-b28c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368017815488:android:1e0bf38203785b48ed7a25",
+        "android_client_info": {
+          "package_name": "com.ericasugui.secontrole"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRRIj2m4cPsU3x7yEhrtByHj9mt02ktN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368017815488:android:22222707fea9d98fed7a25",
+        "android_client_info": {
+          "package_name": "com.ericasugui.secontrole.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRRIj2m4cPsU3x7yEhrtByHj9mt02ktN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
