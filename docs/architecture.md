@@ -320,8 +320,11 @@ do Firebase e App Distribution, assinatura).
   | `tenencia-tcc` | só `tcc` | Não usado. O TCC é acadêmico e congelado, isolado de qualquer configuração |
 
   Por isso o `google-services.json` de `src/dev/` é do projeto de
-  produção (contém os apps `prod` e `dev`), e o de `src/tcc/` é do
-  `tenencia-tcc`. No Analytics de produção, os eventos do app DEV aparecem
+  produção, e o de `src/tcc/` é do `tenencia-tcc`. **Cada arquivo contém
+  só o app do próprio flavor.** O console do Firebase baixa um arquivo com
+  todos os apps do projeto. Ao atualizar um deles, remova as entradas
+  (`client`) dos outros packages, para nenhum flavor carregar
+  configuração de outro ambiente. No Analytics de produção, os eventos do app DEV aparecem
   separados por app e devem ser filtrados nas análises.
 - Build release local, por ambiente (`prod`, `tcc` ou `dev`):
 

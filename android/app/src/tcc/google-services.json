@@ -7,25 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:420056707141:android:7dc7962e4f37ad565af32c",
-        "android_client_info": {
-          "package_name": "com.ericasugui.secontrole.dev"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyB0X7Ccr88MUouHrIbl7pUrmTyYH5JknlM"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:420056707141:android:cc447060de9d4f0c5af32c",
         "android_client_info": {
           "package_name": "com.ericasugui.secontrole.tcc"
