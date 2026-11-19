@@ -7,15 +7,16 @@ description: Como verificar mudanças do se-controle-rn em runtime (Expo web + b
 
 ## Superfície
 
-App Expo (expo-router) com backend Express em `../se-controle-backend`. Para
-homologação, o app aponta para a API via `EXPO_PUBLIC_API_URL` em `.env.hml`;
-produção usa `.env.prod`. O desenvolvimento local deve usar o ambiente
-explicitamente escolhido, nunca uma configuração implícita.
+App Expo (expo-router) com backend Express em `../back`. O app aponta para a
+API via `EXPO_PUBLIC_API_URL`: `.env.dev` (DEV local, padrão dos scripts sem
+sufixo), `.env.tcc` (TCC) e `.env.prod` (produção, só com `:prod`
+explícito). Nunca usar uma configuração implícita.
 
 ## Subir o app (web — iteração mais rápida)
 
 ```powershell
-npm run web            # porta 8081
+npm run web            # DEV local (.env.dev), porta 8081
+npm run web:tcc        # TCC (.env.tcc), com o back em `npm run dev:tcc`
 # porta 8081 costuma estar ocupada por um Metro da dona do repo — use outra:
 npx expo start --web --port 8082
 ```
@@ -33,12 +34,13 @@ O Metro só compila sob demanda. Para forçar e pegar erros de bundle/import:
 ## Limites conhecidos (bloqueiam E2E automatizado)
 
 - **Auth**: backend valida token Supabase real (`src/middleware/auth.ts` do
-  backend) e exige pessoa vinculada. O login de homologação usa os usuários
-  fixture documentados no `back/.env.hml`; senhas não devem ser registradas
-  neste arquivo.
-- **Banco**: os testes de escrita devem usar o Supabase HML e a casa fixture.
-  Nunca criar dados de teste na produção. Use `db:reset:homolog` e
-  `db:clean:homolog` no backend para preparar e limpar os dados experimentais.
+  backend) e exige pessoa vinculada. O login de teste usa os usuários
+  fixture configurados em `back/.env.dev` (ou `back/.env.tcc`); senhas não
+  devem ser registradas neste arquivo.
+- **Banco**: os testes de escrita devem usar o Supabase local (DEV) ou o do
+  TCC, sempre com a casa fixture. Nunca criar dados de teste na produção. No
+  backend, use `db:reset`/`db:clean` (DEV) ou `db:reset:tcc`/`db:clean:tcc`
+  para preparar e limpar os dados.
 - **Dev client nativo**: módulos nativos novos (ex. react-native-svg) exigem rebuild EAS do
   dev client; web e Expo Go funcionam sem rebuild.
 

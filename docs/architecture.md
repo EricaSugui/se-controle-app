@@ -188,30 +188,45 @@ Variáveis lidas pelo bundle (modelo em `.env.example`):
 | `EXPO_PUBLIC_API_URL` | URL do backend |
 | `EXPO_PUBLIC_SUPABASE_URL` | projeto Supabase |
 | `EXPO_PUBLIC_SUPABASE_API_KEY` | anon key do Supabase |
-| `EXPO_PUBLIC_APP_ENV` | `homologacao` exibe o `EnvironmentBanner`; `producao` não |
+| `EXPO_PUBLIC_APP_ENV` | `desenvolvimento`, `tcc` ou `homologacao` exibem o `EnvironmentBanner` (rótulo em `src/utils/ambiente.ts`); `producao` ou ausente, não |
 
-`REACT_APP_*` não é consumida pelo app. Os valores ficam em `.env.prod` e
-`.env.hml` (fora do git). Os scripts do `package.json` desligam o dotenv do
-Expo (`EXPO_NO_DOTENV=1`) e carregam o arquivo explicitamente com
-`dotenv-cli`, para não haver mistura de ambientes:
+`REACT_APP_*` não é consumida pelo app. Os valores ficam em `.env.dev`,
+`.env.tcc` e `.env.prod` (fora do git; modelo em `.env.example`). Os
+scripts do `package.json` desligam o dotenv do Expo (`EXPO_NO_DOTENV=1`) e
+carregam o arquivo explicitamente com `dotenv-cli`, para não haver mistura
+de ambientes. **Sem sufixo = DEV local**; TCC e produção são sempre
+explícitos:
 
 | Script | Ambiente | O que faz |
 |---|---|---|
-| `start`, `web`, `web:prod`, `start:prod`, `ios:prod` | prod | dev server |
-| `web:hml`, `start:hml`, `android:hml`, `ios:hml` | hml | dev server |
-| `build:web` | prod | `expo export -p web` |
-| `android` | prod | `expo run:android` (build de desenvolvimento) |
-| `android:create`, `android:assemble`, `android:install`, `android:distribute` | prod | APK release (ver Android abaixo) |
+| `start`, `web`, `android`, `ios`, `eas:dev` | dev (`.env.dev`) | dev server / `expo run:*` |
+| `start:tcc`, `web:tcc`, `android:tcc`, `ios:tcc` | tcc (`.env.tcc`) | dev server |
+| `start:prod`, `web:prod`, `ios:prod` | prod (`.env.prod`) | dev server |
+| `build:web:dev`, `build:web:tcc`, `build:web:prod` | conforme sufixo | `expo export -p web` local (a Vercel usa as próprias variáveis) |
+| `android:create:prod`, `android:assemble:prod`, `android:install`, `android:distribute` | prod | APK release (ver Android abaixo) |
 | `version:bump` | — | sobe versão/versionCode no `app.json` |
 
-Produção e homologação têm projetos, variáveis públicas e backends separados.
+DEV local, TCC e produção têm variáveis públicas e backends separados. O
+DEV usa backend e Supabase locais (`back`: `npm run dev`). O plano de
+ambientes completo fica no repositório `se-controle-workspace`
+(`docs/planos/estrategia-ambientes-e-roadmap-baseline-tcc.md`).
+
+> Pendente (Fase 0, passo 3 do plano): *product flavors* do Android
+> (`prod`, `tcc`, `dev`). Até lá, só existe APK de produção. **Não gere APK
+> com `.env.tcc` ou `.env.dev`**, porque ele teria o mesmo package de PROD e
+> substituiria o app instalado.
 
 ## Branches
 
-Fluxo: `feature/*` → PR para `hml` → validação → PR `hml` → `main`
-(produção). O PR `hml → main` usa **merge commit** (não squash), para as
-duas branches não divergirem. Depois de cada release, `hml` é alinhada com
-`main` por fast-forward.
+Fluxo: `feature/*` (a partir de `develop`) → PR para `develop` → validação
+no DEV local → PR `develop` → `main` (produção), seguindo o checklist de
+release do plano de ambientes. O PR `develop → main` usa **merge commit**
+(não squash), para as duas branches não divergirem. Depois de cada
+release, `develop` é alinhada com `main` por fast-forward.
+
+A branch `hml` corresponde ao ambiente que será convertido em **TCC**
+(branch `tcc`). Ela deixa de receber features e passa a receber só `main`,
+até a baseline do TCC.
 
 ## Deploy e distribuição
 
@@ -219,10 +234,11 @@ duas branches não divergirem. Depois de cada release, `hml` é alinhada com
 
 - Raiz do projeto: `front`; build `npx expo export -p web`; saída `dist`
   (`vercel.json`).
-- Há um projeto Vercel para prod e outro para hml. As variáveis
-  `EXPO_PUBLIC_*` de cada um ficam nas **Environment Variables do
-  projeto na Vercel**, com os mesmos valores do `.env.prod` / `.env.hml`
-  locais. Os arquivos `.env.*` não vão para o git, então a Vercel não os
+- Há um projeto Vercel para prod e outro para o TCC (antiga hml). As
+  variáveis `EXPO_PUBLIC_*` de cada um ficam nas **Environment Variables
+  do projeto na Vercel**, com os mesmos valores do `.env.prod` / `.env.tcc`
+  locais. (A Vercel do TCC ainda usa `EXPO_PUBLIC_APP_ENV=homologacao`
+  até a conversão HML → TCC.) Os arquivos `.env.*` não vão para o git, então a Vercel não os
   enxerga; o `vercel.json` não define variáveis.
 - O app é instalável como PWA: `public/manifest.json` (nome "Tenência",
   `display: standalone`, cor `#FDF6EF`) e as metas de `app/+html.tsx`
@@ -284,8 +300,8 @@ do Firebase e App Distribution, assinatura).
 
   ```bash
   npm run version:bump        # (ou -- patch/minor/major)
-  npm run android:create      # gera o bundle JS e os assets
-  npm run android:assemble    # gera android/app/build/outputs/apk/release/app-release.apk
+  npm run android:create:prod     # gera o bundle JS e os assets
+  npm run android:assemble:prod   # gera android/app/build/outputs/apk/release/app-release.apk
   npm run android:install     # instala o APK no aparelho via adb
   ```
 
