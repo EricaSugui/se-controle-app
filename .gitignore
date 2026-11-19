@@ -32,11 +32,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-.env.local
-.env.hml
-.env
+# Arquivos de ambiente (.env.dev, .env.tcc, .env.prod...): nenhum é
+# versionado, exceto o modelo.
+.env*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -49,4 +48,3 @@ yarn-error.*
 /android/.gradle/
 /android/local.properties
 .vercel
-.env*
