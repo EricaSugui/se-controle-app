@@ -43,6 +43,11 @@ react {
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
     // debuggableVariants = ["liteDebug", "prodDebug"]
+    // Com os product flavors de ambiente (prod/tcc/dev), os nomes das
+    // variantes de debug mudam — sem esta lista o bundle JS seria embutido
+    // nos builds de desenvolvimento.
+    debuggableVariants = ["prodDebug", "tccDebug", "devDebug",
+                          "prodDebugOptimized", "tccDebugOptimized", "devDebugOptimized"]
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
@@ -107,6 +112,44 @@ android {
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
+
+    // Um app por ambiente, instaláveis lado a lado no mesmo aparelho.
+    // Cada flavor tem o próprio google-services.json em src/<flavor>/ e o
+    // próprio nome visível em src/<flavor>/res/values/strings.xml (prod usa
+    // o de src/main). Variáveis EXPO_PUBLIC_* vêm do .env.<flavor> carregado
+    // pelos scripts android:*:<ambiente> do package.json.
+    // Plano: se-controle-workspace/docs/planos/estrategia-ambientes-e-roadmap-baseline-tcc.md (4.8)
+    flavorDimensions "ambiente"
+    productFlavors {
+        prod {
+            dimension "ambiente"
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "tenencia-vip"
+                releaseNotes = "Tenência ${appVersionName} (${appVersionCode})"
+            }
+        }
+        tcc {
+            dimension "ambiente"
+            applicationIdSuffix ".tcc"
+            versionNameSuffix "-tcc"
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "tenencia-tcc"
+                releaseNotes = "Tenência TCC ${appVersionName} (${appVersionCode})"
+            }
+        }
+        dev {
+            dimension "ambiente"
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "tenencia-dev"
+                releaseNotes = "Tenência DEV ${appVersionName} (${appVersionCode})"
+            }
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -135,13 +178,7 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
-
-            // Firebase App Distribution
-            firebaseAppDistribution {
-                artifactType = "APK"
-                groups = "tenencia-vip"
-                releaseNotes = "Tenência ${appVersionName} (${appVersionCode})"
-            }
+            // Firebase App Distribution: configurado por flavor (productFlavors).
         }
     }
     packagingOptions {
