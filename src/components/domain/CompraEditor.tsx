@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getCompra, getParcelasCompra, updateCompra } from '@/src/services/api/compras';
@@ -8,6 +8,8 @@ import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { CompraForm, type CompraFormValues } from '@/src/components/domain/CompraForm';
+import { VinculoRecorrencia } from '@/src/components/domain/VinculoRecorrencia';
+import { ajusteDeEscopo, type OcorrenciaRecorrente } from '@/src/utils/vinculoRecorrencia';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
@@ -30,11 +32,19 @@ export function CompraEditor({ id, onSalvo, onCarregado }: Props) {
   const [parcelas, setParcelas] = useState<Parcela[]>([]);
   const [error, setError] = useState<string | null>(null);
   // Vínculo com despesa fixa: o PUT remove o vínculo se os campos forem
-  // omitidos, então precisam ser repassados no salvar.
+  // omitidos, então precisam ser repassados no salvar. Começa com o vínculo
+  // salvo e só muda quando a pessoa escolhe outra conta ou desliga a
+  // pergunta (se a ocorrência salva não aparecer na lista, nada se perde).
   const [vinculo, setVinculo] = useState<{
     despesa_fixa_id: number | null;
     competencia_referencia: string | null;
   }>({ despesa_fixa_id: null, competencia_referencia: null });
+  // Cópia síncrona do vínculo, lida dentro do callback do seletor.
+  const vinculoRef = useRef(vinculo);
+  // A ocorrência escolhida no seletor (para mostrar e ajustar o formulário).
+  const [ocorrencia, setOcorrencia] = useState<OcorrenciaRecorrente | null>(null);
+  // Vínculo salvo, para o seletor abrir já com ele escolhido.
+  const [preVinculo, setPreVinculo] = useState<{ id: number; competencia: string } | null>(null);
 
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
@@ -65,10 +75,18 @@ export function CompraEditor({ id, onSalvo, onCarregado }: Props) {
           acertoEixo: compra.acerto_eixo ?? null,
         });
         setParcelas(parcelasResp);
-        setVinculo({
+        const salvo = {
           despesa_fixa_id: compra.despesa_fixa_id ?? null,
           competencia_referencia: compra.competencia_referencia ?? null,
-        });
+        };
+        vinculoRef.current = salvo;
+        setVinculo(salvo);
+        setOcorrencia(null);
+        setPreVinculo(
+          compra.despesa_fixa_id != null && compra.competencia_referencia
+            ? { id: compra.despesa_fixa_id, competencia: compra.competencia_referencia }
+            : null
+        );
         onCarregado?.(compra);
       })
       .catch((e: Error) => setError(e.message));
@@ -98,6 +116,37 @@ export function CompraEditor({ id, onSalvo, onCarregado }: Props) {
     }
     getMembros(values.casaId).then(setMembros).catch(() => setMembros([]));
   }, [values?.casaId]);
+
+  // Trocar ou remover o vínculo (Fase 1, item G). Escolher uma conta ajusta
+  // casa e pessoa ao contrato e usa a categoria dela; descrição e valor já
+  // existentes não são tocados. null = a pessoa desligou a pergunta.
+  const aoVincular = useCallback((o: OcorrenciaRecorrente | null) => {
+    setOcorrencia(o);
+    // O seletor reencontrou o vínculo já salvo ao abrir: só marca, sem mexer
+    // no formulário (a pessoa pode ter mudado a categoria depois de lançar).
+    const atual = vinculoRef.current;
+    if (o && atual.despesa_fixa_id === o.id && atual.competencia_referencia === o.competencia) return;
+    const novo = o
+      ? { despesa_fixa_id: o.id, competencia_referencia: o.competencia }
+      : { despesa_fixa_id: null, competencia_referencia: null };
+    vinculoRef.current = novo;
+    setVinculo(novo);
+    if (!o) return;
+    setValues((v) => v && ({
+      ...v,
+      ...ajusteDeEscopo(o, v),
+      categoriaId: o.categoriaOuOrigemId,
+      descricao: v.descricao.trim() ? v.descricao : o.descricao,
+      valorParcela: v.valorParcela ?? o.valorEsperado,
+    }));
+  }, []);
+
+  // Conta pessoal: a pessoa é sempre a dona do contrato.
+  useEffect(() => {
+    if (ocorrencia && ocorrencia.casaId === null && ocorrencia.pessoaId !== null && values && values.pessoaId !== ocorrencia.pessoaId) {
+      setValues((v) => v && { ...v, pessoaId: ocorrencia.pessoaId });
+    }
+  }, [ocorrencia, values]);
 
   const podeSalvar =
     values != null &&
@@ -159,9 +208,23 @@ export function CompraEditor({ id, onSalvo, onCarregado }: Props) {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {vinculo.despesa_fixa_id != null && (
+        <VinculoRecorrencia
+          key={id}
+          tipo="despesa"
+          casaId={values.casaId}
+          pessoaId={values.pessoaId}
+          descricao={values.descricao}
+          valor={values.valorParcela}
+          selecionada={ocorrencia}
+          onChange={aoVincular}
+          preSelecao={preVinculo}
+          casas={casas}
+        />
+        {/* Vínculo salvo que o seletor não encontrou na lista: continua
+            valendo até a pessoa escolher outra conta ou desligar. */}
+        {vinculo.despesa_fixa_id != null && ocorrencia == null && (
           <Text style={styles.aviso}>
-            Pagamento vinculado a despesa fixa
+            Pagamento vinculado a uma conta recorrente
             {vinculo.competencia_referencia ? ` (competência ${vinculo.competencia_referencia})` : ''}.
           </Text>
         )}

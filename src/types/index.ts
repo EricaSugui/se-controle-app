@@ -262,6 +262,10 @@ export type DespesaFixaStatusItem = {
   competencia: string;
   data_esperada: string;
   status: StatusDespesaFixa;
+  // Só quando "pago" (contrato 3.11.0): o que foi lançado para a ocorrência.
+  realizado_em?: string | null;
+  valor_realizado?: number | null;
+  lancamentos?: number;
 };
 
 export type DespesaFixaExcecaoInput = {
@@ -317,6 +321,10 @@ export type ReceitaFixaStatusItem = {
   competencia: string;
   data_esperada: string;
   status: StatusReceitaFixa;
+  // Só quando "recebido" (contrato 3.11.0): o que foi lançado para a ocorrência.
+  realizado_em?: string | null;
+  valor_realizado?: number | null;
+  lancamentos?: number;
 };
 
 export type ReceitaFixaExcecaoInput = {
