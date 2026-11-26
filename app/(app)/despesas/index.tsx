@@ -1,6 +1,9 @@
 import { CompraEditor } from '@/src/components/domain/CompraEditor';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { IconeRecorrencia, MarcaRecorrencia } from '@/src/components/ui/MarcaRecorrencia';
+import { CabecalhoDia, DetalhesLancamento, LinhaLancamento } from '@/src/components/ui/LancamentoCompacto';
+import { agruparPorDia } from '@/src/utils/agruparPorDia';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
@@ -11,7 +14,7 @@ import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 
 type CampoOrdenacao = 'data' | 'descricao' | 'categoria' | 'pessoa' | 'cartao' | 'valor';
 type DirecaoOrdenacao = 'asc' | 'desc';
@@ -38,6 +41,22 @@ export default function GastosScreen() {
   const mostrandoPainel = painelDuplo && editandoId != null;
 
   const itensOrdenados = useMemo(() => ordenarCompras(itens, ordenacao), [itens, ordenacao]);
+  // Celular: grupos por dia (a ordenação por coluna é só da tabela).
+  const grupos = useMemo(
+    () => agruparPorDia(itens, (c) => c.data, (c) => c.valor_parcela * c.total_parcelas),
+    [itens]
+  );
+  // Despesa aberta na janela de detalhes (celular).
+  const [detalhe, setDetalhe] = useState<Compra | null>(null);
+
+  const vazio = (
+    <EmptyState
+      titulo="Nenhuma despesa neste mês"
+      descricao="Registre uma despesa para acompanhar o mês por competência."
+      acaoLabel="Registrar primeira despesa"
+      onAcao={() => router.push('/(app)/despesas/novo')}
+    />
+  );
 
   function alternarOrdenacao(campo: CampoOrdenacao) {
     setOrdenacao((atual) => {
@@ -137,36 +156,50 @@ export default function GastosScreen() {
       </View>
 
       <View style={styles.corpo}>
-        <FlatList
-          data={itensOrdenados}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={compacto ? styles.lista : styles.tabela}
-          ListHeaderComponent={
-            compacto || itensOrdenados.length === 0 ? null : (
-              <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
-            )
-          }
-          ListEmptyComponent={(
-            <EmptyState
-              titulo="Nenhuma despesa neste mês"
-              descricao="Registre uma despesa para acompanhar o mês por competência."
-              acaoLabel="Registrar primeira despesa"
-              onAcao={() => router.push('/(app)/despesas/novo')}
-            />
-          )}
-          renderItem={({ item }: { item: Compra }) =>
-            compacto ? (
-              <CardGasto item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
-            ) : (
+        {compacto ? (
+          // Celular: agrupado por dia, linha compacta; toque abre os detalhes.
+          <SectionList
+            sections={grupos}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.lista}
+            stickySectionHeadersEnabled={false}
+            ListEmptyComponent={vazio}
+            renderSectionHeader={({ section }) => (
+              <CabecalhoDia titulo={section.titulo} total={section.total} cor={cores.negativo} />
+            )}
+            renderItem={({ item }) => (
+              <LinhaLancamento
+                titulo={item.descricao || item.categoria_nome || 'Sem descrição'}
+                subtitulo={[item.categoria_nome, item.pessoa_nome].filter(Boolean).join(' · ')}
+                valor={item.valor_parcela * item.total_parcelas}
+                cor={cores.negativo}
+                recorrente={item.despesa_fixa_id != null}
+                complemento={item.total_parcelas > 1 ? `${item.total_parcelas}x` : undefined}
+                onPress={() => setDetalhe(item)}
+              />
+            )}
+          />
+        ) : (
+          <FlatList
+            data={itensOrdenados}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.tabela}
+            ListHeaderComponent={
+              itensOrdenados.length === 0 ? null : (
+                <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
+              )
+            }
+            ListEmptyComponent={vazio}
+            renderItem={({ item }: { item: Compra }) => (
               <LinhaTabela
                 item={item}
                 selecionado={item.id === editandoId}
                 onEditar={() => editar(item)}
                 onExcluir={() => confirmarExcluir(item)}
               />
-            )
-          }
-        />
+            )}
+          />
+        )}
 
         {mostrandoPainel && (
           <View style={styles.painel}>
@@ -202,6 +235,32 @@ export default function GastosScreen() {
         onSelecionar={irPara}
         onFechar={() => setSeletorVisivel(false)}
       />
+
+      {detalhe && (
+        <DetalhesLancamento
+          visivel
+          titulo={detalhe.descricao || detalhe.categoria_nome || 'Despesa'}
+          valor={detalhe.valor_parcela * detalhe.total_parcelas}
+          cor={cores.negativo}
+          marca={detalhe.despesa_fixa_id != null ? (
+            <MarcaRecorrencia tipo="despesa" referencia={detalhe.competencia_referencia} competencia={detalhe.competencia} />
+          ) : undefined}
+          linhas={[
+            { rotulo: 'Data', valor: formatDate(detalhe.data) },
+            { rotulo: 'Categoria', valor: detalhe.categoria_nome || '—' },
+            { rotulo: 'Pessoa', valor: detalhe.pessoa_nome || '—' },
+            { rotulo: 'Cartão/conta', valor: detalhe.cartao_conta_nome || '—' },
+            ...(detalhe.total_parcelas > 1
+              ? [{ rotulo: 'Parcelas', valor: `${detalhe.total_parcelas}x de ${formatCurrency(detalhe.valor_parcela)}` }]
+              : []),
+            { rotulo: 'Competência', valor: detalhe.competencia },
+          ]}
+          podeEditar={detalhe.pode_editar}
+          onEditar={() => { const item = detalhe; setDetalhe(null); editar(item); }}
+          onExcluir={() => { const item = detalhe; setDetalhe(null); confirmarExcluir(item); }}
+          onFechar={() => setDetalhe(null)}
+        />
+      )}
     </View>
   );
 }
@@ -359,6 +418,7 @@ function LinhaTabela({
     <View {...hoverProps} style={[styles.tr, hover && styles.trHover, selecionado && styles.trSelecionada]}>
       <Text style={[styles.td, COL.data]}>{formatDate(item.data)}</Text>
       <Text style={[styles.td, styles.tdForte, COL.descricao]} numberOfLines={1}>
+        {item.despesa_fixa_id != null && <IconeRecorrencia />}
         {item.descricao || '—'}
       </Text>
       <Text style={[styles.td, COL.categoria]} numberOfLines={1}>
@@ -388,42 +448,6 @@ function LinhaTabela({
           </>
         )}
       </View>
-    </View>
-  );
-}
-
-function CardGasto({
-  item,
-  onEditar,
-  onExcluir,
-}: {
-  item: Compra;
-  onEditar: () => void;
-  onExcluir: () => void;
-}) {
-  return (
-    <View style={styles.item}>
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemValor}>
-          {formatCurrency(item.valor_parcela * item.total_parcelas)}
-          {item.total_parcelas > 1 && (
-            <Text style={styles.itemParcelas}>{`  · ${item.total_parcelas}x de ${formatCurrency(item.valor_parcela)}`}</Text>
-          )}
-        </Text>
-        <Text style={styles.itemDetalhe}>{item.descricao || item.categoria_nome || 'Sem descrição'}</Text>
-        {(item.pessoa_nome || item.cartao_conta_nome) && (
-          <Text style={styles.itemMeta}>
-            {[item.pessoa_nome, item.cartao_conta_nome].filter(Boolean).join(' · ')}
-          </Text>
-        )}
-        <Text style={styles.itemData}>{formatDate(item.data)}</Text>
-      </View>
-      {item.pode_editar && (
-        <View style={styles.acoes}>
-          <AcaoTexto label="Editar" cor={cores.primaria} onPress={onEditar} />
-          <AcaoTexto label="Excluir" cor={cores.negativo} onPress={onExcluir} />
-        </View>
-      )}
     </View>
   );
 }
@@ -461,7 +485,7 @@ const styles = StyleSheet.create({
   competenciaHint:   { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
   corpo:             { flex: 1, flexDirection: 'row' },
-  lista:             { padding: 16, gap: 8, flexGrow: 1 },
+  lista:             { paddingHorizontal: 16, paddingBottom: 16, flexGrow: 1 },
   tabela:            { padding: 16, flexGrow: 1 },
 
   painel:            { width: 420, borderLeftWidth: 1, borderLeftColor: cores.bordaSuave, backgroundColor: cores.fundo },
@@ -482,15 +506,6 @@ const styles = StyleSheet.create({
   tdForte:           { color: cores.textoForte, fontWeight: '500' },
   tdValor:           { fontSize: 14, fontWeight: '600', color: cores.negativo },
   tdParcelas:        { fontSize: 11, color: cores.textoSuave, marginTop: 2 },
-
-  // Cards (mobile)
-  item:              { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: cores.fundoSuave, borderRadius: raio.md, padding: 14 },
-  itemInfo:          { flex: 1 },
-  itemValor:         { fontSize: 16, fontWeight: '600', color: cores.negativo },
-  itemParcelas:      { fontSize: 13, fontWeight: '400', color: cores.textoSuave },
-  itemDetalhe:       { fontSize: 13, color: cores.textoMedio, marginTop: 2 },
-  itemMeta:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
-  itemData:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
   acoes:             { flexDirection: 'row', gap: 16 },
   acaoTexto:         { fontSize: 14 },
