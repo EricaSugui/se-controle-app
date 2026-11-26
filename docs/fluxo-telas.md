@@ -73,7 +73,7 @@ com Receitas e com "Despesas fixas".
   "Trocar". Escolher uma conta ajusta casa e pessoa ao contrato (da casa:
   fixa a casa e pré-seleciona quem usa; pessoal: fixa a pessoa dona),
   preenche categoria, descrição e valor vazios e herda o meio padrão do
-  contrato. Conta já paga pede confirmação. Depois o form: casa, responsável,
+  contrato. Conta já paga pede confirmação. Depois o form: casa, quem gastou,
   categoria (selector visual), descrição, valor, parcelas, cartão/conta,
   forma de pagamento, data (competência derivada da data, editável). Ao
   salvar, volta para a lista. Ajuda curta junto dos conceitos.
@@ -93,7 +93,7 @@ Espelho de Despesas (simetria entre receitas e despesas).
   casa, a pessoa é pré-selecionada uma vez e "Nenhuma" é respeitada),
   preenche origem, descrição e valor vazios e usa a conta de destino
   padrão. Depois o form: casa,
-  pessoa, origem, descrição, valor bruto, descontos, valor líquido, conta
+  quem recebeu, origem, descrição, valor bruto, descontos, valor líquido, conta
   de destino, data, competência. Ao salvar, volta para a lista.
 - **Edição** de uma receita.
 

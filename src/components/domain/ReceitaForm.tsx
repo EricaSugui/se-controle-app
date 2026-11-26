@@ -68,7 +68,7 @@ export function ReceitaForm({ values, onChange, casas, membros, origens, contas,
 
       {values.casaId != null && membros.length > 0 && (
         <>
-          <Text style={styles.label}>Pessoa</Text>
+          <Text style={styles.label}>Quem recebeu</Text>
           <View style={styles.opcoesContainer}>
             <Pressable
               style={[styles.opcao, values.pessoaId === null && styles.opcaoAtiva]}

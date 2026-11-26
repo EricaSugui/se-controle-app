@@ -267,7 +267,7 @@ export default function GastosScreen() {
             { rotulo: detalhe.dataCaixa ? 'Data da compra' : 'Data', valor: formatDate(detalhe.data) },
             ...(detalhe.dataCaixa ? [{ rotulo: 'Sai do caixa em', valor: formatDate(detalhe.dataCaixa) }] : []),
             { rotulo: 'Categoria', valor: detalhe.categoria_nome || '—' },
-            { rotulo: 'Pessoa', valor: detalhe.pessoa_nome || '—' },
+            { rotulo: 'Quem gastou', valor: detalhe.pessoa_nome || '—' },
             { rotulo: 'Cartão/conta', valor: detalhe.cartao_conta_nome || '—' },
             ...(detalhe.totalParcelas > 1
               ? [{
@@ -334,7 +334,7 @@ function CabecalhoTabela({
         onOrdenar={onOrdenar}
       />
       <CabecalhoOrdenavel
-        label="Pessoa"
+        label="Quem gastou"
         campo="pessoa"
         estiloColuna={COL.pessoa}
         ordenacao={ordenacao}
