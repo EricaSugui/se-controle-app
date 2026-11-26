@@ -5,8 +5,10 @@ import { cores } from '@/src/theme/tokens';
 type Props = {
   titulo: string;
   descricao: string;
-  acaoLabel: string;
-  onAcao: () => void;
+  // Opcional: telas que já têm o botão de criar sempre visível (listas de
+  // Despesas e Receitas) não repetem a ação no estado vazio.
+  acaoLabel?: string;
+  onAcao?: () => void;
 };
 
 export function EmptyState({ titulo, descricao, acaoLabel, onAcao }: Props) {
@@ -14,7 +16,7 @@ export function EmptyState({ titulo, descricao, acaoLabel, onAcao }: Props) {
     <View style={styles.container}>
       <Text style={styles.titulo}>{titulo}</Text>
       <Text style={styles.descricao}>{descricao}</Text>
-      <Button label={acaoLabel} onPress={onAcao} />
+      {acaoLabel && onAcao ? <Button label={acaoLabel} onPress={onAcao} /> : null}
     </View>
   );
 }
