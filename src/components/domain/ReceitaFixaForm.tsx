@@ -10,6 +10,7 @@ import type {
   ReceitaFixaInput,
   TipoConfiabilidadeReceitaFixa,
 } from '@/src/types';
+import { ROTULO_PESSOAL, nomeCasa, ordenarCasas, soEspacoPessoal } from '@/src/utils/casas';
 
 export type ReceitaFixaFormValues = {
   escopo: 'casa' | 'pessoal';
@@ -41,8 +42,10 @@ export function receitaFixaParaInput(
   anteriorId?: number
 ): ReceitaFixaInput {
   return {
-    casa_id: v.escopo === 'casa' ? v.casaId : null,
-    pessoa_id: v.escopo === 'pessoal' ? userId : null,
+    // Toda escolha de "Pertence a" é uma casa, inclusive "Pessoal" (o espaço
+    // pessoal). Só a recorrência pessoal antiga, sem casa, vai por pessoa_id.
+    casa_id: v.casaId ?? null,
+    pessoa_id: v.casaId == null ? userId : null,
     origem_id: v.origemId!,
     descricao: v.descricao.trim(),
     tipo_confiabilidade: v.tipoConfiabilidade,
@@ -87,56 +90,34 @@ export function ReceitaFixaForm({ values, onChange, casas, origens, contas, esco
     onChange({ ...values, [key]: value });
   }
 
-  const nomeCasa = casas.find((c) => c.id === values.casaId)?.nome;
+  const casaAtual = casas.find((c) => c.id === values.casaId);
   const contasDestino = contas.filter((c) => c.tipo !== 'credito' && c.ativo);
 
   return (
     <View style={styles.form}>
-      <Text style={styles.label}>Escopo</Text>
-      {escopoBloqueado ? (
+      {/* Uma escolha só, como nos lançamentos: "Pessoal" (o espaço pessoal)
+          ou uma das casas. A recorrência pessoal antiga, sem casa, aparece
+          como "Pessoal". */}
+      {/* Quem só tem o espaço pessoal não vê a escolha (já vem selecionado). */}
+      {!soEspacoPessoal(casas) && <Text style={styles.label}>Pertence a</Text>}
+      {soEspacoPessoal(casas) ? null : escopoBloqueado ? (
         <Text style={styles.escopoFixo}>
-          {values.escopo === 'casa' ? `Casa${nomeCasa ? `: ${nomeCasa}` : ''}` : 'Pessoal'}
+          {values.casaId == null ? ROTULO_PESSOAL : casaAtual ? nomeCasa(casaAtual) : 'Casa'}
         </Text>
       ) : (
-        <>
-          <View style={styles.opcoesContainer}>
+        <View style={styles.opcoesContainer}>
+          {ordenarCasas(casas).map((casa) => (
             <Pressable
-              style={[styles.opcao, values.escopo === 'casa' && styles.opcaoAtiva]}
-              onPress={() => set('escopo', 'casa')}
+              key={casa.id}
+              style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
+              onPress={() => onChange({ ...values, escopo: casa.pessoal ? 'pessoal' : 'casa', casaId: casa.id })}
             >
-              <Text style={[styles.opcaoTexto, values.escopo === 'casa' && styles.opcaoTextoAtivo]}>
-                Casa
+              <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
+                {nomeCasa(casa)}
               </Text>
             </Pressable>
-            <Pressable
-              style={[styles.opcao, values.escopo === 'pessoal' && styles.opcaoAtiva]}
-              onPress={() => onChange({ ...values, escopo: 'pessoal', casaId: null })}
-            >
-              <Text style={[styles.opcaoTexto, values.escopo === 'pessoal' && styles.opcaoTextoAtivo]}>
-                Pessoal
-              </Text>
-            </Pressable>
-          </View>
-
-          {values.escopo === 'casa' && (
-            <>
-              <Text style={styles.label}>Casa</Text>
-              <View style={styles.opcoesContainer}>
-                {casas.map((casa) => (
-                  <Pressable
-                    key={casa.id}
-                    style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
-                    onPress={() => set('casaId', casa.id)}
-                  >
-                    <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
-                      {casa.nome}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </>
-          )}
-        </>
+          ))}
+        </View>
       )}
 
       {origens.length > 0 && (

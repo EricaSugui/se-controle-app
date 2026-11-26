@@ -11,6 +11,7 @@ import {
   type DespesaFixaFormValues,
 } from '@/src/components/domain/DespesaFixaForm';
 import { useAuth } from '@/src/context/AuthContext';
+import { casaInicial } from '@/src/utils/casas';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { notificar } from '@/src/utils/confirmar';
 import type { CartaoConta, CasaDashboard, Categoria } from '@/src/types';
@@ -63,10 +64,14 @@ export default function NovaDespesaFixaScreen() {
   );
 
   useEffect(() => {
-    if (casas.length === 1 && values.escopo === 'casa' && values.casaId === null) {
-      setValues((v) => ({ ...v, casaId: casas[0].id }));
+    // já vem escolhida a única opção ou a casa principal do Perfil
+    if (values.casaId !== null) return;
+    const inicial = casaInicial(casas, user?.casa_principal_id);
+    if (inicial !== null) {
+      const casa = casas.find((c) => c.id === inicial);
+      setValues((v) => ({ ...v, escopo: casa?.pessoal ? 'pessoal' : 'casa', casaId: inicial }));
     }
-  }, [casas, values.escopo, values.casaId]);
+  }, [casas, values.casaId, user?.casa_principal_id]);
 
   const diaEsperadoNum = Number(values.diaEsperado);
   const podeSalvar =

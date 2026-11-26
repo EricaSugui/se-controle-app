@@ -61,6 +61,8 @@ export type Casa = {
   nome: string;
   ativo: boolean;
   usa_custeio: boolean;
+  pessoal?: boolean; // espaço pessoal (Casa Pessoal); na tela, "Pessoal"
+  dono_pessoa_id?: number | null;
   acerto_eixo: EixoAcerto;
   created_at: string;
 };
@@ -77,6 +79,7 @@ export type CasaDashboard = {
   id: number;
   nome: string;
   usa_custeio: boolean;
+  pessoal?: boolean; // espaço pessoal (Casa Pessoal); na tela, "Pessoal"
   receitas_total: number;
   gastos_total: number;
   saldo_casa: number;

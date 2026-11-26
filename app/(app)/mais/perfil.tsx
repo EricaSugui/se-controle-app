@@ -7,6 +7,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard } from '@/src/types';
+import { nomeCasa, ordenarCasas } from '@/src/utils/casas';
 
 const FUSOS_BR = [
   { valor: 'America/Sao_Paulo', label: 'São Paulo (Brasília)' },
@@ -138,14 +139,14 @@ export default function PerfilScreen() {
             Nenhuma
           </Text>
         </Pressable>
-        {casas.map((casa) => (
+        {ordenarCasas(casas).map((casa) => (
           <Pressable
             key={casa.id}
             style={[styles.opcao, casaPrincipalId === casa.id && styles.opcaoAtiva]}
             onPress={() => setCasaPrincipalId(casa.id)}
           >
             <Text style={[styles.opcaoTexto, casaPrincipalId === casa.id && styles.opcaoTextoAtivo]}>
-              {casa.nome}
+              {nomeCasa(casa)}
             </Text>
           </Pressable>
         ))}

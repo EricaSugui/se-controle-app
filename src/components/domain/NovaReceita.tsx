@@ -9,6 +9,7 @@ import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
 import { VinculoRecorrencia } from '@/src/components/domain/VinculoRecorrencia';
 import { useAuth } from '@/src/context/AuthContext';
+import { casaInicial } from '@/src/utils/casas';
 import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import { ajusteDeEscopo, type OcorrenciaRecorrente } from '@/src/utils/vinculoRecorrencia';
@@ -97,10 +98,11 @@ export function NovaReceita({ preVinculo = null, aoSalvar }: Props) {
   );
 
   useEffect(() => {
-    if (casas.length === 1 && values.casaId === null) {
-      setValues((v) => ({ ...v, casaId: casas[0].id }));
-    }
-  }, [casas, values.casaId]);
+    // já vem escolhida a única opção ou a casa principal do Perfil
+    if (values.casaId !== null) return;
+    const inicial = casaInicial(casas, user?.casa_principal_id);
+    if (inicial !== null) setValues((v) => ({ ...v, casaId: inicial }));
+  }, [casas, values.casaId, user?.casa_principal_id]);
 
   useEffect(() => {
     if (values.casaId == null) {

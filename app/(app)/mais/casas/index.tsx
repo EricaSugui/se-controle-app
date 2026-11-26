@@ -7,6 +7,7 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard } from '@/src/types';
+import { casasCompartilhadas } from '@/src/utils/casas';
 
 export default function CasasScreen() {
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
@@ -17,7 +18,7 @@ export default function CasasScreen() {
     setLoading(true);
     setError(null);
     getDashboard(competenciaAtual())
-      .then((data) => setCasas(data.casas))
+      .then((data) => setCasas(casasCompartilhadas(data.casas))) // o espaço pessoal não aparece aqui: não há o que gerenciar nele
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
