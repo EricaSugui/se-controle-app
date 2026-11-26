@@ -136,16 +136,8 @@ export default function NovaCompraScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <CompraForm
-          values={values}
-          onChange={setValues}
-          casas={casas}
-          membros={membros}
-          categorias={categorias}
-          cartoes={cartoes}
-          formas={formas}
-        />
-
+        {/* A pergunta vem antes: escolher a conta já preenche categoria,
+            descrição e valor do formulário abaixo. */}
         <VinculoRecorrencia
           key={chaveFormulario}
           tipo="despesa"
@@ -155,6 +147,16 @@ export default function NovaCompraScreen() {
           valor={values.valorParcela}
           selecionada={vinculo}
           onChange={aoVincular}
+        />
+
+        <CompraForm
+          values={values}
+          onChange={setValues}
+          casas={casas}
+          membros={membros}
+          categorias={categorias}
+          cartoes={cartoes}
+          formas={formas}
         />
         {vinculo && values.cartaoContaId === null && (
           <Text style={styles.hint}>Sem cartão/conta escolhido, vale o padrão da conta recorrente.</Text>

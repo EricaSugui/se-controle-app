@@ -28,7 +28,7 @@ import { cores, raio } from '@/src/theme/tokens';
 const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: string; jaRealizadaTitulo: string; jaRealizadaMsg: (d: string, c: string) => string; confirmar: string }> = {
   despesa: {
     pergunta: 'É pagamento de uma conta recorrente?',
-    ajuda: 'Vincule este gasto a uma conta cadastrada.',
+    ajuda: 'Para dar baixa numa conta que já está cadastrada, como aluguel, internet ou luz.',
     vazio: 'Nenhuma conta recorrente desta casa ou pessoa nesse mês.',
     jaRealizadaTitulo: 'Conta já paga',
     jaRealizadaMsg: (d, c) => `Já existe um pagamento registrado para "${d}" em ${c}. Registrar mais um pagamento para essa conta?`,
@@ -36,7 +36,7 @@ const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: stri
   },
   receita: {
     pergunta: 'É recebimento de uma receita recorrente?',
-    ajuda: 'Vincule esta receita a uma receita recorrente cadastrada.',
+    ajuda: 'Para dar baixa numa receita que já está cadastrada, como salário ou aluguel recebido.',
     vazio: 'Nenhuma receita recorrente desta casa ou pessoa nesse mês.',
     jaRealizadaTitulo: 'Receita já recebida',
     jaRealizadaMsg: (d, c) => `Já existe um recebimento registrado para "${d}" em ${c}. Registrar mais um recebimento para essa receita?`,
@@ -142,7 +142,7 @@ export function VinculoRecorrencia({ tipo, casaId, pessoaId, descricao, valor, s
       {ativo && (
         <>
           {casaId == null ? (
-            <Text style={styles.ajuda}>Escolha a casa primeiro.</Text>
+            <Text style={styles.ajuda}>Escolha a casa no formulário abaixo para ver a lista.</Text>
           ) : (
             <>
               <View style={styles.linhaReferencia}>

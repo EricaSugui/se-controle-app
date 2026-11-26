@@ -127,16 +127,8 @@ export default function NovaReceitaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <ReceitaForm
-          values={values}
-          onChange={setValues}
-          casas={casas}
-          membros={membros}
-          origens={origens}
-          contas={contas}
-          vinculadaAFixa={vinculo != null}
-        />
-
+        {/* A pergunta vem antes: escolher a receita já preenche origem,
+            valor e conta de destino do formulário abaixo. */}
         <VinculoRecorrencia
           key={chaveFormulario}
           tipo="receita"
@@ -146,6 +138,16 @@ export default function NovaReceitaScreen() {
           valor={values.valorLiquido}
           selecionada={vinculo}
           onChange={aoVincular}
+        />
+
+        <ReceitaForm
+          values={values}
+          onChange={setValues}
+          casas={casas}
+          membros={membros}
+          origens={origens}
+          contas={contas}
+          vinculadaAFixa={vinculo != null}
         />
 
         <Pressable
