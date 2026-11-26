@@ -184,7 +184,7 @@ export default function RelatorioGastosScreen() {
           <ActivityIndicator size="large" />
         </View>
       ) : linhas.length === 0 ? (
-        <Text style={styles.vazio}>Nenhum gasto no período.</Text>
+        <Text style={styles.vazio}>Nenhuma despesa no período.</Text>
       ) : (
         <>
           {pessoas.length > 1 && (
@@ -229,7 +229,7 @@ export default function RelatorioGastosScreen() {
           )}
 
           <Text style={styles.secaoTitulo}>Por categoria</Text>
-          {porCategoria.length === 0 && <Text style={styles.vazio}>Nenhum gasto com esses filtros.</Text>}
+          {porCategoria.length === 0 && <Text style={styles.vazio}>Nenhuma despesa com esses filtros.</Text>}
           {porCategoria.map((cat) => {
             const expandida = categoriaExpandidaId === cat.id;
             const pessoasDaCategoria = agrupar(

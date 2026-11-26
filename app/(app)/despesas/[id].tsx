@@ -12,7 +12,7 @@ export default function EditarCompraScreen() {
   const id = Number(params.id);
 
   const aoCarregar = useCallback(
-    (compra: Compra) => navigation.setOptions({ title: compra.descricao || 'Editar compra' }),
+    (compra: Compra) => navigation.setOptions({ title: compra.descricao || 'Editar despesa' }),
     [navigation]
   );
 

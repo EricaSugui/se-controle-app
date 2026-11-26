@@ -38,7 +38,7 @@ export default function MetasScreen() {
   }
 
   function editar(item: Meta) {
-    router.push({ pathname: '/(app)/metas/[id]', params: { id: item.id } });
+    router.push({ pathname: '/(app)/mais/metas/[id]', params: { id: item.id } });
   }
 
   function confirmarExcluir(item: Meta) {
@@ -109,7 +109,7 @@ export default function MetasScreen() {
           </View>
         )}
       />
-      <Pressable style={styles.botaoNova} onPress={() => router.push('/(app)/metas/novo')}>
+      <Pressable style={styles.botaoNova} onPress={() => router.push('/(app)/mais/metas/novo')}>
         <Text style={styles.botaoNovaTexto}>+ Nova meta</Text>
       </Pressable>
     </View>

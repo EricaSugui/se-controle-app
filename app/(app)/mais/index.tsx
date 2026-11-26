@@ -14,7 +14,7 @@ export default function MaisScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Mais</Text>
       <Link href="/(app)/mais/ajuda">Ajuda e como usar</Link>
-      <Link href="/(app)/mais/receitas">Receitas</Link>
+      <Link href="/(app)/mais/metas">Metas</Link>
       <Link href="/(app)/mais/cartoes-contas">Cartões e contas</Link>
       <Link href="/(app)/mais/despesas-fixas">Despesas fixas</Link>
       <Link href="/(app)/mais/receitas-fixas">Receitas fixas</Link>

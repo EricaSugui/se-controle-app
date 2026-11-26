@@ -7,15 +7,15 @@ import { cores, raio } from '@/src/theme/tokens';
 const SECOES = [
   {
     titulo: 'Primeiros passos',
-    texto: 'Comece criando ou entrando em uma casa. Depois, registre um gasto para visualizar os primeiros resultados no dashboard.',
+    texto: 'Comece criando ou entrando em uma casa. Depois, registre uma despesa para visualizar os primeiros resultados no dashboard.',
   },
   {
-    titulo: 'Como registrar um gasto',
-    texto: 'Informe quem realizou o gasto, a categoria, o valor, a data e, quando aplicável, o cartão ou conta usado. O parcelamento distribui o valor nas parcelas correspondentes.',
+    titulo: 'Como registrar uma despesa',
+    texto: 'Informe quem realizou a despesa, a categoria, o valor, a data e, quando aplicável, o cartão ou conta usado. O parcelamento distribui o valor nas parcelas correspondentes.',
   },
   {
     titulo: 'Caixa e competência',
-    texto: 'Caixa mostra quando o dinheiro realmente sai da conta ou da fatura. Competência mostra o mês ao qual a compra pertence, mesmo que o pagamento aconteça depois.',
+    texto: 'Caixa mostra quando o dinheiro realmente sai da conta ou da fatura. Competência mostra o mês ao qual a despesa pertence, mesmo que o pagamento aconteça depois.',
   },
   {
     titulo: 'Combinado de custeio',
@@ -27,7 +27,7 @@ const SECOES = [
   },
   {
     titulo: 'Relatórios',
-    texto: 'Use os relatórios para acompanhar gastos por período, categoria e pessoa, além de consultar os fechamentos disponíveis.',
+    texto: 'Use os relatórios para acompanhar despesas por período, categoria e pessoa, além de consultar os fechamentos disponíveis.',
   },
   {
     titulo: 'Convites',

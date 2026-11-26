@@ -49,9 +49,10 @@ export default function NovaReceitaScreen() {
     }, [])
   );
 
-  // Ao escolher a receita recorrente, usa a origem dela, completa o valor se
-  // estiver vazio e passa a conta de destino para o padrão do contrato (se
-  // nenhuma foi escolhida). Desvincular volta a conta para "Nenhuma".
+  // Ao escolher a receita recorrente, usa a origem dela, completa descrição e
+  // valor se estiverem vazios e passa a conta de destino para o padrão do
+  // contrato (se nenhuma foi escolhida). Desvincular volta a conta para
+  // "Nenhuma".
   const aoVincular = useCallback((o: OcorrenciaRecorrente | null) => {
     setVinculo(o);
     setValues((v) => {
@@ -59,6 +60,8 @@ export default function NovaReceitaScreen() {
       return {
         ...v,
         origemId: o.categoriaOuOrigemId,
+        // herda a descrição da receita fixa, sem sobrescrever o que já foi digitado
+        observacao: v.observacao.trim() ? v.observacao : o.descricao,
         valorLiquido: v.valorLiquido ?? o.valorEsperado,
         contaDestino: v.contaDestino === null ? 'herdar' : v.contaDestino,
       };
@@ -114,7 +117,10 @@ export default function NovaReceitaScreen() {
               conta_destino_id: values.contaDestino === 'herdar' ? null : values.contaDestino,
             }),
       });
-      router.back();
+      // Sempre termina na lista de Receitas, como o novo gasto termina na de
+      // Gastos. dismissTo volta até a lista se ela já está na pilha, ou
+      // troca esta tela por ela, sem duplicar.
+      router.dismissTo('/(app)/receitas');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {

@@ -68,7 +68,7 @@ export default function CasasScreen() {
         ListEmptyComponent={(
           <EmptyState
             titulo="Você ainda não tem uma casa"
-            descricao="Crie uma casa para organizar seus gastos e acompanhar o dashboard."
+            descricao="Crie uma casa para organizar suas despesas e acompanhar o dashboard."
             acaoLabel="Criar uma casa"
             onAcao={() => router.push('/(app)/mais/casas/nova')}
           />

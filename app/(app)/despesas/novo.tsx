@@ -125,7 +125,11 @@ export default function NovaCompraScreen() {
         acerto_eixo: values.acertoEixo,
         ...(vinculo ? { despesa_fixa_id: vinculo.id, competencia_referencia: vinculo.competencia } : {}),
       });
-      router.back();
+      // Sempre termina na lista de Gastos, mesmo quando a tela foi aberta
+      // pelo Dashboard (checklist de primeiros passos), onde router.back()
+      // voltaria para o Dashboard. dismissTo volta até a lista se ela já
+      // está na pilha, ou troca esta tela por ela, sem duplicar.
+      router.dismissTo('/(app)/despesas');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {

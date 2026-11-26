@@ -192,7 +192,7 @@ export function CompraEditor({ id, onSalvo, onCarregado }: Props) {
           </>
         )}
 
-        <Text style={styles.aviso}>Ao salvar, todas as parcelas desta compra são apagadas e recriadas.</Text>
+        <Text style={styles.aviso}>Ao salvar, todas as parcelas desta despesa são apagadas e recriadas.</Text>
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}
