@@ -186,6 +186,31 @@ export type Parcela = {
   created_at: string;
 };
 
+// Visão de caixa da lista de despesas (GET /compras/caixa): uma parcela que
+// sai do caixa no período, com os dados da compra de origem.
+export type ParcelaCaixa = {
+  parcela_id: number;
+  compra_id: number;
+  numero_parcela: number;
+  total_parcelas: number;
+  valor: number; // valor desta parcela
+  data_caixa: string; // vencimento da fatura ou data própria
+  fatura_id: number | null;
+  casa_id: number;
+  pessoa_id: number;
+  categoria_id: number;
+  descricao: string | null;
+  cartao_conta_id: number | null;
+  data: string; // data da compra
+  competencia: string; // competência da compra
+  despesa_fixa_id: number | null;
+  competencia_referencia: string | null;
+  pessoa_nome: string | null;
+  categoria_nome: string | null;
+  cartao_conta_nome: string | null;
+  pode_editar: boolean;
+};
+
 export type Compra = CompraInput & {
   id: number;
   lancado_por_id: number | null;

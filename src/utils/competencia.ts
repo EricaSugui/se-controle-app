@@ -12,6 +12,17 @@ export function competenciaAtual(): string {
 // Competência derivada de uma data AAAA-MM-DD. Em formulários de lançamento o
 // default deve vir da DATA do evento, nunca de "hoje" — lançar em julho uma
 // receita de 30/06 deve pré-preencher JUN-26.
+// Primeiro e último dia do mês de uma competência (MMM-AA), em AAAA-MM-DD.
+// Usado na visão de caixa das listas (de/ate da API).
+export function intervaloDaCompetencia(competencia: string): { de: string; ate: string } {
+  const [mesStr, anoStr] = competencia.split('-');
+  const mes = MESES_COMPETENCIA.indexOf(mesStr) + 1;
+  const ano = 2000 + Number(anoStr);
+  const ultimoDia = new Date(ano, mes, 0).getDate();
+  const mm = String(mes).padStart(2, '0');
+  return { de: `${ano}-${mm}-01`, ate: `${ano}-${mm}-${String(ultimoDia).padStart(2, '0')}` };
+}
+
 export function competenciaDaData(dataISO: string): string {
   const [ano, mes] = dataISO.split('-');
   return `${MESES_COMPETENCIA[Number(mes) - 1]}-${ano.slice(-2)}`;

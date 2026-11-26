@@ -57,8 +57,15 @@ convites pendentes.
 ### 2. Despesas
 Rota e tela "Despesas" (`/despesas`); no código e na API, "compras". Par
 com Receitas e com "Despesas fixas".
-- **Lista** de despesas (filtros por casa/período), com categoria (ícone e
-  cor), responsável e meio de pagamento.
+- **Lista** do mês, com o seletor **Competência | Caixa** (na URL; abre em
+  Competência). Competência: uma linha por compra, no mês a que pertence.
+  Caixa: uma linha por **parcela** que sai do caixa no mês (no cartão, as
+  da fatura que vence no mês), mostrada pela **data da compra**, como a
+  fatura nos apps de banco ("2/3"). Celular: agrupada por dia (total do
+  dia; "Hoje"/"Ontem" só no mês atual), linha compacta com ›, e o toque abre
+  a janela de detalhes com Editar e Excluir. Desktop: tabela ordenável e
+  edição em painel lateral. Lançamentos vinculados a conta recorrente
+  levam o ↻.
 - **Nova despesa** (formulário único, `NovaDespesa`): no topo, a pergunta
   opcional "É pagamento de uma conta recorrente?". Ligada, funciona como um
   campo de seleção: a lista (mês de referência com ‹ ›, busca, situação de
@@ -75,9 +82,11 @@ com Receitas e com "Despesas fixas".
   de contas" não aparece.
 
 ### 3. Receitas
-Espelho de Gastos (simetria entre receitas e despesas).
-- **Lista** por competência: valor, descrição (ou a origem, se não houver
-  descrição) e, abaixo, origem e pessoa.
+Espelho de Despesas (simetria entre receitas e despesas).
+- **Lista** igual à de Despesas (seletor Competência | Caixa, agrupamento
+  por dia e detalhes no celular, tabela e painel lateral no desktop). Caixa:
+  receitas com data no mês, pela data do recebimento (sem data ficam de
+  fora). Linha: valor, descrição (ou a origem) e, abaixo, origem e pessoa.
 - **Nova receita** (formulário único, `NovaReceita`): no topo, "É
   recebimento de uma receita recorrente?", mesmo seletor da despesa.
   Escolher uma receita ajusta casa e pessoa ao contrato (na receita da
