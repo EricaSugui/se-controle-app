@@ -1,6 +1,7 @@
 import { CompraEditor } from '@/src/components/domain/CompraEditor';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { EmptyState } from '@/src/components/ui/EmptyState';
+import { IconeRecorrencia, MarcaRecorrencia } from '@/src/components/ui/MarcaRecorrencia';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteCompra, getCompras } from '@/src/services/api/compras';
@@ -359,6 +360,7 @@ function LinhaTabela({
     <View {...hoverProps} style={[styles.tr, hover && styles.trHover, selecionado && styles.trSelecionada]}>
       <Text style={[styles.td, COL.data]}>{formatDate(item.data)}</Text>
       <Text style={[styles.td, styles.tdForte, COL.descricao]} numberOfLines={1}>
+        {item.despesa_fixa_id != null && <IconeRecorrencia />}
         {item.descricao || '—'}
       </Text>
       <Text style={[styles.td, COL.categoria]} numberOfLines={1}>
@@ -411,6 +413,9 @@ function CardGasto({
           )}
         </Text>
         <Text style={styles.itemDetalhe}>{item.descricao || item.categoria_nome || 'Sem descrição'}</Text>
+        {item.despesa_fixa_id != null && (
+          <MarcaRecorrencia tipo="despesa" referencia={item.competencia_referencia} competencia={item.competencia} />
+        )}
         {(item.pessoa_nome || item.cartao_conta_nome) && (
           <Text style={styles.itemMeta}>
             {[item.pessoa_nome, item.cartao_conta_nome].filter(Boolean).join(' · ')}

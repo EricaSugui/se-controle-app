@@ -9,6 +9,10 @@ export function getReceitas(competencia?: string, receitaFixaId?: number): Promi
   return api.get<Receita[]>(`/receitas${query}`);
 }
 
+export function getReceita(id: number): Promise<Receita> {
+  return api.get<Receita>(`/receitas/${id}`);
+}
+
 export function createReceita(input: ReceitaInput): Promise<Receita> {
   return api.post<Receita>('/receitas', input);
 }
