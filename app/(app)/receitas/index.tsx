@@ -58,9 +58,11 @@ export default function ReceitasScreen() {
   const vazio = (
     <EmptyState
       titulo={eixo === 'caixa' ? 'Nada entrou neste mês' : 'Nenhuma receita neste mês'}
-      descricao="Registre uma receita para acompanhar o que entra no mês."
-      acaoLabel="Registrar primeira receita"
-      onAcao={() => router.push('/(app)/receitas/novo')}
+      // Sem botão aqui: "+ Nova receita" já fica sempre visível (rodapé no
+      // celular, topo no desktop).
+      descricao={eixo === 'caixa'
+        ? 'Nenhuma receita com data de recebimento neste mês.'
+        : 'Use “+ Nova receita” para registrar a primeira.'}
     />
   );
 
