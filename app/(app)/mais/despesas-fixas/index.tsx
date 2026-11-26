@@ -64,11 +64,8 @@ export default function ContasDoMesScreen() {
       params: {
         despesaFixaId: item.despesa_fixa_id,
         competenciaReferencia: item.competencia,
+        // só para o título; o formulário único tira o resto da recorrência
         descricao: item.descricao,
-        valorReferencia: String(item.valor_referencia),
-        categoriaId: item.categoria_id,
-        casaId: item.casa_id != null ? String(item.casa_id) : '',
-        pessoaId: item.pessoa_id != null ? String(item.pessoa_id) : '',
       },
     });
   }

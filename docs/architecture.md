@@ -49,8 +49,8 @@ app/
         ├── index              ← menu
         ├── metas/             ← index, novo, [id]
         ├── cartoes-contas/    ← index, novo, [id], faturas, fatura, visibilidade
-        ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
-        ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
+        ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento (→ NovaDespesa), justificar, reajuste
+        ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento (→ NovaReceita), justificar, reajuste
         ├── relatorios/        ← index (fechamento mensal), despesas (matriz categoria×pessoa)
         ├── casas/             ← index, nova, [id], combinado, acerto,
         │                         acertos (histórico), acerto-detalhe (snapshot)

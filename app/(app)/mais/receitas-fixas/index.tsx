@@ -63,11 +63,8 @@ export default function RecebimentosScreen() {
       params: {
         receitaFixaId: item.receita_fixa_id,
         competenciaReferencia: item.competencia,
+        // só para o título; o formulário único tira o resto da recorrência
         descricao: item.descricao,
-        valorEsperado: item.valor_esperado != null ? String(item.valor_esperado) : '',
-        origemId: item.origem_id,
-        casaId: item.casa_id != null ? String(item.casa_id) : '',
-        pessoaId: item.pessoa_id != null ? String(item.pessoa_id) : '',
       },
     });
   }
