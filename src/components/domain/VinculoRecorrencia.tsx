@@ -11,8 +11,9 @@ import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import {
   deDespesa,
   deReceita,
-  ehSugestao,
   filtrarEOrdenar,
+  motivoSugestao,
+  type ContextoSugestao,
   rotuloSituacao,
   visivelNoContexto,
   type OcorrenciaRecorrente,
@@ -28,7 +29,7 @@ import { cores, raio } from '@/src/theme/tokens';
 // e, na tela, fica só a recorrência escolhida, com "Trocar". Nada é vinculado
 // sem o toque do usuário.
 
-const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: string; escolher: string; tituloLista: string; jaRealizadaTitulo: string; jaRealizadaMsg: (d: string, c: string) => string; confirmar: string }> = {
+const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: string; escolher: string; tituloLista: string; jaRealizadaTitulo: string; jaRealizadaMsg: (d: string, c: string) => string; justificadaTitulo: string; justificadaMsg: (d: string, c: string) => string; confirmar: string }> = {
   despesa: {
     escolher: 'Escolher a conta recorrente',
     tituloLista: 'Conta recorrente',
@@ -37,6 +38,8 @@ const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: stri
     vazio: 'Nenhuma conta recorrente desta casa ou pessoa nesse mês.',
     jaRealizadaTitulo: 'Conta já paga',
     jaRealizadaMsg: (d, c) => `Já existe um pagamento registrado para "${d}" em ${c}. Registrar mais um pagamento para essa conta?`,
+    justificadaTitulo: 'Competência justificada',
+    justificadaMsg: (d, c) => `"${d}" em ${c} foi marcada como não paga, com justificativa. Registrar o pagamento mesmo assim?`,
     confirmar: 'Vincular mesmo assim',
   },
   receita: {
@@ -47,6 +50,8 @@ const TEXTOS: Record<TipoVinculo, { pergunta: string; ajuda: string; vazio: stri
     vazio: 'Nenhuma receita recorrente desta casa ou pessoa nesse mês.',
     jaRealizadaTitulo: 'Receita já recebida',
     jaRealizadaMsg: (d, c) => `Já existe um recebimento registrado para "${d}" em ${c}. Registrar mais um recebimento para essa receita?`,
+    justificadaTitulo: 'Competência justificada',
+    justificadaMsg: (d, c) => `"${d}" em ${c} foi marcada como não recebida, com justificativa. Registrar o recebimento mesmo assim?`,
     confirmar: 'Vincular mesmo assim',
   },
 };
@@ -65,6 +70,7 @@ type Props = {
   pessoaId: number | null;
   descricao: string; // descrição do lançamento, usada só para sugerir
   valor: number | null; // valor do lançamento, para comparar com o esperado
+  origemId?: number | null; // só receitas: origem escolhida, sinal principal da sugestão
   selecionada: OcorrenciaRecorrente | null;
   onChange: (ocorrencia: OcorrenciaRecorrente | null) => void;
   // Abre já ligado e com esta ocorrência escolhida (botões "Registrar
@@ -75,7 +81,7 @@ type Props = {
 };
 
 export function VinculoRecorrencia({
-  tipo, casaId, pessoaId, descricao, valor, selecionada, onChange, preSelecao = null, casas = [],
+  tipo, casaId, pessoaId, descricao, valor, origemId = null, selecionada, onChange, preSelecao = null, casas = [],
 }: Props) {
   const textos = TEXTOS[tipo];
   const [ativo, setAtivo] = useState(preSelecao != null);
@@ -119,9 +125,14 @@ export function VinculoRecorrencia({
     }
   }, [casaId, selecionada, onChange]);
 
+  const contexto = useMemo<ContextoSugestao>(
+    () => ({ descricao, origemId, pessoaId }),
+    [descricao, origemId, pessoaId]
+  );
+
   const visiveis = useMemo(
-    () => filtrarEOrdenar(itens.filter((o) => visivelNoContexto(o, casaId)), busca, descricao),
-    [itens, casaId, busca, descricao]
+    () => filtrarEOrdenar(itens.filter((o) => visivelNoContexto(o, casaId)), busca, contexto),
+    [itens, casaId, busca, contexto]
   );
 
   function escopoDe(o: OcorrenciaRecorrente): string | null {
@@ -148,13 +159,16 @@ export function VinculoRecorrencia({
       setListaAberta(false);
       return;
     }
-    if (o.situacao === 'realizada') {
+    // Já realizada ou justificada: confirmação antes de vincular. Vincular a
+    // uma justificada faz a ocorrência passar a constar como paga/recebida.
+    if (o.situacao === 'realizada' || o.situacao === 'justificada') {
+      const realizada = o.situacao === 'realizada';
       // Fecha a lista antes: no celular, o aviso não aparece por cima da janela.
       setListaAberta(false);
       confirmar(
         {
-          titulo: textos.jaRealizadaTitulo,
-          mensagem: textos.jaRealizadaMsg(o.descricao, o.competencia),
+          titulo: realizada ? textos.jaRealizadaTitulo : textos.justificadaTitulo,
+          mensagem: (realizada ? textos.jaRealizadaMsg : textos.justificadaMsg)(o.descricao, o.competencia),
           textoConfirmar: textos.confirmar,
           destrutivo: false,
         },
@@ -261,7 +275,7 @@ export function VinculoRecorrencia({
 
           {!carregando && visiveis.map((o) => {
             const ativa = selecionada?.id === o.id && selecionada.competencia === o.competencia;
-            const sugestao = ehSugestao(o, descricao);
+            const sugestao = motivoSugestao(o, contexto);
             return (
               <Pressable
                 key={`${o.id}-${o.competencia}`}
@@ -275,7 +289,7 @@ export function VinculoRecorrencia({
                   {badge(o)}
                 </View>
                 <Text style={styles.itemDetalhe}>{detalhe(o)}</Text>
-                {sugestao && !ativa && <Text style={styles.sugestao}>Parece corresponder à descrição</Text>}
+                {sugestao && !ativa && <Text style={styles.sugestao}>Sugestão: {sugestao.toLowerCase()}</Text>}
               </Pressable>
             );
           })}

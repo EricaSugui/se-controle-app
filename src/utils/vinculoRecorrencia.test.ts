@@ -6,6 +6,7 @@ import {
   deReceita,
   ehSugestao,
   filtrarEOrdenar,
+  motivoSugestao,
   noEscopo,
   rotuloSituacao,
   type OcorrenciaRecorrente,
@@ -95,8 +96,31 @@ describe('vinculoRecorrencia', () => {
       ocorrencia({ id: 3, descricao: 'Condomínio', situacao: 'atrasada', dataEsperada: '2026-11-05' }),
       ocorrencia({ id: 4, descricao: 'Energia', situacao: 'realizada', dataEsperada: '2026-11-12' }),
     ];
-    expect(filtrarEOrdenar(lista, '', '').map((o) => o.id)).toEqual([3, 2, 1, 4]);
-    expect(filtrarEOrdenar(lista, '', 'energia').map((o) => o.id)).toEqual([4, 3, 2, 1]);
+    expect(filtrarEOrdenar(lista, '', { descricao: '' }).map((o) => o.id)).toEqual([3, 2, 1, 4]);
+    expect(filtrarEOrdenar(lista, '', { descricao: 'energia' }).map((o) => o.id)).toEqual([4, 3, 2, 1]);
+  });
+
+  it('em receitas, sugere por origem e pessoa antes da descrição', () => {
+    const salarioErica = ocorrencia({ id: 1, descricao: 'Salário Empresa X', categoriaOuOrigemId: 4, casaId: null, pessoaId: 2 });
+    const salarioOutra = ocorrencia({ id: 2, descricao: 'Salário Empresa Y', categoriaOuOrigemId: 4, casaId: null, pessoaId: 3 });
+    const aluguel = ocorrencia({ id: 3, descricao: 'Aluguel recebido', categoriaOuOrigemId: 7 });
+    const freela = ocorrencia({ id: 4, descricao: 'Freela site', categoriaOuOrigemId: 9 });
+
+    const ctx = { descricao: 'freela', origemId: 4, pessoaId: 2 };
+    expect(motivoSugestao(salarioErica, ctx)).toBe('Mesma origem e pessoa');
+    expect(motivoSugestao(salarioOutra, ctx)).toBe('Mesma origem');
+    expect(motivoSugestao(freela, ctx)).toBe('Parece corresponder à descrição');
+    expect(motivoSugestao(aluguel, ctx)).toBeNull();
+
+    // origem + pessoa > origem > descrição > resto
+    expect(filtrarEOrdenar([aluguel, freela, salarioOutra, salarioErica], '', ctx).map((o) => o.id))
+      .toEqual([1, 2, 4, 3]);
+  });
+
+  it('sem origem escolhida, vale só a descrição (como em despesas)', () => {
+    const salario = ocorrencia({ descricao: 'Salário', categoriaOuOrigemId: 4 });
+    expect(motivoSugestao(salario, { descricao: '', origemId: null })).toBeNull();
+    expect(motivoSugestao(salario, { descricao: 'salario de novembro' })).toBe('Parece corresponder à descrição');
   });
 
   it('filtra pela busca sem acento', () => {
@@ -104,8 +128,8 @@ describe('vinculoRecorrencia', () => {
       ocorrencia({ id: 1, descricao: 'Condomínio' }),
       ocorrencia({ id: 2, descricao: 'Aluguel' }),
     ];
-    expect(filtrarEOrdenar(lista, 'condo', '').map((o) => o.id)).toEqual([1]);
-    expect(filtrarEOrdenar(lista, 'CONDOMINIO', '').map((o) => o.id)).toEqual([1]);
+    expect(filtrarEOrdenar(lista, 'condo', { descricao: '' }).map((o) => o.id)).toEqual([1]);
+    expect(filtrarEOrdenar(lista, 'CONDOMINIO', { descricao: '' }).map((o) => o.id)).toEqual([1]);
   });
 
   it('usa o vocabulário de cada lado', () => {

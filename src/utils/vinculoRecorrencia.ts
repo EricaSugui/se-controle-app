@@ -121,6 +121,32 @@ export function ehSugestao(o: OcorrenciaRecorrente, descricaoLancamento: string)
   return doLancamento.some((p) => daRecorrencia.some((r) => r.includes(p) || p.includes(r)));
 }
 
+// O que o formulário já sabe do lançamento e serve para sugerir. Receitas
+// usam principalmente origem e pessoa (a descrição é sinal secundário);
+// despesas, a descrição. Proposta de receitas, seção 4.3.
+export type ContextoSugestao = {
+  descricao: string;
+  origemId?: number | null; // só receitas
+  pessoaId?: number | null;
+};
+
+// Por que a recorrência parece corresponder ao lançamento, do sinal mais
+// forte para o mais fraco; null = não é sugestão.
+export function motivoSugestao(o: OcorrenciaRecorrente, ctx: ContextoSugestao): string | null {
+  if (ctx.origemId != null && o.categoriaOuOrigemId === ctx.origemId) {
+    return ctx.pessoaId != null && o.pessoaId === ctx.pessoaId ? 'Mesma origem e pessoa' : 'Mesma origem';
+  }
+  if (ehSugestao(o, ctx.descricao)) return 'Parece corresponder à descrição';
+  return null;
+}
+
+function forcaSugestao(o: OcorrenciaRecorrente, ctx: ContextoSugestao): number {
+  if (ctx.origemId != null && o.categoriaOuOrigemId === ctx.origemId) {
+    return ctx.pessoaId != null && o.pessoaId === ctx.pessoaId ? 3 : 2;
+  }
+  return ehSugestao(o, ctx.descricao) ? 1 : 0;
+}
+
 const ORDEM_SITUACAO: Record<SituacaoOcorrencia, number> = {
   atrasada: 0,
   vence_hoje: 1,
@@ -129,20 +155,21 @@ const ORDEM_SITUACAO: Record<SituacaoOcorrencia, number> = {
   realizada: 4,
 };
 
-// Filtra pela busca e ordena: sugestões primeiro, depois o que ainda falta
-// (atrasada, vence hoje, em aberto) e por último o já realizado, por data.
-// Nada some por causa da situação: contas já pagas continuam na lista.
+// Filtra pela busca e ordena: sugestões primeiro (as mais fortes antes),
+// depois o que ainda falta (atrasada, vence hoje, em aberto) e por último o
+// já realizado, por data. Nada some por causa da situação: contas já pagas
+// continuam na lista.
 export function filtrarEOrdenar(
   lista: OcorrenciaRecorrente[],
   busca: string,
-  descricaoLancamento: string
+  ctx: ContextoSugestao
 ): OcorrenciaRecorrente[] {
   const termo = normalizar(busca);
   return lista
     .filter((o) => termo === '' || normalizar(o.descricao).includes(termo))
-    .map((o) => ({ o, sugestao: ehSugestao(o, descricaoLancamento) }))
+    .map((o) => ({ o, forca: forcaSugestao(o, ctx) }))
     .sort((a, b) => {
-      if (a.sugestao !== b.sugestao) return a.sugestao ? -1 : 1;
+      if (a.forca !== b.forca) return b.forca - a.forca;
       const porSituacao = ORDEM_SITUACAO[a.o.situacao] - ORDEM_SITUACAO[b.o.situacao];
       if (porSituacao !== 0) return porSituacao;
       return a.o.dataEsperada.localeCompare(b.o.dataEsperada);

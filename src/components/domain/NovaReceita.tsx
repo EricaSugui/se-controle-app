@@ -178,6 +178,7 @@ export function NovaReceita({ preVinculo = null, aoSalvar }: Props) {
           pessoaId={values.pessoaId}
           descricao={values.observacao}
           valor={values.valorLiquido}
+          origemId={values.origemId}
           selecionada={vinculo}
           onChange={aoVincular}
           preSelecao={preVinculo}
