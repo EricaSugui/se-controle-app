@@ -104,7 +104,9 @@ src/
 │
 ├── theme/                     ← tokens visuais
 ├── types/                     ← tipos do domínio (espelham o contrato)
-└── utils/                     ← competência (MMM-AA), formatadores, confirmar
+└── utils/                     ← competência (MMM-AA), formatadores, confirmar,
+                                 casas.ts (espaço pessoal: nomeCasa, ordenarCasas,
+                                 casasCompartilhadas, soEspacoPessoal, casaInicial)
 ```
 
 `NotificationBell` consulta convites internos pendentes e é exibido no
@@ -131,6 +133,15 @@ envia e-mail: a aceitação explícita cria `casa_pessoas`.
 - Na tela `convidado`, a sessão local é encerrada antes de definir a senha
   e aceitar o convite, para não misturar o convidado com uma sessão já
   aberta no aparelho.
+- **Espaço pessoal (Casa Pessoal):** cada pessoa com login tem uma Casa
+  com `pessoal = true` (backend cria; `GET /dashboard` devolve a marca).
+  Na tela é sempre "Pessoal" / "espaço pessoal", nunca "casa": use
+  `src/utils/casas.ts` (`nomeCasa`, `ordenarCasas` com Pessoal primeiro,
+  `casasCompartilhadas` para Mais → Casas e visibilidade de cartões,
+  `soEspacoPessoal` para esconder "Lançar em"/"Pertence a", `casaInicial`
+  para a casa que já vem escolhida). Formulários: rótulo "Lançar em",
+  sem "Quem gastou" no espaço pessoal. Especificação no workspace:
+  `docs/planos/casa-pessoal-nucleo.md`.
 - `mais/casas/nova` só chama `createCasa`. O front não chama mais
   `vincularPessoa` depois de criar a casa: essa chamada quebrava o fluxo de
   usuário novo.

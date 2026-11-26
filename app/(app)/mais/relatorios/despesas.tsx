@@ -9,6 +9,7 @@ import { getDashboard } from '@/src/services/api/dashboard';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard, EixoAcerto, LinhaRelatorioGastos, RelatorioGastos } from '@/src/types';
+import { nomeCasa, ordenarCasas } from '@/src/utils/casas';
 
 const EIXOS: { valor: EixoAcerto; label: string }[] = [
   { valor: 'competencia', label: 'Competência' },
@@ -135,13 +136,13 @@ export default function RelatorioGastosScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       {casas.length > 1 && (
         <View style={styles.chipsRow}>
-          {casas.map((c) => (
+          {ordenarCasas(casas).map((c) => (
             <Pressable
               key={c.id}
               style={[styles.chip, casaId === c.id && styles.chipAtivo]}
               onPress={() => setCasaId(c.id)}
             >
-              <Text style={[styles.chipTexto, casaId === c.id && styles.chipTextoAtivo]}>{c.nome}</Text>
+              <Text style={[styles.chipTexto, casaId === c.id && styles.chipTextoAtivo]}>{nomeCasa(c)}</Text>
             </Pressable>
           ))}
         </View>

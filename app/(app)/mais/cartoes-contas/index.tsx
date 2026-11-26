@@ -97,11 +97,10 @@ export default function CartoesContasScreen() {
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={(
+          // Sem botão aqui: "+ Novo cartão/conta" já fica sempre visível.
           <EmptyState
             titulo="Nenhum cartão ou conta cadastrado"
-            descricao="Adicione uma conta ou cartão para identificar como suas despesas foram pagas."
-            acaoLabel="Adicionar conta ou cartão"
-            onAcao={() => router.push('/(app)/mais/cartoes-contas/novo')}
+            descricao="Use “+ Novo cartão/conta” para identificar como suas despesas foram pagas."
           />
         )}
         renderItem={({ item }: { item: CartaoConta }) => (

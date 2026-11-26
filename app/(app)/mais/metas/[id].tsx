@@ -92,9 +92,11 @@ export default function EditarMetaScreen() {
     );
   }
 
-  const nomeEscopo = values.pessoaId != null
+  const casaDaMeta = casas.find((c) => c.id === values.casaId);
+  // meta no espaço pessoal também é "pessoal" (nunca "Meta da casa Pessoal")
+  const nomeEscopo = values.pessoaId != null || casaDaMeta?.pessoal
     ? 'Meta pessoal'
-    : `Meta da casa ${casas.find((c) => c.id === values.casaId)?.nome ?? `#${values.casaId}`}`;
+    : `Meta da casa ${casaDaMeta?.nome ?? `#${values.casaId}`}`;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

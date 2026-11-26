@@ -8,6 +8,7 @@ import { competenciaParaData, dataParaCompetencia } from '@/src/components/ui/Mo
 import { competenciaAtual } from '@/src/utils/competencia';
 import { confirmar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
+import { nomeCasa } from '@/src/utils/casas';
 import {
   deDespesa,
   deReceita,
@@ -144,7 +145,8 @@ export function VinculoRecorrencia({
   function escopoDe(o: OcorrenciaRecorrente): string | null {
     if (o.casaId === null) return 'pessoal';
     if (casaId !== null) return null; // a casa já está escolhida no formulário
-    return casas.find((c) => c.id === o.casaId)?.nome ?? null;
+    const casa = casas.find((c) => c.id === o.casaId);
+    return casa ? nomeCasa(casa) : null;
   }
 
   function alternar(valorSwitch: boolean) {

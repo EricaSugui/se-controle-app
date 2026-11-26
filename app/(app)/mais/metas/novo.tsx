@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { createMeta } from '@/src/services/api/metas';
@@ -6,6 +6,7 @@ import { getDashboard } from '@/src/services/api/dashboard';
 import { MetaForm, type MetaFormValues } from '@/src/components/domain/MetaForm';
 import { useAuth } from '@/src/context/AuthContext';
 import { competenciaAtual } from '@/src/utils/competencia';
+import { espacoPessoal } from '@/src/utils/casas';
 import { notificar } from '@/src/utils/confirmar';
 import type { CasaDashboard } from '@/src/types';
 
@@ -44,6 +45,15 @@ export default function NovaMetaScreen() {
       getDashboard(competenciaAtual()).then((d) => setCasas(d.casas)).catch(() => {});
     }, [])
   );
+
+  // Meta nova começa no espaço pessoal (o "Pessoal" de hoje), no lugar da
+  // meta pessoal antiga, ligada à pessoa e sem casa.
+  useEffect(() => {
+    const pessoal = espacoPessoal(casas);
+    if (pessoal && values.casaId === null && values.pessoaId === usuarioPessoaId) {
+      setValues((v) => ({ ...v, pessoaId: null, casaId: pessoal.id }));
+    }
+  }, [casas, values.casaId, values.pessoaId, usuarioPessoaId]);
 
   const escopoValido = (values.pessoaId != null) !== (values.casaId != null);
   const podeSalvar = values.objetivo.trim() !== '' && escopoValido && !salvando;
