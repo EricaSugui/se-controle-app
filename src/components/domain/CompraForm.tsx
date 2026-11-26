@@ -103,7 +103,7 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
 
       {values.casaId != null && membros.length > 0 && (
         <>
-          <Text style={styles.label}>Pessoa</Text>
+          <Text style={styles.label}>Quem gastou</Text>
           <View style={styles.opcoesContainer}>
             {membros.map((m) => (
               <Pressable
