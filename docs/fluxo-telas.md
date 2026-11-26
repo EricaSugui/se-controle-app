@@ -59,10 +59,14 @@ Rota e tela "Despesas" (`/despesas`); no código e na API, "compras". Par
 com Receitas e com "Despesas fixas".
 - **Lista** de despesas (filtros por casa/período), com categoria (ícone e
   cor), responsável e meio de pagamento.
-- **Nova despesa**: no topo, a pergunta opcional "É pagamento de uma conta
-  recorrente?" (lista as contas da casa/pessoa no mês de referência, com
-  situação; escolher uma preenche categoria, descrição e valor vazios e
-  herda o meio padrão do contrato). Depois o form: casa, responsável,
+- **Nova despesa** (formulário único, `NovaDespesa`): no topo, a pergunta
+  opcional "É pagamento de uma conta recorrente?". Ligada, funciona como um
+  campo de seleção: a lista (mês de referência com ‹ ›, busca, situação de
+  cada conta) abre numa janela, e na tela fica só a conta escolhida, com
+  "Trocar". Escolher uma conta ajusta casa e pessoa ao contrato (da casa:
+  fixa a casa e pré-seleciona quem usa; pessoal: fixa a pessoa dona),
+  preenche categoria, descrição e valor vazios e herda o meio padrão do
+  contrato. Conta já paga pede confirmação. Depois o form: casa, responsável,
   categoria (selector visual), descrição, valor, parcelas, cartão/conta,
   forma de pagamento, data (competência derivada da data, editável). Ao
   salvar, volta para a lista. Ajuda curta junto dos conceitos.
@@ -74,9 +78,12 @@ com Receitas e com "Despesas fixas".
 Espelho de Gastos (simetria entre receitas e despesas).
 - **Lista** por competência: valor, descrição (ou a origem, se não houver
   descrição) e, abaixo, origem e pessoa.
-- **Nova receita**: no topo, "É recebimento de uma receita recorrente?"
-  (mesmo componente do gasto; escolher uma preenche origem, descrição e
-  valor vazios e usa a conta de destino padrão). Depois o form: casa,
+- **Nova receita** (formulário único, `NovaReceita`): no topo, "É
+  recebimento de uma receita recorrente?", mesmo seletor da despesa.
+  Escolher uma receita ajusta casa e pessoa ao contrato (na receita da
+  casa, a pessoa é pré-selecionada uma vez e "Nenhuma" é respeitada),
+  preenche origem, descrição e valor vazios e usa a conta de destino
+  padrão. Depois o form: casa,
   pessoa, origem, descrição, valor bruto, descontos, valor líquido, conta
   de destino, data, competência. Ao salvar, volta para a lista.
 - **Edição** de uma receita.
@@ -94,11 +101,13 @@ sem meio padrão etc.) — guiam, não bloqueiam.
   (incl. compartilhar saldo, opt-in).
 - **Despesas fixas** — status do mês (em dia/atrasado), lista de
   **contratos** (com linhagem de versões), novo contrato,
-  **registrar pagamento** (gera a compra vinculada), **justificar**
+  **registrar pagamento** (abre o formulário único de Nova despesa já com a
+  conta e o mês escolhidos; ao salvar, volta para a lista), **justificar**
   (exceção do mês) e **reajuste** (valor novo + início da nova vigência —
   atômico no backend).
 - **Receitas fixas** — espelho: status, contratos, novo,
-  **registrar recebimento**, justificar, reajuste.
+  **registrar recebimento** (formulário único de Nova receita, já com a
+  receita e o mês escolhidos), justificar, reajuste.
 - **Relatórios** — "Para onde foi meu dinheiro?" (matriz categoria ×
   pessoa da casa, com período e eixo) e **Fechamento mensal** (com filtro
   de casa).
@@ -120,13 +129,16 @@ sem meio padrão etc.) — guiam, não bloqueiam.
 ## Fluxos que cruzam telas (os que importam para pensar UX)
 
 1. **Primeiro acesso**: cadastro/login → wizard "Comece aqui" → criar ou
-   entrar numa casa → primeiro gasto → Dashboard com o checklist
+   entrar numa casa → primeira despesa → Dashboard com o checklist
    "Primeiros passos".
-2. **Lançar um gasto do dia a dia**: Gastos → Novo → salvar. Competência
+2. **Lançar uma despesa do dia a dia**: Despesas → Nova → salvar. Competência
    default deriva da data escolhida.
-3. **Mês a mês das fixas**: Mais → Despesas fixas → status mostra o que
-   falta → "registrar pagamento" cria a compra vinculada ao contrato → o
-   status vira "em dia". Se não vai acontecer no mês: "justificar".
+3. **Mês a mês das fixas**: duas portas para o mesmo formulário.
+   (a) Mais → Despesas fixas → status mostra o que falta → "registrar
+   pagamento" abre a Nova despesa com a conta já escolhida → salvar volta
+   para o status, com a conta "paga". (b) Despesas → Nova → "É pagamento
+   de uma conta recorrente?" → escolher a conta. Se não vai acontecer no
+   mês: "justificar". Receitas fixas: o mesmo, com "registrar recebimento".
 4. **Reajuste de contrato**: Despesas/Receitas fixas → contrato →
    Reajuste → informa valor novo + a partir de quando. Uma ação só.
 5. **Acerto entre pessoas** (casa compartilhada): Mais → Casas → casa →

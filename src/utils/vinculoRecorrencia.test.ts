@@ -1,5 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import {
+  ajusteDeEscopo,
+  visivelNoContexto,
   deDespesa,
   deReceita,
   ehSugestao,
@@ -54,6 +56,26 @@ describe('vinculoRecorrencia', () => {
     expect(noEscopo(pessoal, 10, 2)).toBe(true);
     expect(noEscopo(pessoal, 10, 3)).toBe(false);
     expect(noEscopo(pessoal, 10, null)).toBe(false);
+  });
+
+  it('mostra pessoais sempre e as da casa só da casa escolhida', () => {
+    const daCasa = ocorrencia({ casaId: 10 });
+    const pessoal = ocorrencia({ casaId: null, pessoaId: 2 });
+    expect(visivelNoContexto(daCasa, 10)).toBe(true);
+    expect(visivelNoContexto(daCasa, 11)).toBe(false);
+    expect(visivelNoContexto(daCasa, null)).toBe(true);
+    expect(visivelNoContexto(pessoal, 11)).toBe(true);
+  });
+
+  it('ajusta casa e pessoa ao contrato escolhido', () => {
+    const daCasa = ocorrencia({ casaId: 10 });
+    expect(ajusteDeEscopo(daCasa, { casaId: 10, pessoaId: 3 })).toEqual({ casaId: 10, pessoaId: 3 });
+    expect(ajusteDeEscopo(daCasa, { casaId: 11, pessoaId: 3 })).toEqual({ casaId: 10, pessoaId: null });
+    expect(ajusteDeEscopo(daCasa, { casaId: null, pessoaId: null })).toEqual({ casaId: 10, pessoaId: null });
+
+    const pessoal = ocorrencia({ casaId: null, pessoaId: 2 });
+    expect(ajusteDeEscopo(pessoal, { casaId: 11, pessoaId: 3 })).toEqual({ casaId: 11, pessoaId: 2 });
+    expect(ajusteDeEscopo(pessoal, { casaId: null, pessoaId: null })).toEqual({ casaId: null, pessoaId: 2 });
   });
 
   it('sugere por palavra da descrição, sem diferenciar acento e caixa', () => {

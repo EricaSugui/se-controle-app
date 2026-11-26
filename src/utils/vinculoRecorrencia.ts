@@ -76,6 +76,27 @@ export function noEscopo(o: OcorrenciaRecorrente, casaId: number | null, pessoaI
   return pessoaId !== null && o.pessoaId === pessoaId;
 }
 
+// O que a lista mostra: recorrências pessoais sempre; as da casa, só da casa
+// escolhida (ou de todas, se nenhuma casa foi escolhida ainda). Escolher uma
+// ajusta casa e pessoa do lançamento (ajusteDeEscopo).
+export function visivelNoContexto(o: OcorrenciaRecorrente, casaId: number | null): boolean {
+  return o.casaId === null || casaId === null || o.casaId === casaId;
+}
+
+// Casa e pessoa do lançamento depois de escolher a recorrência:
+// - da casa: a casa passa a ser a do contrato; a pessoa é mantida se a casa
+//   não mudou (senão fica vazia, para ser escolhida entre os membros);
+// - pessoal: a pessoa passa a ser a dona do contrato; a casa é mantida.
+export function ajusteDeEscopo(
+  o: OcorrenciaRecorrente,
+  atual: { casaId: number | null; pessoaId: number | null }
+): { casaId: number | null; pessoaId: number | null } {
+  if (o.casaId !== null) {
+    return { casaId: o.casaId, pessoaId: atual.casaId === o.casaId ? atual.pessoaId : null };
+  }
+  return { casaId: atual.casaId, pessoaId: o.pessoaId };
+}
+
 export function normalizar(texto: string): string {
   return texto
     .normalize('NFD')
