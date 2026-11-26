@@ -67,11 +67,12 @@ export default function CasasScreen() {
         keyExtractor={(c) => String(c.id)}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={(
+          // Sem botão aqui: "+ Nova casa" já fica sempre visível. Quem não
+          // tem casa compartilhada já tem o espaço pessoal (que não aparece
+          // nesta lista).
           <EmptyState
-            titulo="Você ainda não tem uma casa"
-            descricao="Crie uma casa para organizar suas despesas e acompanhar o dashboard."
-            acaoLabel="Criar uma casa"
-            onAcao={() => router.push('/(app)/mais/casas/nova')}
+            titulo="Nenhuma casa compartilhada"
+            descricao="Seu espaço pessoal já guarda o que é só seu. Use “+ Nova casa” quando quiser dividir as contas com alguém."
           />
         )}
         renderItem={({ item }: { item: CasaDashboard }) => (
