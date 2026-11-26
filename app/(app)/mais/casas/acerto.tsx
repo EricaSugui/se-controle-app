@@ -27,7 +27,7 @@ import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import type { AcertoContas, AvisoAcerto, EixoAcerto, MembroCasa, PagamentoAcerto, SaldoAcertoPessoa } from '@/src/types';
 
 const EIXOS: { valor: EixoAcerto; label: string }[] = [
-  { valor: 'competencia', label: 'Mês da compra' },
+  { valor: 'competencia', label: 'Mês da despesa' },
   { valor: 'caixa', label: 'Por parcela' },
 ];
 
@@ -191,7 +191,7 @@ export default function AcertoContasScreen() {
     if (aviso.tipo === 'meses_sem_combinado' || aviso.tipo === 'combinado_nao_soma_100') {
       router.push({ pathname: '/(app)/mais/casas/combinado', params: { id: casaId, nome } });
     } else if (aviso.tipo === 'compras_sem_meio') {
-      router.push('/(app)/gastos');
+      router.push('/(app)/despesas');
     }
   }
 
@@ -269,7 +269,7 @@ export default function AcertoContasScreen() {
 
         <Text style={styles.secaoTitulo}>Saldo por pessoa</Text>
         {acerto.saldos.length === 0 && (
-          <Text style={styles.vazio}>Nenhuma compra nem pagamento entrou no acerto ainda.</Text>
+          <Text style={styles.vazio}>Nenhuma despesa nem pagamento entrou no acerto ainda.</Text>
         )}
         {acerto.saldos.map((s) => {
           const { texto, cor } = situacao(s);

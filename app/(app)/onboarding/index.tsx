@@ -79,7 +79,7 @@ export default function OnboardingScreen() {
           {perfil === 'convidado' ? (
             <>
               <Text style={styles.texto}>
-                Consulte o dashboard da casa da qual você participa e registre seu primeiro gasto quando estiver pronto.
+                Consulte o dashboard da casa da qual você participa e registre sua primeira despesa quando estiver pronto.
               </Text>
               <Button label="Ir para o dashboard" onPress={finalizar} />
             </>

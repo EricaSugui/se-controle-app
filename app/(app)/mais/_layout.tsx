@@ -1,5 +1,11 @@
 import { Stack } from 'expo-router';
 
+// Tela inicial da pilha. Quando uma tela interna é aberta direto (atalho do
+// Dashboard, da Projeção ou do Onboarding, link ou recarregar a página), a
+// tela principal de Mais entra embaixo dela, e o botão de voltar aparece.
+// Receitas é aba própria (app/(app)/receitas); Metas fica aqui em Mais.
+export const unstable_settings = { initialRouteName: 'index' };
+
 export default function MaisLayout() {
   return (
     <Stack>
@@ -9,7 +15,7 @@ export default function MaisLayout() {
       <Stack.Screen name="convidar" options={{ title: 'Convidar amigos' }} />
 
       <Stack.Screen name="relatorios/index" options={{ title: 'Relatórios' }} />
-      <Stack.Screen name="relatorios/gastos" options={{ title: 'Relatório de gastos' }} />
+      <Stack.Screen name="relatorios/despesas" options={{ title: 'Relatório de despesas' }} />
 
       <Stack.Screen name="casas/index" options={{ title: 'Gerenciar casas' }} />
       <Stack.Screen name="casas/nova" options={{ title: 'Nova casa' }} />
@@ -34,9 +40,9 @@ export default function MaisLayout() {
       <Stack.Screen name="despesas-fixas/justificar" options={{ title: 'Justificar competência' }} />
       <Stack.Screen name="despesas-fixas/reajuste" options={{ title: 'Reajuste' }} />
 
-      <Stack.Screen name="receitas/index" options={{ title: 'Receitas' }} />
-      <Stack.Screen name="receitas/novo" options={{ title: 'Nova receita' }} />
-      <Stack.Screen name="receitas/[id]" options={{ title: 'Editar receita' }} />
+      <Stack.Screen name="metas/index" options={{ title: 'Metas' }} />
+      <Stack.Screen name="metas/novo" options={{ title: 'Nova meta' }} />
+      <Stack.Screen name="metas/[id]" options={{ title: 'Editar meta' }} />
 
       <Stack.Screen name="receitas-fixas/index" options={{ title: 'Receitas fixas' }} />
       <Stack.Screen name="receitas-fixas/novo" options={{ title: 'Nova receita fixa' }} />

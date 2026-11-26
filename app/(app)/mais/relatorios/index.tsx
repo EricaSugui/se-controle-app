@@ -58,9 +58,9 @@ export default function RelatoriosScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/gastos')}>
+      <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/despesas')}>
         <Text style={styles.linkGastosTitulo}>Para onde foi meu dinheiro? ›</Text>
-        <Text style={styles.linkGastosSub}>Gastos por categoria e por pessoa, casa a casa</Text>
+        <Text style={styles.linkGastosSub}>Despesas por categoria e por pessoa, casa a casa</Text>
       </Pressable>
 
       <Text style={styles.titulo}>Fechamento mensal</Text>
@@ -131,7 +131,7 @@ export default function RelatoriosScreen() {
               <View style={styles.card}>
                 <Text style={styles.cardTitulo}>{item.competencia}</Text>
                 <Linha label="Receitas" valor={receitas} cor="#2e7d32" />
-                <Linha label="Gastos" valor={gastos} cor="#c62828" />
+                <Linha label="Despesas" valor={gastos} cor="#c62828" />
                 <Linha label="Minha parte" valor={minhaParte} cor="#e65100" />
                 <Linha label="Saldo" valor={saldo} cor={saldo >= 0 ? '#2e7d32' : '#c62828'} />
                 {casaFiltroId === null && casasDoMes.length > 1 && (
