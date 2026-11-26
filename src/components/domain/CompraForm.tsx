@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
@@ -9,6 +9,7 @@ import { FormaPagamentoSelector } from '@/src/components/ui/FormaPagamentoSelect
 import { ContextualHelp } from '@/src/components/ui/ContextualHelp';
 import { formatCurrency } from '@/src/utils/formatters';
 import { competenciaDaData } from '@/src/utils/competencia';
+import { nomeCasa, ordenarCasas, soEspacoPessoal } from '@/src/utils/casas';
 import type { CartaoConta, CasaDashboard, Categoria, EixoAcerto, FormaPagamento, MembroCasa } from '@/src/types';
 
 export type CompraFormValues = {
@@ -70,6 +71,15 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
   const cartaoSelecionado = cartoes.find((c) => c.id === values.cartaoContaId);
   const formaSelecionada = formas.find((f) => f.id === values.formaPagamentoId);
   const casaSelecionada = casas.find((casa) => casa.id === values.casaId);
+  const noEspacoPessoal = casaSelecionada?.pessoal === true;
+
+  // No espaço pessoal a pessoa é sempre a dona (o único membro): preenche
+  // sozinho, já que o campo "Quem gastou" não aparece.
+  useEffect(() => {
+    if (noEspacoPessoal && membros.length === 1 && values.pessoaId !== membros[0].pessoa_id) {
+      onChange({ ...values, pessoaId: membros[0].pessoa_id });
+    }
+  }, [noEspacoPessoal, membros, values, onChange]);
 
   function selecionarCartaoConta(id: number | null) {
     const cartao = cartoes.find((c) => c.id === id);
@@ -86,24 +96,32 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
 
   return (
     <View style={styles.form}>
-      <Text style={styles.label}>Casa</Text>
-      <View style={styles.opcoesContainer}>
-        {casas.map((casa) => (
-          <Pressable
-            key={casa.id}
-            style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
-            onPress={() => onChange({ ...values, casaId: casa.id, pessoaId: null })}
-          >
-            <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
-              {casa.nome}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {values.casaId != null && membros.length > 0 && (
+      {/* "Lançar em", e não "Casa": o espaço pessoal aparece como "Pessoal"
+          e não deve ser lido como uma casa. */}
+      {/* Quem só tem o espaço pessoal não vê a escolha (já vem selecionado). */}
+      {!soEspacoPessoal(casas) && (
         <>
-          <Text style={styles.label}>Pessoa</Text>
+          <Text style={styles.label}>Lançar em</Text>
+          <View style={styles.opcoesContainer}>
+            {ordenarCasas(casas).map((casa) => (
+              <Pressable
+                key={casa.id}
+                style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
+                onPress={() => onChange({ ...values, casaId: casa.id, pessoaId: null })}
+              >
+                <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
+                  {nomeCasa(casa)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* No espaço pessoal não se pergunta quem gastou: é a própria pessoa. */}
+      {values.casaId != null && !noEspacoPessoal && membros.length > 0 && (
+        <>
+          <Text style={styles.label}>Quem gastou</Text>
           <View style={styles.opcoesContainer}>
             {membros.map((m) => (
               <Pressable

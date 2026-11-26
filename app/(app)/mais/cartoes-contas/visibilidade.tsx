@@ -6,6 +6,7 @@ import { atualizarVisibilidade, criarVisibilidade, getVisibilidade } from '@/src
 import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CartaoCasaVisibilidade, CasaDashboard } from '@/src/types';
+import { casasCompartilhadas } from '@/src/utils/casas';
 
 type CampoVisibilidade = 'compartilhado' | 'compartilha_saldo';
 
@@ -28,7 +29,8 @@ export default function VisibilidadeCartaoContaScreen() {
       getVisibilidade(id),
     ])
       .then(([casasResp, entradasResp]) => {
-        setCasas(casasResp);
+        // o espaço pessoal não entra: os cartões da própria pessoa já aparecem para ela
+        setCasas(casasCompartilhadas(casasResp));
         setEntradas(entradasResp);
       })
       .catch((e: Error) => setError(e.message))

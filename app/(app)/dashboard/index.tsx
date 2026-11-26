@@ -13,6 +13,7 @@ import { competenciaAtual } from '@/src/utils/competencia';
 import { formatCurrency } from '@/src/utils/formatters';
 import { cores, raio } from '@/src/theme/tokens';
 import { useAuth } from '@/src/context/AuthContext';
+import { nomeCasa, ordenarCasas } from '@/src/utils/casas';
 
 const EIXOS: { valor: 'caixa' | 'competencia'; label: string }[] = [
   { valor: 'caixa', label: 'Caixa' },
@@ -151,14 +152,20 @@ export default function DashboardScreen() {
         {/* flexWrap resolve a grade sozinho: com flexBasis 260 cabe 1 card no
             celular e 3-4 no desktop, sem precisar de breakpoint. */}
         <View style={styles.casasGrid}>
-          {data.casas.map((casa) => (
+          {ordenarCasas(data.casas).map((casa) => (
             <View key={casa.id} style={styles.casa}>
-              <Text style={styles.casaNome}>{casa.nome}</Text>
+              <Text style={styles.casaNome}>{nomeCasa(casa)}</Text>
               <LinhaCasa label="Receitas" valor={formatCurrency(casa.receitas_total)} />
-              <LinhaCasa label="Gastos" valor={formatCurrency(casa.gastos_total)} />
+              <LinhaCasa label="Despesas" valor={formatCurrency(casa.gastos_total)} />
               <LinhaCasa label="Saldo" valor={formatCurrency(casa.saldo_casa)} />
-              <LinhaCasa label="Minha parte" valor={formatCurrency(casa.minha_parte)} />
-              <LinhaCasa label="Custeio" valor={`${casa.percentual_custeio}%`} />
+              {/* No espaço pessoal tudo é da pessoa: "minha parte" e custeio
+                  seriam sempre o total e 100%. */}
+              {!casa.pessoal && (
+                <>
+                  <LinhaCasa label="Minha parte" valor={formatCurrency(casa.minha_parte)} />
+                  <LinhaCasa label="Custeio" valor={`${casa.percentual_custeio}%`} />
+                </>
+              )}
             </View>
           ))}
         </View>

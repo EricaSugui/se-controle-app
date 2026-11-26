@@ -3,6 +3,7 @@
 // Proposta: docs/propostas/proposta-ux-vinculo-despesas-contas-recorrentes.md
 // e proposta-ux-vinculo-receitas-recorrentes.md (workspace).
 import type { DespesaFixaStatusItem, ReceitaFixaStatusItem } from '@/src/types';
+import { formatCurrency } from './formatters';
 
 export type TipoVinculo = 'despesa' | 'receita';
 
@@ -21,6 +22,10 @@ export type OcorrenciaRecorrente = {
   competencia: string; // competência da ocorrência (MMM-AA)
   dataEsperada: string; // AAAA-MM-DD
   situacao: SituacaoOcorrencia;
+  // O que já foi lançado para a ocorrência (só quando realizada).
+  realizadoEm: string | null;
+  valorRealizado: number | null;
+  lancamentos: number;
 };
 
 const SITUACAO_DESPESA: Record<DespesaFixaStatusItem['status'], SituacaoOcorrencia> = {
@@ -50,6 +55,9 @@ export function deDespesa(item: DespesaFixaStatusItem): OcorrenciaRecorrente {
     competencia: item.competencia,
     dataEsperada: item.data_esperada,
     situacao: SITUACAO_DESPESA[item.status],
+    realizadoEm: item.realizado_em ?? null,
+    valorRealizado: item.valor_realizado != null ? Number(item.valor_realizado) : null,
+    lancamentos: item.lancamentos ?? 0,
   };
 }
 
@@ -65,6 +73,9 @@ export function deReceita(item: ReceitaFixaStatusItem): OcorrenciaRecorrente {
     competencia: item.competencia,
     dataEsperada: item.data_esperada,
     situacao: SITUACAO_RECEITA[item.status],
+    realizadoEm: item.realizado_em ?? null,
+    valorRealizado: item.valor_realizado != null ? Number(item.valor_realizado) : null,
+    lancamentos: item.lancamentos ?? 0,
   };
 }
 
@@ -196,4 +207,37 @@ const ROTULO: Record<TipoVinculo, Record<SituacaoOcorrencia, string>> = {
 
 export function rotuloSituacao(tipo: TipoVinculo, situacao: SituacaoOcorrencia): string {
   return ROTULO[tipo][situacao];
+}
+
+// "Pagamento registrado em 10/11 · R$ 129,90" (Fase 1, item D). Com mais de
+// um lançamento: "2 pagamentos registrados · R$ 229,90". Receita sem data:
+// "Recebimento registrado · R$ 4.800,00". null quando não há nada lançado.
+export function textoRealizado(tipo: TipoVinculo, o: OcorrenciaRecorrente): string | null {
+  if (o.situacao !== 'realizada' || o.lancamentos === 0) return null;
+  const nome = tipo === 'despesa' ? 'pagamento' : 'recebimento';
+  const valor = o.valorRealizado != null ? ` · ${formatCurrency(o.valorRealizado)}` : '';
+  if (o.lancamentos > 1) return `${o.lancamentos} ${nome}s registrados${valor}`;
+  const Nome = nome[0].toUpperCase() + nome.slice(1);
+  const data = o.realizadoEm ? ` em ${diaMes(o.realizadoEm)}` : '';
+  return `${Nome} registrado${data}${valor}`;
+}
+
+function diaMes(dataISO: string): string {
+  const [, mes, dia] = dataISO.slice(0, 10).split('-');
+  return `${dia}/${mes}`;
+}
+
+// Fase 1, item C: além das ocorrências do mês escolhido, as ATRASADAS de
+// outros meses (que o endpoint de status sem competência devolve), para quem
+// paga hoje a conta do mês passado não precisar voltar o mês. Sem repetir.
+export function juntarAtrasadas(
+  doMes: OcorrenciaRecorrente[],
+  abertas: OcorrenciaRecorrente[],
+  competencia: string
+): OcorrenciaRecorrente[] {
+  const chaves = new Set(doMes.map((o) => `${o.id}|${o.competencia}`));
+  const atrasadas = abertas.filter(
+    (o) => o.situacao === 'atrasada' && o.competencia !== competencia && !chaves.has(`${o.id}|${o.competencia}`)
+  );
+  return [...doMes, ...atrasadas];
 }

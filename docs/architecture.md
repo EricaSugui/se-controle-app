@@ -38,7 +38,7 @@ app/
 │
 └── (app)/
     ├── _layout                ← 5 abas (mobile) / sidebar (desktop) — fonte única em
-    │                            src/navigation/abas.ts; banner de homologação; sino;
+    │                            src/navigation/abas.ts; banner de ambiente; sino;
     │                            redireciona p/ onboarding quando status = not_started
     ├── dashboard/index        ← inclui o checklist de onboarding
     ├── despesas/              ← index (lista), novo, [id] (detalhe/edição)
@@ -104,7 +104,9 @@ src/
 │
 ├── theme/                     ← tokens visuais
 ├── types/                     ← tipos do domínio (espelham o contrato)
-└── utils/                     ← competência (MMM-AA), formatadores, confirmar
+└── utils/                     ← competência (MMM-AA), formatadores, confirmar,
+                                 casas.ts (espaço pessoal: nomeCasa, ordenarCasas,
+                                 casasCompartilhadas, soEspacoPessoal, casaInicial)
 ```
 
 `NotificationBell` consulta convites internos pendentes e é exibido no
@@ -131,6 +133,15 @@ envia e-mail: a aceitação explícita cria `casa_pessoas`.
 - Na tela `convidado`, a sessão local é encerrada antes de definir a senha
   e aceitar o convite, para não misturar o convidado com uma sessão já
   aberta no aparelho.
+- **Espaço pessoal (Casa Pessoal):** cada pessoa com login tem uma Casa
+  com `pessoal = true` (backend cria; `GET /dashboard` devolve a marca).
+  Na tela é sempre "Pessoal" / "espaço pessoal", nunca "casa": use
+  `src/utils/casas.ts` (`nomeCasa`, `ordenarCasas` com Pessoal primeiro,
+  `casasCompartilhadas` para Mais → Casas e visibilidade de cartões,
+  `soEspacoPessoal` para esconder "Lançar em"/"Pertence a", `casaInicial`
+  para a casa que já vem escolhida). Formulários: rótulo "Lançar em",
+  sem "Quem gastou" no espaço pessoal. Especificação no workspace:
+  `docs/planos/casa-pessoal-nucleo.md`.
 - `mais/casas/nova` só chama `createCasa`. O front não chama mais
   `vincularPessoa` depois de criar a casa: essa chamada quebrava o fluxo de
   usuário novo.
@@ -185,6 +196,14 @@ de senha, convites internos e exibição dos membros da casa.
 - Uma mudança só deve ser considerada concluída quando os testes direcionados
   passarem; o conjunto completo deve ser executado quando a alteração afetar
   contratos ou infraestrutura compartilhada.
+- **CI** (`.github/workflows/ci.yml`): `npm ci`, `tsc --noEmit` e `npm test`
+  a cada PR e push para `develop` e `main`. O `expo-env.d.ts` fica fora do
+  git (é gerado pelo `expo start`); o CI o gera antes do `tsc`.
+- Testes de `src/utils` importam código por caminho **relativo**: o Jest
+  deste repo não resolve o alias `@/` (imports só de tipo funcionam).
+- Rotas tipadas: depois de mover ou renomear pastas em `app/`, o
+  `.expo/types/router.d.ts` local pode ficar desatualizado (erros de `Href`
+  no editor). Apague-o e suba o `npm run web` de novo.
 
 ## Ambientes e variáveis
 

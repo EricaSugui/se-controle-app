@@ -31,12 +31,19 @@
   depois vinculando a conta.
 - Usuários já cadastrados recebem convites de casa no **sino** de
   notificações; novos usuários recebem o convite por e-mail.
+- Toda pessoa com login tem um **espaço pessoal** ("Pessoal"): o lugar do
+  que é só dela, sem rateio. No modelo é uma Casa (Casa Pessoal), mas a
+  interface **nunca** a chama de casa: diz "Pessoal" e, em frases, "seu
+  espaço pessoal". Aparece primeiro nos seletores; não aparece em Mais →
+  Casas (não há o que gerenciar nela).
 
 ## Primeiro uso
 
 - Quem ainda não começou o onboarding é levado ao wizard **"Comece aqui"**:
   escolhe como pretende usar (vida financeira própria, casa compartilhada
-  ou entrada por convite) e segue os passos sugeridos. Pode pular a
+  ou entrada por convite) e segue os passos sugeridos. Na etapa 2: "Seu
+  espaço" (o espaço pessoal já está pronto), "Configure sua casa" (criar a
+  casa compartilhada) ou "Sua casa" (já participa por convite). Pode pular a
   qualquer momento e reabrir depois pela Ajuda.
 - O **Dashboard** mostra o checklist "Primeiros passos", calculado a partir
   da casa principal (casa principal definida, categorias disponíveis,
@@ -73,7 +80,9 @@ com Receitas e com "Despesas fixas".
   "Trocar". Escolher uma conta ajusta casa e pessoa ao contrato (da casa:
   fixa a casa e pré-seleciona quem usa; pessoal: fixa a pessoa dona),
   preenche categoria, descrição e valor vazios e herda o meio padrão do
-  contrato. Conta já paga pede confirmação. Depois o form: casa, responsável,
+  contrato. Conta já paga pede confirmação. Depois o form: **Lançar em** ("Pessoal" ou a casa; some para
+  quem só tem o espaço pessoal; já vem com a casa principal), quem gastou
+  (não aparece no espaço pessoal),
   categoria (selector visual), descrição, valor, parcelas, cartão/conta,
   forma de pagamento, data (competência derivada da data, editável). Ao
   salvar, volta para a lista. Ajuda curta junto dos conceitos.
@@ -92,8 +101,8 @@ Espelho de Despesas (simetria entre receitas e despesas).
   Escolher uma receita ajusta casa e pessoa ao contrato (na receita da
   casa, a pessoa é pré-selecionada uma vez e "Nenhuma" é respeitada),
   preenche origem, descrição e valor vazios e usa a conta de destino
-  padrão. Depois o form: casa,
-  pessoa, origem, descrição, valor bruto, descontos, valor líquido, conta
+  padrão. Depois o form: **Lançar em** (como na despesa),
+  quem recebeu (não aparece no espaço pessoal), origem, descrição, valor bruto, descontos, valor líquido, conta
   de destino, data, competência. Ao salvar, volta para a lista.
 - **Edição** de uma receita.
 
@@ -109,7 +118,8 @@ sem meio padrão etc.) — guiam, não bloqueiam.
   (lista e detalhe); **visibilidade/compartilhamento** com casas
   (incl. compartilhar saldo, opt-in).
 - **Despesas fixas** — status do mês (em dia/atrasado), lista de
-  **contratos** (com linhagem de versões), novo contrato,
+  **contratos** (com linhagem de versões), novo contrato, com **Pertence a**
+  ("Pessoal" ou uma casa; "Pessoal" grava no espaço pessoal),
   **registrar pagamento** (abre o formulário único de Nova despesa já com a
   conta e o mês escolhidos; ao salvar, volta para a lista), **justificar**
   (exceção do mês) e **reajuste** (valor novo + início da nova vigência —
@@ -120,7 +130,8 @@ sem meio padrão etc.) — guiam, não bloqueiam.
 - **Relatórios** — "Para onde foi meu dinheiro?" (matriz categoria ×
   pessoa da casa, com período e eixo) e **Fechamento mensal** (com filtro
   de casa).
-- **Gerenciar casas** — lista, nova, detalhe (membros com e-mail e
+- **Gerenciar casas** — só as casas compartilhadas (o espaço pessoal não aparece aqui);
+  lista, nova, detalhe (membros com e-mail e
   papéis), **combinado de custeio** (percentuais por mês) e **acerto de
   contas** (saldo corrente entre as pessoas, extrato mensal, registrar
   pagamento/adiantamento), histórico de acertos confirmados e detalhe do

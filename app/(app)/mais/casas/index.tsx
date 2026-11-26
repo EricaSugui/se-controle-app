@@ -7,6 +7,7 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CasaDashboard } from '@/src/types';
+import { casasCompartilhadas } from '@/src/utils/casas';
 
 export default function CasasScreen() {
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
@@ -17,7 +18,7 @@ export default function CasasScreen() {
     setLoading(true);
     setError(null);
     getDashboard(competenciaAtual())
-      .then((data) => setCasas(data.casas))
+      .then((data) => setCasas(casasCompartilhadas(data.casas))) // o espaço pessoal não aparece aqui: não há o que gerenciar nele
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -66,11 +67,12 @@ export default function CasasScreen() {
         keyExtractor={(c) => String(c.id)}
         contentContainerStyle={styles.lista}
         ListEmptyComponent={(
+          // Sem botão aqui: "+ Nova casa" já fica sempre visível. Quem não
+          // tem casa compartilhada já tem o espaço pessoal (que não aparece
+          // nesta lista).
           <EmptyState
-            titulo="Você ainda não tem uma casa"
-            descricao="Crie uma casa para organizar suas despesas e acompanhar o dashboard."
-            acaoLabel="Criar uma casa"
-            onAcao={() => router.push('/(app)/mais/casas/nova')}
+            titulo="Nenhuma casa compartilhada"
+            descricao="Seu espaço pessoal já guarda o que é só seu. Use “+ Nova casa” quando quiser dividir as contas com alguém."
           />
         )}
         renderItem={({ item }: { item: CasaDashboard }) => (

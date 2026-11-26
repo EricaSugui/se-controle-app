@@ -75,11 +75,28 @@ export default function OnboardingScreen() {
 
       {perfil != null && (
         <View style={styles.proxima}>
-          <Text style={styles.etapa}>2 de 3 — Configure sua casa</Text>
-          {perfil === 'convidado' ? (
+          <Text style={styles.etapa}>
+            {perfil === 'individual'
+              ? '2 de 3 — Seu espaço'
+              : perfil === 'convidado'
+                ? '2 de 3 — Sua casa'
+                : '2 de 3 — Configure sua casa'}
+          </Text>
+          {perfil === 'individual' ? (
+            // O espaço pessoal (Casa Pessoal no modelo) já existe: nada a
+            // criar. Nunca chamá-lo de "casa" na tela.
             <>
               <Text style={styles.texto}>
-                Consulte o dashboard da casa da qual você participa e registre sua primeira despesa quando estiver pronto.
+                Seu espaço pessoal já está pronto. Registre suas despesas e receitas quando quiser. Se um dia for
+                dividir as contas com alguém, você pode criar uma casa compartilhada.
+              </Text>
+              <Button label="Continuar" onPress={finalizar} />
+            </>
+          ) : perfil === 'convidado' ? (
+            <>
+              <Text style={styles.texto}>
+                Você já participa da casa para a qual foi convidado. Consulte o dashboard e registre sua primeira
+                despesa quando estiver pronto. Você também tem um espaço pessoal, para o que é só seu.
               </Text>
               <Button label="Ir para o dashboard" onPress={finalizar} />
             </>

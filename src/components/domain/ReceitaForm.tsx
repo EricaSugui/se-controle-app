@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { DatePickerField } from '@/src/components/ui/DatePickerField';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import { competenciaDaData } from '@/src/utils/competencia';
+import { nomeCasa, ordenarCasas, soEspacoPessoal } from '@/src/utils/casas';
 import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
 // 'herdar' = não enviar conta_destino_id no payload (o backend herda o default
@@ -35,6 +36,15 @@ type Props = {
 
 export function ReceitaForm({ values, onChange, casas, membros, origens, contas, vinculadaAFixa = false }: Props) {
   const [seletorCompetenciaVisivel, setSeletorCompetenciaVisivel] = useState(false);
+  const noEspacoPessoal = casas.find((c) => c.id === values.casaId)?.pessoal === true;
+
+  // No espaço pessoal quem recebeu é sempre a dona (o único membro): preenche
+  // sozinho, já que o campo "Quem recebeu" não aparece.
+  useEffect(() => {
+    if (noEspacoPessoal && membros.length === 1 && values.pessoaId !== membros[0].pessoa_id) {
+      onChange({ ...values, pessoaId: membros[0].pessoa_id });
+    }
+  }, [noEspacoPessoal, membros, values, onChange]);
 
   function set<K extends keyof ReceitaFormValues>(key: K, value: ReceitaFormValues[K]) {
     onChange({ ...values, [key]: value });
@@ -51,24 +61,30 @@ export function ReceitaForm({ values, onChange, casas, membros, origens, contas,
 
   return (
     <View style={styles.form}>
-      <Text style={styles.label}>Casa</Text>
-      <View style={styles.opcoesContainer}>
-        {casas.map((casa) => (
-          <Pressable
-            key={casa.id}
-            style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
-            onPress={() => onChange({ ...values, casaId: casa.id, pessoaId: null })}
-          >
-            <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
-              {casa.nome}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {values.casaId != null && membros.length > 0 && (
+      {/* "Lançar em": o espaço pessoal ("Pessoal") não deve ser lido como casa. */}
+      {/* Quem só tem o espaço pessoal não vê a escolha (já vem selecionado). */}
+      {!soEspacoPessoal(casas) && (
         <>
-          <Text style={styles.label}>Pessoa</Text>
+          <Text style={styles.label}>Lançar em</Text>
+          <View style={styles.opcoesContainer}>
+            {ordenarCasas(casas).map((casa) => (
+              <Pressable
+                key={casa.id}
+                style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
+                onPress={() => onChange({ ...values, casaId: casa.id, pessoaId: null })}
+              >
+                <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
+                  {nomeCasa(casa)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
+
+      {values.casaId != null && !noEspacoPessoal && membros.length > 0 && (
+        <>
+          <Text style={styles.label}>Quem recebeu</Text>
           <View style={styles.opcoesContainer}>
             <Pressable
               style={[styles.opcao, values.pessoaId === null && styles.opcaoAtiva]}

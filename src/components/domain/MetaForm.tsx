@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { CurrencyInput } from '@/src/components/ui/CurrencyInput';
 import type { CasaDashboard } from '@/src/types';
+import { espacoPessoal, nomeCasa, ordenarCasas, soEspacoPessoal } from '@/src/utils/casas';
 
 export type MetaFormValues = {
   // exatamente um entre pessoaId e casaId (escopo imutável após a criação)
@@ -35,27 +36,32 @@ export function MetaForm({ values, onChange, casas, usuarioPessoaId, mostrarEsco
   }
 
   const escopoPessoal = values.pessoaId != null;
+  // Com o espaço pessoal, ele É o "Pessoal" das metas: o botão antigo (meta
+  // ligada à pessoa, sem casa) só aparece se o espaço pessoal não existir.
+  const temEspacoPessoal = espacoPessoal(casas) !== undefined;
 
   return (
     <View style={styles.form}>
-      {mostrarEscopo && (
+      {mostrarEscopo && !soEspacoPessoal(casas) && (
         <>
           <Text style={styles.label}>Meta de quem?</Text>
           <View style={styles.opcoesContainer}>
-            <Pressable
-              style={[styles.opcao, escopoPessoal && styles.opcaoAtiva]}
-              onPress={() => onChange({ ...values, pessoaId: usuarioPessoaId, casaId: null })}
-            >
-              <Text style={[styles.opcaoTexto, escopoPessoal && styles.opcaoTextoAtivo]}>Pessoal</Text>
-            </Pressable>
-            {casas.map((casa) => (
+            {!temEspacoPessoal && (
+              <Pressable
+                style={[styles.opcao, escopoPessoal && styles.opcaoAtiva]}
+                onPress={() => onChange({ ...values, pessoaId: usuarioPessoaId, casaId: null })}
+              >
+                <Text style={[styles.opcaoTexto, escopoPessoal && styles.opcaoTextoAtivo]}>Pessoal</Text>
+              </Pressable>
+            )}
+            {ordenarCasas(casas).map((casa) => (
               <Pressable
                 key={casa.id}
                 style={[styles.opcao, values.casaId === casa.id && styles.opcaoAtiva]}
                 onPress={() => onChange({ ...values, casaId: casa.id, pessoaId: null })}
               >
                 <Text style={[styles.opcaoTexto, values.casaId === casa.id && styles.opcaoTextoAtivo]}>
-                  {casa.nome}
+                  {nomeCasa(casa)}
                 </Text>
               </Pressable>
             ))}

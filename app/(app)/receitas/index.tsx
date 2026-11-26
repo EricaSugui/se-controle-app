@@ -260,7 +260,7 @@ export default function ReceitasScreen() {
           linhas={[
             { rotulo: 'Data', valor: detalhe.data ? formatDate(detalhe.data) : '—' },
             { rotulo: 'Origem', valor: detalhe.origem_nome || '—' },
-            { rotulo: 'Pessoa', valor: detalhe.pessoa_nome || '—' },
+            { rotulo: 'Quem recebeu', valor: detalhe.pessoa_nome || '—' },
             ...(detalhe.valor_bruto != null
               ? [{ rotulo: 'Valor bruto', valor: formatCurrency(detalhe.valor_bruto) }]
               : []),
@@ -305,7 +305,7 @@ function CabecalhoTabela({
       <CabecalhoOrdenavel label="Data" campo="data" estiloColuna={COL.data} ordenacao={ordenacao} onOrdenar={onOrdenar} />
       <CabecalhoOrdenavel label="Descrição" campo="descricao" estiloColuna={COL.descricao} ordenacao={ordenacao} onOrdenar={onOrdenar} />
       <CabecalhoOrdenavel label="Origem" campo="origem" estiloColuna={COL.origem} ordenacao={ordenacao} onOrdenar={onOrdenar} />
-      <CabecalhoOrdenavel label="Pessoa" campo="pessoa" estiloColuna={COL.pessoa} ordenacao={ordenacao} onOrdenar={onOrdenar} />
+      <CabecalhoOrdenavel label="Quem recebeu" campo="pessoa" estiloColuna={COL.pessoa} ordenacao={ordenacao} onOrdenar={onOrdenar} />
       <CabecalhoOrdenavel
         label="Valor"
         campo="valor"
