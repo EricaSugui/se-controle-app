@@ -35,6 +35,12 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      # O expo-env.d.ts fica fora do git (recomendação do Expo) e é gerado
+      # pelo `expo start`. Sem ele faltam os tipos de expo/types (por
+      # exemplo, `hovered` do Pressable na web).
+      - name: Gerar expo-env.d.ts
+        run: echo '/// <reference types="expo/types" />' > expo-env.d.ts
+
       - name: Checar tipos
         run: npx tsc --noEmit
 
