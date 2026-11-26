@@ -131,6 +131,15 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
         </>
       )}
 
+      {/* Descrição junto do valor: é o que identifica o gasto na lista. */}
+      <Text style={styles.label}>Descrição</Text>
+      <TextInput
+        style={styles.input}
+        value={values.descricao}
+        onChangeText={(v) => set('descricao', v)}
+        placeholder="Opcional"
+      />
+
       <Text style={styles.label}>Valor da parcela</Text>
       <CurrencyInput value={values.valorParcela} onChange={(v) => set('valorParcela', v)} />
 
@@ -219,14 +228,6 @@ export function CompraForm({ values, onChange, casas, membros, categorias, carto
           />
         </>
       )}
-
-      <Text style={styles.label}>Descrição</Text>
-      <TextInput
-        style={styles.input}
-        value={values.descricao}
-        onChangeText={(v) => set('descricao', v)}
-        placeholder="Opcional"
-      />
 
       <MonthPicker
         visivel={seletorCompetenciaVisivel}

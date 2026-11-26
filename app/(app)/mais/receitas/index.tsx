@@ -102,9 +102,14 @@ export default function ReceitasScreen() {
           <View style={styles.item}>
             <View style={styles.itemInfo}>
               <Text style={styles.itemValor}>{formatCurrency(item.valor_liquido)}</Text>
-              <Text style={styles.itemDetalhe}>
-                {[item.origem_nome, item.pessoa_nome].filter(Boolean).join(' · ') || 'Sem origem/pessoa'}
-              </Text>
+              {/* Mesmo padrão da lista de gastos: descrição (ou origem) e, abaixo,
+                  origem e pessoa. A descrição é o campo `observacao` da API. */}
+              <Text style={styles.itemDetalhe}>{item.observacao || item.origem_nome || 'Sem descrição'}</Text>
+              {Boolean((item.observacao && item.origem_nome) || item.pessoa_nome) && (
+                <Text style={styles.itemMeta}>
+                  {[item.observacao ? item.origem_nome : null, item.pessoa_nome].filter(Boolean).join(' · ')}
+                </Text>
+              )}
               {item.data && <Text style={styles.itemData}>{formatDate(item.data)}</Text>}
             </View>
             {item.pode_editar && (
@@ -148,6 +153,7 @@ const styles = StyleSheet.create({
   itemInfo:          { flex: 1 },
   itemValor:         { fontSize: 16, fontWeight: '600', color: '#2e7d32' },
   itemDetalhe:       { fontSize: 13, color: '#555', marginTop: 2 },
+  itemMeta:          { fontSize: 12, color: '#777', marginTop: 2 },
   itemData:          { fontSize: 12, color: '#888', marginTop: 2 },
   acoes:             { flexDirection: 'row', gap: 16 },
   editar:            { color: '#1565c0', fontSize: 14 },

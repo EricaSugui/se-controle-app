@@ -1,5 +1,10 @@
 import { Stack } from 'expo-router';
 
+// Tela inicial da pilha. Quando uma tela interna é aberta direto (atalho do
+// Dashboard, da Projeção ou do Onboarding, link ou recarregar a página), a
+// tela principal de Mais entra embaixo dela, e o botão de voltar aparece.
+export const unstable_settings = { initialRouteName: 'index' };
+
 export default function MaisLayout() {
   return (
     <Stack>

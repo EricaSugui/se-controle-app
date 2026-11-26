@@ -1,5 +1,10 @@
 import { Stack } from 'expo-router';
 
+// Tela inicial da pilha: abrir Novo gasto direto (checklist do Dashboard,
+// link ou recarregar a página) coloca a lista de Gastos embaixo, e o botão
+// de voltar aparece.
+export const unstable_settings = { initialRouteName: 'index' };
+
 export default function GastosLayout() {
   return (
     <Stack>

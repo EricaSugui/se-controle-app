@@ -36,21 +36,29 @@ export default function AppLayout() {
 
       <CenteredColumn>
         <EnvironmentBanner />
-        <Tabs screenOptions={amplo ? { tabBarStyle: styles.tabBarOculta } : undefined}>
-          {ABAS
-          .filter((aba) => {
-            if (aba.segmento !== 'onboarding') return true;
-
-            return (
-              onboarding?.status === 'not_started' ||
-              onboarding?.status === 'in_progress'
-            );
-          })
-          .map((aba) => (
+        <Tabs
+          screenOptions={{
+            // Ao sair de uma aba, a pilha dela volta para a primeira tela.
+            // Sem isso, voltar a "Gastos" pela sidebar ou pelas abas
+            // reabria a última tela aberta (por exemplo, o formulário de
+            // novo gasto) em vez da lista.
+            popToTopOnBlur: true,
+            ...(amplo ? { tabBarStyle: styles.tabBarOculta } : {}),
+          }}
+        >
+          {/* Todas as abas são sempre declaradas. Uma aba fora desta lista
+              não some: o expo-router a recria sozinho, com as opções padrão
+              (sem ícone). Para esconder, usa-se `href: null`. */}
+          {ABAS.map((aba) => (
             <Tabs.Screen
               key={aba.nome}
               name={aba.nome}
               options={{
+                // "Comece aqui" só aparece enquanto o onboarding não terminou.
+                ...(aba.segmento === 'onboarding' &&
+                !(onboarding?.status === 'not_started' || onboarding?.status === 'in_progress')
+                  ? { href: null }
+                  : {}),
                 title:
                   aba.segmento === 'dashboard' && user ? `Dashboard - ${user.nome}` : aba.titulo,
                 // Abas com Stack próprio já desenham o header delas.

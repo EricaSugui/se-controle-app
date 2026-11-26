@@ -120,6 +120,16 @@ export function ReceitaForm({ values, onChange, casas, membros, origens, contas,
         </>
       )}
 
+      {/* "Descrição" na tela, como no gasto (simetria entre receitas e
+          despesas); na API e no banco o campo continua `observacao`. */}
+      <Text style={styles.label}>Descrição</Text>
+      <TextInput
+        style={styles.input}
+        value={values.observacao}
+        onChangeText={(v) => set('observacao', v)}
+        placeholder="Opcional"
+      />
+
       <Text style={styles.label}>Valor bruto</Text>
       <CurrencyInput
         value={values.valorBruto}
@@ -182,14 +192,6 @@ export function ReceitaForm({ values, onChange, casas, membros, origens, contas,
       <Pressable style={styles.input} onPress={() => setSeletorCompetenciaVisivel(true)}>
         <Text>{values.competencia}</Text>
       </Pressable>
-
-      <Text style={styles.label}>Observação</Text>
-      <TextInput
-        style={styles.input}
-        value={values.observacao}
-        onChangeText={(v) => set('observacao', v)}
-        placeholder="Opcional"
-      />
 
       <MonthPicker
         visivel={seletorCompetenciaVisivel}

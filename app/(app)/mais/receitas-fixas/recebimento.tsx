@@ -227,7 +227,7 @@ export default function RecebimentoReceitaFixaScreen() {
             ))}
         </View>
 
-        <Text style={styles.label}>Observação</Text>
+        <Text style={styles.label}>Descrição</Text>
         <TextInput
           style={styles.input}
           value={observacao}
