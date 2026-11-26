@@ -1,5 +1,10 @@
 import { api } from './client';
-import type { Compra, CompraInput, Parcela } from '../../types';
+import type { Compra, CompraInput, Parcela, ParcelaCaixa } from '../../types';
+
+// Visão de caixa: parcelas que saem do caixa entre `de` e `ate` (AAAA-MM-DD).
+export function getComprasCaixa(de: string, ate: string): Promise<ParcelaCaixa[]> {
+  return api.get<ParcelaCaixa[]>(`/compras/caixa?de=${de}&ate=${ate}`);
+}
 
 export function getCompras(competencia?: string, despesaFixaId?: number): Promise<Compra[]> {
   const params: string[] = [];

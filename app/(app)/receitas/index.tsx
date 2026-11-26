@@ -6,10 +6,11 @@ import { CabecalhoDia, DetalhesLancamento, LinhaLancamento } from '@/src/compone
 import { agruparPorDia } from '@/src/utils/agruparPorDia';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
-import { deleteReceita, getReceitas } from '@/src/services/api/receitas';
+import { deleteReceita, getReceitas, getReceitasPorData } from '@/src/services/api/receitas';
+import { SeletorEixo, type Eixo } from '@/src/components/ui/SeletorEixo';
 import { cores, raio } from '@/src/theme/tokens';
 import type { Receita } from '@/src/types';
-import { competenciaAtual } from '@/src/utils/competencia';
+import { competenciaAtual, intervaloDaCompetencia } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -27,8 +28,11 @@ export default function ReceitasScreen() {
   // Competência e receita aberta vivem na URL, como em Despesas: o mês é
   // compartilhável por link, o voltar do browser funciona e trocar de linha
   // no painel lateral não remonta a lista.
-  const params = useLocalSearchParams<{ competencia?: string; editar?: string }>();
+  const params = useLocalSearchParams<{ competencia?: string; editar?: string; eixo?: string }>();
   const competencia = params.competencia || competenciaAtual();
+  // Competência (padrão): receitas do mês a que pertencem. Caixa: o que
+  // entrou no mês, pela data do recebimento.
+  const eixo: Eixo = params.eixo === 'caixa' ? 'caixa' : 'competencia';
   const editandoId = params.editar ? Number(params.editar) : null;
 
   const [seletorVisivel, setSeletorVisivel] = useState(false);
@@ -44,13 +48,16 @@ export default function ReceitasScreen() {
 
   const itensOrdenados = useMemo(() => ordenarReceitas(itens, ordenacao), [itens, ordenacao]);
   // Celular: grupos por dia (a ordenação por coluna é só da tabela).
-  const grupos = useMemo(() => agruparPorDia(itens, (r) => r.data, (r) => r.valor_liquido), [itens]);
+  const grupos = useMemo(
+    () => agruparPorDia(itens, (r) => r.data, (r) => r.valor_liquido, { relativo: competencia === competenciaAtual() }),
+    [itens, competencia]
+  );
   // Receita aberta na janela de detalhes (celular).
   const [detalhe, setDetalhe] = useState<Receita | null>(null);
 
   const vazio = (
     <EmptyState
-      titulo="Nenhuma receita neste mês"
+      titulo={eixo === 'caixa' ? 'Nada entrou neste mês' : 'Nenhuma receita neste mês'}
       descricao="Registre uma receita para acompanhar o que entra no mês."
       acaoLabel="Registrar primeira receita"
       onAcao={() => router.push('/(app)/receitas/novo')}
@@ -77,11 +84,12 @@ export default function ReceitasScreen() {
   const carregar = useCallback(() => {
     setLoading(true);
     setError(null);
-    getReceitas(competencia)
+    const { de, ate } = intervaloDaCompetencia(competencia);
+    (eixo === 'caixa' ? getReceitasPorData(de, ate) : getReceitas(competencia))
       .then(setItens)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [competencia]);
+  }, [competencia, eixo]);
 
   useFocusEffect(carregar);
 
@@ -146,6 +154,14 @@ export default function ReceitasScreen() {
           <Text style={styles.competencia}>{competencia}</Text>
           <Text style={styles.competenciaHint}>▼ trocar mês</Text>
         </Pressable>
+
+        <SeletorEixo
+          eixo={eixo}
+          onChange={(e) => router.setParams({ eixo: e === 'caixa' ? 'caixa' : undefined, editar: undefined })}
+          dica={eixo === 'caixa'
+            ? `Caixa: o que entrou em ${competencia}, pela data do recebimento`
+            : 'Competência: receitas do mês a que pertencem'}
+        />
 
         {!compacto && <BotaoNova />}
       </View>
@@ -428,7 +444,7 @@ const styles = StyleSheet.create({
   center:            { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   container:         { flex: 1 },
 
-  cabecalho:         { paddingTop: 16, paddingHorizontal: 16 },
+  cabecalho:         { paddingTop: 16, paddingHorizontal: 16, gap: 10 },
   cabecalhoLargo:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   competenciaBotao:  { alignItems: 'center' },
   competencia:       { fontSize: 18, fontWeight: 'bold' },

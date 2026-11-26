@@ -6,10 +6,11 @@ import { CabecalhoDia, DetalhesLancamento, LinhaLancamento } from '@/src/compone
 import { agruparPorDia } from '@/src/utils/agruparPorDia';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
-import { deleteCompra, getCompras } from '@/src/services/api/compras';
+import { deleteCompra, getCompras, getComprasCaixa } from '@/src/services/api/compras';
+import { SeletorEixo, type Eixo } from '@/src/components/ui/SeletorEixo';
+import { deCompra, deParcela, rotuloParcelas, type LinhaDespesa } from '@/src/utils/linhaDespesa';
 import { cores, raio } from '@/src/theme/tokens';
-import type { Compra } from '@/src/types';
-import { competenciaAtual } from '@/src/utils/competencia';
+import { competenciaAtual, intervaloDaCompetencia } from '@/src/utils/competencia';
 import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -23,12 +24,15 @@ export default function GastosScreen() {
   // Competência e gasto aberto vivem na URL, não em useState: assim o mês
   // é compartilhável por link, o voltar do browser funciona, e trocar de
   // linha no painel lateral não remonta a lista.
-  const params = useLocalSearchParams<{ competencia?: string; editar?: string }>();
+  const params = useLocalSearchParams<{ competencia?: string; editar?: string; eixo?: string }>();
   const competencia = params.competencia || competenciaAtual();
+  // Competência (padrão): uma linha por compra, no mês a que pertence.
+  // Caixa: uma linha por parcela que sai do caixa no mês, pela data da compra.
+  const eixo: Eixo = params.eixo === 'caixa' ? 'caixa' : 'competencia';
   const editandoId = params.editar ? Number(params.editar) : null;
 
   const [seletorVisivel, setSeletorVisivel] = useState(false);
-  const [itens, setItens] = useState<Compra[]>([]);
+  const [itens, setItens] = useState<LinhaDespesa[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Os 4 campos de cada card já são colunas querendo existir; acima de
@@ -43,15 +47,15 @@ export default function GastosScreen() {
   const itensOrdenados = useMemo(() => ordenarCompras(itens, ordenacao), [itens, ordenacao]);
   // Celular: grupos por dia (a ordenação por coluna é só da tabela).
   const grupos = useMemo(
-    () => agruparPorDia(itens, (c) => c.data, (c) => c.valor_parcela * c.total_parcelas),
-    [itens]
+    () => agruparPorDia(itens, (l) => l.data, (l) => l.valor, { relativo: competencia === competenciaAtual() }),
+    [itens, competencia]
   );
   // Despesa aberta na janela de detalhes (celular).
-  const [detalhe, setDetalhe] = useState<Compra | null>(null);
+  const [detalhe, setDetalhe] = useState<LinhaDespesa | null>(null);
 
   const vazio = (
     <EmptyState
-      titulo="Nenhuma despesa neste mês"
+      titulo={eixo === 'caixa' ? 'Nada sai do caixa neste mês' : 'Nenhuma despesa neste mês'}
       descricao="Registre uma despesa para acompanhar o mês por competência."
       acaoLabel="Registrar primeira despesa"
       onAcao={() => router.push('/(app)/despesas/novo')}
@@ -82,33 +86,37 @@ export default function GastosScreen() {
   const carregar = useCallback(() => {
     setLoading(true);
     setError(null);
-    getCompras(competencia)
+    const { de, ate } = intervaloDaCompetencia(competencia);
+    (eixo === 'caixa'
+      ? getComprasCaixa(de, ate).then((l) => l.map(deParcela))
+      : getCompras(competencia).then((l) => l.map(deCompra)))
       .then(setItens)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [competencia]);
+  }, [competencia, eixo]);
 
   useFocusEffect(carregar);
 
   // Só o desktop largo edita no painel. Abaixo disso vai para a tela cheia,
   // que no celular é o único jeito de o gesto de voltar fechar o formulário
   // (setParams não empilha no navegador nativo).
-  function editar(item: Compra) {
+  // Editar e excluir agem sobre a COMPRA (no caixa, a linha é uma parcela dela).
+  function editar(item: LinhaDespesa) {
     if (painelDuplo) {
-      router.setParams({ editar: String(item.id) });
+      router.setParams({ editar: String(item.compraId) });
       return;
     }
-    router.push({ pathname: '/(app)/despesas/[id]', params: { id: item.id } });
+    router.push({ pathname: '/(app)/despesas/[id]', params: { id: item.compraId } });
   }
 
-  function confirmarExcluir(item: Compra) {
+  function confirmarExcluir(item: LinhaDespesa) {
     confirmar(
       {
         titulo: 'Excluir despesa',
         mensagem: `Deseja excluir esta despesa${item.descricao ? ` (${item.descricao})` : ''}? Todas as parcelas serão removidas.`,
         textoConfirmar: 'Excluir',
       },
-      () => excluir(item.id)
+      () => excluir(item.compraId)
     );
   }
 
@@ -152,6 +160,14 @@ export default function GastosScreen() {
           <Text style={styles.competenciaHint}>▼ trocar mês</Text>
         </Pressable>
 
+        <SeletorEixo
+          eixo={eixo}
+          onChange={(e) => router.setParams({ eixo: e === 'caixa' ? 'caixa' : undefined, editar: undefined })}
+          dica={eixo === 'caixa'
+            ? `Caixa: o que sai da conta em ${competencia}, pela data da compra`
+            : 'Competência: despesas decididas neste mês'}
+        />
+
         {!compacto && <BotaoNova />}
       </View>
 
@@ -171,10 +187,10 @@ export default function GastosScreen() {
               <LinhaLancamento
                 titulo={item.descricao || item.categoria_nome || 'Sem descrição'}
                 subtitulo={[item.categoria_nome, item.pessoa_nome].filter(Boolean).join(' · ')}
-                valor={item.valor_parcela * item.total_parcelas}
+                valor={item.valor}
                 cor={cores.negativo}
                 recorrente={item.despesa_fixa_id != null}
-                complemento={item.total_parcelas > 1 ? `${item.total_parcelas}x` : undefined}
+                complemento={rotuloParcelas(item)}
                 onPress={() => setDetalhe(item)}
               />
             )}
@@ -190,10 +206,10 @@ export default function GastosScreen() {
               )
             }
             ListEmptyComponent={vazio}
-            renderItem={({ item }: { item: Compra }) => (
+            renderItem={({ item }: { item: LinhaDespesa }) => (
               <LinhaTabela
                 item={item}
-                selecionado={item.id === editandoId}
+                selecionado={item.compraId === editandoId}
                 onEditar={() => editar(item)}
                 onExcluir={() => confirmarExcluir(item)}
               />
@@ -240,18 +256,24 @@ export default function GastosScreen() {
         <DetalhesLancamento
           visivel
           titulo={detalhe.descricao || detalhe.categoria_nome || 'Despesa'}
-          valor={detalhe.valor_parcela * detalhe.total_parcelas}
+          valor={detalhe.valor}
           cor={cores.negativo}
           marca={detalhe.despesa_fixa_id != null ? (
             <MarcaRecorrencia tipo="despesa" referencia={detalhe.competencia_referencia} competencia={detalhe.competencia} />
           ) : undefined}
           linhas={[
-            { rotulo: 'Data', valor: formatDate(detalhe.data) },
+            { rotulo: detalhe.dataCaixa ? 'Data da compra' : 'Data', valor: formatDate(detalhe.data) },
+            ...(detalhe.dataCaixa ? [{ rotulo: 'Sai do caixa em', valor: formatDate(detalhe.dataCaixa) }] : []),
             { rotulo: 'Categoria', valor: detalhe.categoria_nome || '—' },
             { rotulo: 'Pessoa', valor: detalhe.pessoa_nome || '—' },
             { rotulo: 'Cartão/conta', valor: detalhe.cartao_conta_nome || '—' },
-            ...(detalhe.total_parcelas > 1
-              ? [{ rotulo: 'Parcelas', valor: `${detalhe.total_parcelas}x de ${formatCurrency(detalhe.valor_parcela)}` }]
+            ...(detalhe.totalParcelas > 1
+              ? [{
+                  rotulo: 'Parcelas',
+                  valor: detalhe.numeroParcela != null
+                    ? `${detalhe.numeroParcela}/${detalhe.totalParcelas} · total ${formatCurrency(detalhe.valorParcela * detalhe.totalParcelas)}`
+                    : `${detalhe.totalParcelas}x de ${formatCurrency(detalhe.valorParcela)}`,
+                }]
               : []),
             { rotulo: 'Competência', valor: detalhe.competencia },
           ]}
@@ -358,7 +380,7 @@ function CabecalhoOrdenavel({
   );
 }
 
-function ordenarCompras(itens: Compra[], ordenacao: { campo: CampoOrdenacao; direcao: DirecaoOrdenacao }) {
+function ordenarCompras(itens: LinhaDespesa[], ordenacao: { campo: CampoOrdenacao; direcao: DirecaoOrdenacao }) {
   const fator = ordenacao.direcao === 'asc' ? 1 : -1;
 
   return [...itens].sort((a, b) => {
@@ -381,7 +403,7 @@ function ordenarCompras(itens: Compra[], ordenacao: { campo: CampoOrdenacao; dir
         comparacao = compararTexto(a.cartao_conta_nome || '', b.cartao_conta_nome || '');
         break;
       case 'valor':
-        comparacao = compararNumero(a.valor_parcela * a.total_parcelas, b.valor_parcela * b.total_parcelas);
+        comparacao = compararNumero(a.valor, b.valor);
         break;
     }
 
@@ -407,7 +429,7 @@ function LinhaTabela({
   onEditar,
   onExcluir,
 }: {
-  item: Compra;
+  item: LinhaDespesa;
   selecionado: boolean;
   onEditar: () => void;
   onExcluir: () => void;
@@ -432,10 +454,12 @@ function LinhaTabela({
       </Text>
 
       <View style={COL.valor}>
-        <Text style={styles.tdValor}>{formatCurrency(item.valor_parcela * item.total_parcelas)}</Text>
-        {item.total_parcelas > 1 && (
+        <Text style={styles.tdValor}>{formatCurrency(item.valor)}</Text>
+        {item.totalParcelas > 1 && (
           <Text style={styles.tdParcelas}>
-            {`${item.total_parcelas}x de ${formatCurrency(item.valor_parcela)}`}
+            {item.numeroParcela != null
+              ? `Parcela ${item.numeroParcela}/${item.totalParcelas}`
+              : `${item.totalParcelas}x de ${formatCurrency(item.valorParcela)}`}
           </Text>
         )}
       </View>
@@ -478,7 +502,7 @@ const styles = StyleSheet.create({
   center:            { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   container:         { flex: 1 },
 
-  cabecalho:         { paddingTop: 16, paddingHorizontal: 16 },
+  cabecalho:         { paddingTop: 16, paddingHorizontal: 16, gap: 10 },
   cabecalhoLargo:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   competenciaBotao:  { alignItems: 'center' },
   competencia:       { fontSize: 18, fontWeight: 'bold' },

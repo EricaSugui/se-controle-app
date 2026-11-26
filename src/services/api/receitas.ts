@@ -9,6 +9,11 @@ export function getReceitas(competencia?: string, receitaFixaId?: number): Promi
   return api.get<Receita[]>(`/receitas${query}`);
 }
 
+// Visão de caixa: receitas com data entre `de` e `ate` (AAAA-MM-DD).
+export function getReceitasPorData(de: string, ate: string): Promise<Receita[]> {
+  return api.get<Receita[]>(`/receitas?de=${de}&ate=${ate}`);
+}
+
 export function getReceita(id: number): Promise<Receita> {
   return api.get<Receita>(`/receitas/${id}`);
 }

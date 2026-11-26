@@ -20,11 +20,20 @@ function isoLocal(d: Date): string {
   return `${d.getFullYear()}-${mes}-${dia}`;
 }
 
-export function rotuloDia(dataISO: string, hoje: Date = new Date()): string {
+export type OpcoesRotulo = {
+  hoje?: Date;
+  // "Hoje"/"Ontem" só fazem sentido quando a lista é do mês atual. Vendo
+  // outro mês, o dia aparece sempre pelo nome ("QUI, 26 NOV").
+  relativo?: boolean;
+};
+
+export function rotuloDia(dataISO: string, { hoje = new Date(), relativo = true }: OpcoesRotulo = {}): string {
   const dia = dataISO.slice(0, 10);
-  if (dia === isoLocal(hoje)) return 'Hoje';
-  const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
-  if (dia === isoLocal(ontem)) return 'Ontem';
+  if (relativo) {
+    if (dia === isoLocal(hoje)) return 'Hoje';
+    const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1);
+    if (dia === isoLocal(ontem)) return 'Ontem';
+  }
   const [ano, mes, d] = dia.split('-').map(Number);
   const data = new Date(ano, mes - 1, d);
   return `${DIAS[data.getDay()]}, ${d} ${MESES[mes - 1]}`;
@@ -34,7 +43,7 @@ export function agruparPorDia<T extends { id: number }>(
   itens: T[],
   dataDe: (item: T) => string | null | undefined,
   valorDe: (item: T) => number,
-  hoje: Date = new Date()
+  opcoes: OpcoesRotulo = {}
 ): GrupoDia<T>[] {
   const grupos = new Map<string, T[]>();
   for (const item of itens) {
@@ -53,7 +62,7 @@ export function agruparPorDia<T extends { id: number }>(
     })
     .map(([chave, lista]) => ({
       chave,
-      titulo: chave === 'sem-data' ? 'Sem data' : rotuloDia(chave, hoje),
+      titulo: chave === 'sem-data' ? 'Sem data' : rotuloDia(chave, opcoes),
       total: lista.reduce((soma, item) => soma + Number(valorDe(item)), 0),
       data: [...lista].sort((a, b) => b.id - a.id),
     }));
