@@ -191,7 +191,7 @@ export default function AcertoContasScreen() {
     if (aviso.tipo === 'meses_sem_combinado' || aviso.tipo === 'combinado_nao_soma_100') {
       router.push({ pathname: '/(app)/mais/casas/combinado', params: { id: casaId, nome } });
     } else if (aviso.tipo === 'compras_sem_meio') {
-      router.push('/(app)/gastos');
+      router.push('/(app)/despesas');
     }
   }
 

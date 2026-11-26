@@ -79,7 +79,7 @@ export default function GastosScreen() {
       router.setParams({ editar: String(item.id) });
       return;
     }
-    router.push({ pathname: '/(app)/gastos/[id]', params: { id: item.id } });
+    router.push({ pathname: '/(app)/despesas/[id]', params: { id: item.id } });
   }
 
   function confirmarExcluir(item: Compra) {
@@ -151,7 +151,7 @@ export default function GastosScreen() {
               titulo="Nenhuma despesa neste mês"
               descricao="Registre uma despesa para acompanhar o mês por competência."
               acaoLabel="Registrar primeira despesa"
-              onAcao={() => router.push('/(app)/gastos/novo')}
+              onAcao={() => router.push('/(app)/despesas/novo')}
             />
           )}
           renderItem={({ item }: { item: Compra }) =>
@@ -213,7 +213,7 @@ function BotaoNova() {
     <Pressable
       {...hoverProps}
       style={[styles.botaoNova, hover && styles.botaoNovaHover]}
-      onPress={() => router.push('/(app)/gastos/novo')}
+      onPress={() => router.push('/(app)/despesas/novo')}
     >
       <Text style={styles.botaoNovaTexto}>+ Nova despesa</Text>
     </Pressable>

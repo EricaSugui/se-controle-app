@@ -129,7 +129,7 @@ export default function NovaCompraScreen() {
       // pelo Dashboard (checklist de primeiros passos), onde router.back()
       // voltaria para o Dashboard. dismissTo volta até a lista se ela já
       // está na pilha, ou troca esta tela por ela, sem duplicar.
-      router.dismissTo('/(app)/gastos');
+      router.dismissTo('/(app)/despesas');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {

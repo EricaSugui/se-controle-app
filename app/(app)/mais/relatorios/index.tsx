@@ -58,7 +58,7 @@ export default function RelatoriosScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/gastos')}>
+      <Pressable style={styles.linkGastos} onPress={() => router.push('/(app)/mais/relatorios/despesas')}>
         <Text style={styles.linkGastosTitulo}>Para onde foi meu dinheiro? ›</Text>
         <Text style={styles.linkGastosSub}>Despesas por categoria e por pessoa, casa a casa</Text>
       </Pressable>

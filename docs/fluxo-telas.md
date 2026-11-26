@@ -55,8 +55,8 @@ situação, não julga. O sino da barra superior permite consultar e aceitar
 convites pendentes.
 
 ### 2. Despesas
-Rota `/gastos` e, no código e na API, "compras"; na tela, "Despesas"
-(par com Receitas e com "Despesas fixas").
+Rota e tela "Despesas" (`/despesas`); no código e na API, "compras". Par
+com Receitas e com "Despesas fixas".
 - **Lista** de despesas (filtros por casa/período), com categoria (ícone e
   cor), responsável e meio de pagamento.
 - **Nova despesa**: no topo, a pergunta opcional "É pagamento de uma conta

@@ -41,7 +41,7 @@ app/
     │                            src/navigation/abas.ts; banner de homologação; sino;
     │                            redireciona p/ onboarding quando status = not_started
     ├── dashboard/index        ← inclui o checklist de onboarding
-    ├── gastos/                ← index (lista), novo, [id] (detalhe/edição)
+    ├── despesas/              ← index (lista), novo, [id] (detalhe/edição)
     ├── receitas/              ← index (lista), novo, [id] (edição)
     ├── projecao/index         ← saldo projetado
     ├── onboarding/index       ← wizard "Comece aqui" (aba oculta da sidebar)
@@ -51,7 +51,7 @@ app/
         ├── cartoes-contas/    ← index, novo, [id], faturas, fatura, visibilidade
         ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
         ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
-        ├── relatorios/        ← index (fechamento mensal), gastos (matriz categoria×pessoa)
+        ├── relatorios/        ← index (fechamento mensal), despesas (matriz categoria×pessoa)
         ├── casas/             ← index, nova, [id], combinado, acerto,
         │                         acertos (histórico), acerto-detalhe (snapshot)
         ├── convidar
@@ -68,7 +68,7 @@ app/
   layout só a mostra enquanto o onboarding está `not_started` ou
   `in_progress`. Fora disso recebe `href: null`: toda aba precisa ser
   declarada no `<Tabs>`, senão o expo-router a recria sozinho, sem ícone.
-- Abas: Dashboard, Despesas (rota `/gastos`), Receitas, Projeção e Mais (Metas fica em Mais).
+- Abas: Dashboard, Despesas, Receitas, Projeção e Mais (Metas fica em Mais).
 - `popToTopOnBlur`: ao sair de uma aba, a pilha dela volta à primeira
   tela. As pilhas de Gastos, Receitas e Mais declaram
   `unstable_settings.initialRouteName = 'index'`, para que uma tela interna

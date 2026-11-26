@@ -19,8 +19,8 @@ export type Aba = {
 
 export const ABAS: Aba[] = [
   { nome: 'dashboard/index', segmento: 'dashboard', titulo: 'Dashboard', href: '/(app)/dashboard', icone: 'home-outline' },
-  // A rota continua /gastos; só o texto da tela virou "Despesas".
-  { nome: 'gastos',          segmento: 'gastos',    titulo: 'Despesas',  href: '/(app)/gastos',    icone: 'cart-outline',        headerProprio: true },
+  // Rota e tela "Despesas"; no código e na API o nome continua "compras".
+  { nome: 'despesas',        segmento: 'despesas',  titulo: 'Despesas',  href: '/(app)/despesas',  icone: 'cart-outline',        headerProprio: true },
   // Receitas ao lado de Despesas (simetria). Metas fica em Mais.
   { nome: 'receitas',        segmento: 'receitas',  titulo: 'Receitas',  href: '/(app)/receitas',  icone: 'cash-outline',        headerProprio: true },
   { nome: 'projecao/index',  segmento: 'projecao',  titulo: 'Projeção',  href: '/(app)/projecao',  icone: 'trending-up-outline' },
