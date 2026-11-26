@@ -56,9 +56,11 @@ export default function GastosScreen() {
   const vazio = (
     <EmptyState
       titulo={eixo === 'caixa' ? 'Nada sai do caixa neste mês' : 'Nenhuma despesa neste mês'}
-      descricao="Registre uma despesa para acompanhar o mês por competência."
-      acaoLabel="Registrar primeira despesa"
-      onAcao={() => router.push('/(app)/despesas/novo')}
+      // Sem botão aqui: "+ Nova despesa" já fica sempre visível (rodapé no
+      // celular, topo no desktop).
+      descricao={eixo === 'caixa'
+        ? 'Nenhuma parcela vence e nenhum pagamento sai da conta neste mês.'
+        : 'Use “+ Nova despesa” para registrar a primeira.'}
     />
   );
 
