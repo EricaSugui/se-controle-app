@@ -12,7 +12,9 @@ import {
   deDespesa,
   deReceita,
   filtrarEOrdenar,
+  juntarAtrasadas,
   motivoSugestao,
+  textoRealizado,
   type ContextoSugestao,
   rotuloSituacao,
   visivelNoContexto,
@@ -98,9 +100,13 @@ export function VinculoRecorrencia({
     let cancelado = false;
     setCarregando(true);
     setErro(null);
-    const requisicao = tipo === 'despesa'
-      ? getStatusDespesasFixas(competencia).then((l) => l.map(deDespesa))
-      : getStatusReceitasFixas(competencia).then((l) => l.map(deReceita));
+    // Duas consultas: o mês escolhido e tudo o que está em aberto (sem
+    // competência), para trazer também as atrasadas de outros meses (item C).
+    const buscar = (c?: string) => tipo === 'despesa'
+      ? getStatusDespesasFixas(c).then((l) => l.map(deDespesa))
+      : getStatusReceitasFixas(c).then((l) => l.map(deReceita));
+    const requisicao = Promise.all([buscar(competencia), buscar()])
+      .then(([doMes, abertas]) => juntarAtrasadas(doMes, abertas, competencia));
     requisicao
       .then((l) => { if (!cancelado) setItens(l); })
       .catch((e: unknown) => { if (!cancelado) { setItens([]); setErro((e as Error).message); } })
@@ -168,7 +174,8 @@ export function VinculoRecorrencia({
       confirmar(
         {
           titulo: realizada ? textos.jaRealizadaTitulo : textos.justificadaTitulo,
-          mensagem: (realizada ? textos.jaRealizadaMsg : textos.justificadaMsg)(o.descricao, o.competencia),
+          mensagem: (realizada ? textos.jaRealizadaMsg : textos.justificadaMsg)(o.descricao, o.competencia)
+            + (realizada && textoRealizado(tipo, o) ? `\n\n${textoRealizado(tipo, o)}.` : ''),
           textoConfirmar: textos.confirmar,
           destrutivo: false,
         },
@@ -180,13 +187,15 @@ export function VinculoRecorrencia({
     setListaAberta(false);
   }
 
-  function detalhe(o: OcorrenciaRecorrente): string {
+  function detalhe(o: OcorrenciaRecorrente, mostraOutroMes = true): string {
     const valorTexto = o.valorEsperado != null
       ? `${o.valorFixo ? 'Valor fixo' : 'Valor variável, cerca de'} ${formatCurrency(o.valorEsperado)}`
       : 'Valor variável';
     const data = `${tipo === 'despesa' ? 'vence' : 'previsto'} ${formatDate(o.dataEsperada)}`;
     const escopo = escopoDe(o);
-    return [valorTexto, data, escopo].filter(Boolean).join(' · ');
+    // Atrasada de outro mês (item C): deixa claro a qual mês ela se refere.
+    const outroMes = mostraOutroMes && o.competencia !== competencia ? `referente a ${o.competencia}` : null;
+    return [outroMes, valorTexto, data, escopo].filter(Boolean).join(' · ');
   }
 
   function badge(o: OcorrenciaRecorrente) {
@@ -224,7 +233,10 @@ export function VinculoRecorrencia({
               </Text>
               {badge(selecionada)}
             </View>
-            <Text style={styles.itemDetalhe}>Referente a {selecionada.competencia} · {detalhe(selecionada)}</Text>
+            <Text style={styles.itemDetalhe}>Referente a {selecionada.competencia} · {detalhe(selecionada, false)}</Text>
+            {textoRealizado(tipo, selecionada) && (
+              <Text style={styles.realizado}>{textoRealizado(tipo, selecionada)}</Text>
+            )}
             <Pressable onPress={() => setListaAberta(true)} hitSlop={8}>
               <Text style={styles.trocar}>Trocar</Text>
             </Pressable>
@@ -289,6 +301,7 @@ export function VinculoRecorrencia({
                   {badge(o)}
                 </View>
                 <Text style={styles.itemDetalhe}>{detalhe(o)}</Text>
+                {textoRealizado(tipo, o) && <Text style={styles.realizado}>{textoRealizado(tipo, o)}</Text>}
                 {sugestao && !ativa && <Text style={styles.sugestao}>Sugestão: {sugestao.toLowerCase()}</Text>}
               </Pressable>
             );
@@ -322,4 +335,5 @@ const styles = StyleSheet.create({
   itemDetalhe:    { fontSize: 13, color: cores.textoMedio },
   badge:          { fontSize: 12, fontWeight: '600', paddingVertical: 2, paddingHorizontal: 8, borderRadius: raio.md, overflow: 'hidden' },
   sugestao:       { fontSize: 12, color: cores.primaria },
+  realizado:      { fontSize: 12, color: cores.positivo },
 });

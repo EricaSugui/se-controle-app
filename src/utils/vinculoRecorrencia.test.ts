@@ -6,6 +6,8 @@ import {
   deReceita,
   ehSugestao,
   filtrarEOrdenar,
+  juntarAtrasadas,
+  textoRealizado,
   motivoSugestao,
   noEscopo,
   rotuloSituacao,
@@ -24,6 +26,9 @@ function ocorrencia(parcial: Partial<OcorrenciaRecorrente>): OcorrenciaRecorrent
     competencia: 'NOV-26',
     dataEsperada: '2026-11-10',
     situacao: 'em_aberto',
+    realizadoEm: null,
+    valorRealizado: null,
+    lancamentos: 0,
     ...parcial,
   };
 }
@@ -136,5 +141,44 @@ describe('vinculoRecorrencia', () => {
     expect(rotuloSituacao('despesa', 'realizada')).toBe('Já paga');
     expect(rotuloSituacao('receita', 'realizada')).toBe('Já recebida');
     expect(rotuloSituacao('receita', 'em_aberto')).toBe('Aguardando');
+  });
+});
+
+describe('textoRealizado (item D)', () => {
+  it('mostra data e valor do pagamento', () => {
+    const paga = ocorrencia({ situacao: 'realizada', realizadoEm: '2026-11-10', valorRealizado: 129.9, lancamentos: 1 });
+    expect(textoRealizado('despesa', paga)).toMatch(/^Pagamento registrado em 10\/11 · R\$\s?129,90$/);
+  });
+
+  it('com mais de um lançamento, mostra a quantidade e a soma', () => {
+    const paga = ocorrencia({ situacao: 'realizada', realizadoEm: '2026-11-20', valorRealizado: 229.9, lancamentos: 2 });
+    expect(textoRealizado('despesa', paga)).toMatch(/^2 pagamentos registrados · R\$\s?229,90$/);
+  });
+
+  it('receita sem data não mostra a data', () => {
+    const recebida = ocorrencia({ situacao: 'realizada', realizadoEm: null, valorRealizado: 4800, lancamentos: 1 });
+    expect(textoRealizado('receita', recebida)).toMatch(/^Recebimento registrado · R\$\s?4\.800,00$/);
+  });
+
+  it('nada quando não está realizada (ou o backend é antigo, sem os campos)', () => {
+    expect(textoRealizado('despesa', ocorrencia({ situacao: 'em_aberto' }))).toBeNull();
+    expect(textoRealizado('despesa', ocorrencia({ situacao: 'realizada', lancamentos: 0 }))).toBeNull();
+  });
+});
+
+describe('juntarAtrasadas (item C)', () => {
+  const doMes = [
+    ocorrencia({ id: 1, competencia: 'NOV-26', situacao: 'em_aberto' }),
+    ocorrencia({ id: 2, competencia: 'NOV-26', situacao: 'atrasada' }),
+  ];
+
+  it('acrescenta as atrasadas de outros meses, sem repetir', () => {
+    const abertas = [
+      ocorrencia({ id: 2, competencia: 'NOV-26', situacao: 'atrasada' }), // já está no mês
+      ocorrencia({ id: 1, competencia: 'OUT-26', situacao: 'atrasada' }), // mês passado
+      ocorrencia({ id: 3, competencia: 'DEZ-26', situacao: 'em_aberto' }), // não atrasada
+    ];
+    const lista = juntarAtrasadas(doMes, abertas, 'NOV-26');
+    expect(lista.map((o) => `${o.id}|${o.competencia}`)).toEqual(['1|NOV-26', '2|NOV-26', '1|OUT-26']);
   });
 });

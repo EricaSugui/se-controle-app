@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getReceita, updateReceita } from '@/src/services/api/receitas';
@@ -7,6 +7,8 @@ import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
+import { VinculoRecorrencia } from '@/src/components/domain/VinculoRecorrencia';
+import { ajusteDeEscopo, type OcorrenciaRecorrente } from '@/src/utils/vinculoRecorrencia';
 import { notificar } from '@/src/utils/confirmar';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita, Receita } from '@/src/types';
@@ -74,8 +76,52 @@ export function ReceitaEditor({ id, onSalvo, onCarregado }: Props) {
 }
 
 function FormularioEdicao({ receita, onSalvo }: { receita: ReceitaEditavel; onSalvo: () => void }) {
-  const { id, receitaFixaId, competenciaReferencia } = receita;
+  const { id } = receita;
   const [values, setValues] = useState<ReceitaFormValues>(receita.valores);
+  // Vínculo com receita fixa (Fase 1, item G: trocar ou remover). Começa com
+  // o salvo e só muda quando a pessoa escolhe outra receita ou desliga a
+  // pergunta; se a ocorrência salva não aparecer na lista, nada se perde.
+  const [vinculo, setVinculo] = useState({
+    receitaFixaId: receita.receitaFixaId,
+    competenciaReferencia: receita.competenciaReferencia,
+  });
+  const vinculoRef = useRef(vinculo);
+  const [ocorrencia, setOcorrencia] = useState<OcorrenciaRecorrente | null>(null);
+  const preVinculo = useMemo(
+    () => receita.receitaFixaId != null && receita.competenciaReferencia
+      ? { id: receita.receitaFixaId, competencia: receita.competenciaReferencia }
+      : null,
+    [receita.receitaFixaId, receita.competenciaReferencia]
+  );
+  const { receitaFixaId, competenciaReferencia } = vinculo;
+
+  const aoVincular = useCallback((o: OcorrenciaRecorrente | null) => {
+    setOcorrencia(o);
+    // Reencontrou o vínculo salvo ao abrir: só marca, sem mexer no formulário.
+    const atual = vinculoRef.current;
+    if (o && atual.receitaFixaId === o.id && atual.competenciaReferencia === o.competencia) return;
+    const novo = { receitaFixaId: o ? o.id : null, competenciaReferencia: o ? o.competencia : null };
+    vinculoRef.current = novo;
+    setVinculo(novo);
+    setValues((v) => {
+      if (!o) return v.contaDestino === 'herdar' ? { ...v, contaDestino: null } : v;
+      return {
+        ...v,
+        ...ajusteDeEscopo(o, v),
+        origemId: o.categoriaOuOrigemId,
+        observacao: v.observacao.trim() ? v.observacao : o.descricao,
+        valorLiquido: v.valorLiquido ?? o.valorEsperado,
+        contaDestino: v.contaDestino === null ? 'herdar' : v.contaDestino,
+      };
+    });
+  }, []);
+
+  // Receita pessoal: a pessoa é sempre a dona do contrato.
+  useEffect(() => {
+    if (ocorrencia && ocorrencia.casaId === null && ocorrencia.pessoaId !== null && values.pessoaId !== ocorrencia.pessoaId) {
+      setValues((v) => ({ ...v, pessoaId: ocorrencia.pessoaId }));
+    }
+  }, [ocorrencia, values.pessoaId]);
   const [casas, setCasas] = useState<CasaDashboard[]>([]);
   const [membros, setMembros] = useState<MembroCasa[]>([]);
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
@@ -133,9 +179,23 @@ function FormularioEdicao({ receita, onSalvo }: { receita: ReceitaEditavel; onSa
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {receitaFixaId != null && (
+        <VinculoRecorrencia
+          tipo="receita"
+          casaId={values.casaId}
+          pessoaId={values.pessoaId}
+          descricao={values.observacao}
+          valor={values.valorLiquido}
+          origemId={values.origemId}
+          selecionada={ocorrencia}
+          onChange={aoVincular}
+          preSelecao={preVinculo}
+          casas={casas}
+        />
+        {/* Vínculo salvo que o seletor não encontrou na lista: continua
+            valendo até a pessoa escolher outra receita ou desligar. */}
+        {receitaFixaId != null && ocorrencia == null && (
           <Text style={styles.aviso}>
-            Recebimento vinculado a receita fixa
+            Recebimento vinculado a uma receita recorrente
             {competenciaReferencia ? ` (competência ${competenciaReferencia})` : ''}.
           </Text>
         )}
