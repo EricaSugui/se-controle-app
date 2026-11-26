@@ -28,7 +28,7 @@ export default function ReceitasScreen() {
 
   function editar(item: Receita) {
     router.push({
-      pathname: '/(app)/mais/receitas/[id]',
+      pathname: '/(app)/receitas/[id]',
       params: {
         id: item.id,
         casaId: item.casa_id,
@@ -125,7 +125,7 @@ export default function ReceitasScreen() {
           </View>
         )}
       />
-      <Pressable style={styles.botaoNova} onPress={() => router.push('/(app)/mais/receitas/novo')}>
+      <Pressable style={styles.botaoNova} onPress={() => router.push('/(app)/receitas/novo')}>
         <Text style={styles.botaoNovaTexto}>+ Nova receita</Text>
       </Pressable>
 

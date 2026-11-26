@@ -54,28 +54,41 @@ combinado de custeio). Alterna eixo **competência/caixa** e mês. Abre na
 situação, não julga. O sino da barra superior permite consultar e aceitar
 convites pendentes.
 
-### 2. Gastos
-- **Lista** de compras (filtros por casa/período), com categoria (ícone e
+### 2. Despesas
+Rota `/gastos` e, no código e na API, "compras"; na tela, "Despesas"
+(par com Receitas e com "Despesas fixas").
+- **Lista** de despesas (filtros por casa/período), com categoria (ícone e
   cor), responsável e meio de pagamento.
-- **Novo gasto**: form com casa, responsável, categoria (selector visual),
-  cartão/conta, forma de pagamento, data (competência derivada da data,
-  editável), parcelas. Pode vincular a uma despesa fixa (aí herda o meio
-  padrão do contrato). Ajuda curta junto dos conceitos.
+- **Nova despesa**: no topo, a pergunta opcional "É pagamento de uma conta
+  recorrente?" (lista as contas da casa/pessoa no mês de referência, com
+  situação; escolher uma preenche categoria, descrição e valor vazios e
+  herda o meio padrão do contrato). Depois o form: casa, responsável,
+  categoria (selector visual), descrição, valor, parcelas, cartão/conta,
+  forma de pagamento, data (competência derivada da data, editável). Ao
+  salvar, volta para a lista. Ajuda curta junto dos conceitos.
 - **Detalhe/edição** de uma compra, com rateio por pagadores quando a
   compra é exceção ao combinado. Em casas sem combinado, o bloco "Acerto
   de contas" não aparece.
 
-### 3. Projeção
+### 3. Receitas
+Espelho de Gastos (simetria entre receitas e despesas).
+- **Lista** por competência: valor, descrição (ou a origem, se não houver
+  descrição) e, abaixo, origem e pessoa.
+- **Nova receita**: no topo, "É recebimento de uma receita recorrente?"
+  (mesmo componente do gasto; escolher uma preenche origem, descrição e
+  valor vazios e usa a conta de destino padrão). Depois o form: casa,
+  pessoa, origem, descrição, valor bruto, descontos, valor líquido, conta
+  de destino, data, competência. Ao salvar, volta para a lista.
+- **Edição** de uma receita.
+
+### 4. Projeção
 Saldo projetado por conta: saldo base + o que vai entrar/sair (receitas
 esperadas, parcelas, faturas, despesas fixas) até a data escolhida. Exibe
 os avisos de configuração incompleta (cartão sem conta de débito, contrato
 sem meio padrão etc.) — guiam, não bloqueiam.
 
-### 4. Metas
-Lista, criação e edição de metas.
-
 ### 5. Mais (hub de gestão)
-- **Receitas** — lista, nova, detalhe/edição.
+- **Metas** — lista, criação e edição.
 - **Cartões e contas** — lista, novo, detalhe; **faturas** do cartão
   (lista e detalhe); **visibilidade/compartilhamento** com casas
   (incl. compartilhar saldo, opt-in).

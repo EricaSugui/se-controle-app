@@ -92,7 +92,7 @@ export default function DashboardScreen() {
             <Text style={styles.eixoHint}>
               {eixo === 'caixa'
                 ? 'Caixa: parcelas que saem do bolso neste mês'
-                : 'Competência: compras decididas neste mês'}
+                : 'Competência: despesas decididas neste mês'}
             </Text>
           </View>
         </View>
@@ -143,7 +143,7 @@ export default function DashboardScreen() {
         {data.casas.length === 0 && (
           <EmptyState
             titulo="Você ainda não participa de uma casa"
-            descricao="Crie uma casa ou aceite um convite para começar a organizar seus gastos."
+            descricao="Crie uma casa ou aceite um convite para começar a organizar suas despesas."
             acaoLabel="Gerenciar casas"
             onAcao={() => router.push('/(app)/mais/casas')}
           />

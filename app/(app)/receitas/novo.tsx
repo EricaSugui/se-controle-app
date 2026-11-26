@@ -120,7 +120,7 @@ export default function NovaReceitaScreen() {
       // Sempre termina na lista de Receitas, como o novo gasto termina na de
       // Gastos. dismissTo volta até a lista se ela já está na pilha, ou
       // troca esta tela por ela, sem duplicar.
-      router.dismissTo('/(app)/mais/receitas');
+      router.dismissTo('/(app)/receitas');
     } catch (e: unknown) {
       notificar('Erro', (e as Error).message);
     } finally {

@@ -36,7 +36,7 @@ export function OnboardingChecklist({ casa, casaPrincipalConfigurada, competenci
     { label: 'Casa principal definida', concluido: casaPrincipalConfigurada, rota: '/(app)/mais/perfil' },
     { label: 'Categorias disponíveis', concluido: temCategoria, rota: '/(app)/gastos/novo' },
     { label: 'Conta ou cartão', concluido: temConta, rota: '/(app)/mais/cartoes-contas' },
-    { label: 'Primeiro gasto', concluido: (casa?.gastos_total ?? 0) > 0, rota: '/(app)/gastos/novo' },
+    { label: 'Primeira despesa', concluido: (casa?.gastos_total ?? 0) > 0, rota: '/(app)/gastos/novo' },
     {
       label: 'Combinado de custeio (opcional)',
       concluido: casa?.usa_custeio === false || temCusteio,

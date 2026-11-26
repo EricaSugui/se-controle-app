@@ -85,8 +85,8 @@ export default function GastosScreen() {
   function confirmarExcluir(item: Compra) {
     confirmar(
       {
-        titulo: 'Excluir compra',
-        mensagem: `Deseja excluir esta compra${item.descricao ? ` (${item.descricao})` : ''}? Todas as parcelas serão removidas.`,
+        titulo: 'Excluir despesa',
+        mensagem: `Deseja excluir esta despesa${item.descricao ? ` (${item.descricao})` : ''}? Todas as parcelas serão removidas.`,
         textoConfirmar: 'Excluir',
       },
       () => excluir(item.id)
@@ -148,9 +148,9 @@ export default function GastosScreen() {
           }
           ListEmptyComponent={(
             <EmptyState
-              titulo="Nenhum gasto neste mês"
-              descricao="Registre uma compra para acompanhar seus gastos por competência."
-              acaoLabel="Registrar primeiro gasto"
+              titulo="Nenhuma despesa neste mês"
+              descricao="Registre uma despesa para acompanhar o mês por competência."
+              acaoLabel="Registrar primeira despesa"
               onAcao={() => router.push('/(app)/gastos/novo')}
             />
           )}
@@ -171,7 +171,7 @@ export default function GastosScreen() {
         {mostrandoPainel && (
           <View style={styles.painel}>
             <View style={styles.painelCabecalho}>
-              <Text style={styles.painelTitulo}>Editar compra</Text>
+              <Text style={styles.painelTitulo}>Editar despesa</Text>
               <Pressable onPress={fecharPainel} style={styles.painelFechar}>
                 <Text style={styles.painelFecharTexto}>✕</Text>
               </Pressable>
@@ -215,7 +215,7 @@ function BotaoNova() {
       style={[styles.botaoNova, hover && styles.botaoNovaHover]}
       onPress={() => router.push('/(app)/gastos/novo')}
     >
-      <Text style={styles.botaoNovaTexto}>+ Nova compra</Text>
+      <Text style={styles.botaoNovaTexto}>+ Nova despesa</Text>
     </Pressable>
   );
 }

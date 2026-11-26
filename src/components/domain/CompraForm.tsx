@@ -27,7 +27,7 @@ export type CompraFormValues = {
 
 const OPCOES_ACERTO_EIXO: { valor: EixoAcerto | null; label: string }[] = [
   { valor: null, label: 'Padrão da casa' },
-  { valor: 'competencia', label: 'Mês da compra' },
+  { valor: 'competencia', label: 'Mês da despesa' },
   { valor: 'caixa', label: 'Por parcela' },
 ];
 

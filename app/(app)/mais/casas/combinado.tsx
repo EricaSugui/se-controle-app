@@ -135,7 +135,7 @@ export default function CombinadoScreen() {
         <View style={styles.opcaoCusteio}>
           <View style={styles.opcaoTexto}>
             <Text style={styles.label}>Usar rateio de custeio</Text>
-            <Text style={styles.hint}>Desative para deixar cada gasto integralmente no nome de quem pagou.</Text>
+            <Text style={styles.hint}>Desative para deixar cada despesa integralmente no nome de quem pagou.</Text>
           </View>
           <Switch value={usaCusteio} onValueChange={mudarUsoCusteio} disabled={salvando} />
         </View>

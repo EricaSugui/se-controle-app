@@ -99,7 +99,7 @@ export default function CartoesContasScreen() {
         ListEmptyComponent={(
           <EmptyState
             titulo="Nenhum cartão ou conta cadastrado"
-            descricao="Adicione uma conta ou cartão para identificar como seus gastos foram pagos."
+            descricao="Adicione uma conta ou cartão para identificar como suas despesas foram pagas."
             acaoLabel="Adicionar conta ou cartão"
             onAcao={() => router.push('/(app)/mais/cartoes-contas/novo')}
           />

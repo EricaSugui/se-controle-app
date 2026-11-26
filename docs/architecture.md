@@ -42,12 +42,12 @@ app/
     │                            redireciona p/ onboarding quando status = not_started
     ├── dashboard/index        ← inclui o checklist de onboarding
     ├── gastos/                ← index (lista), novo, [id] (detalhe/edição)
+    ├── receitas/              ← index (lista), novo, [id] (edição)
     ├── projecao/index         ← saldo projetado
-    ├── metas/                 ← index, novo, [id]
     ├── onboarding/index       ← wizard "Comece aqui" (aba oculta da sidebar)
     └── mais/                  ← hub de gestão
         ├── index              ← menu
-        ├── receitas/          ← index, novo, [id]
+        ├── metas/             ← index, novo, [id]
         ├── cartoes-contas/    ← index, novo, [id], faturas, fatura, visibilidade
         ├── despesas-fixas/    ← index (status), contratos, novo, [id], pagamento, justificar, reajuste
         ├── receitas-fixas/    ← index (status), contratos, novo, [id], recebimento, justificar, reajuste
@@ -66,7 +66,14 @@ app/
   (`useBreakpoint`); nenhuma rota é duplicada.
 - A aba `onboarding` existe em `ABAS` com `exibirNaSidebar: false`; o
   layout só a mostra enquanto o onboarding está `not_started` ou
-  `in_progress`.
+  `in_progress`. Fora disso recebe `href: null`: toda aba precisa ser
+  declarada no `<Tabs>`, senão o expo-router a recria sozinho, sem ícone.
+- Abas: Dashboard, Despesas (rota `/gastos`), Receitas, Projeção e Mais (Metas fica em Mais).
+- `popToTopOnBlur`: ao sair de uma aba, a pilha dela volta à primeira
+  tela. As pilhas de Gastos, Receitas e Mais declaram
+  `unstable_settings.initialRouteName = 'index'`, para que uma tela interna
+  aberta direto (atalho de outra aba, link, recarregar) tenha a tela
+  principal embaixo e mostre o botão de voltar.
 
 ## src/
 
