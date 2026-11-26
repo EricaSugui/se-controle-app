@@ -7,7 +7,9 @@ import { getCartoesContas } from '@/src/services/api/cartoesContas';
 import { getMembros } from '@/src/services/api/casas';
 import { getDashboard } from '@/src/services/api/dashboard';
 import { ReceitaForm, type ReceitaFormValues } from '@/src/components/domain/ReceitaForm';
+import { VinculoRecorrencia } from '@/src/components/domain/VinculoRecorrencia';
 import { notificar } from '@/src/utils/confirmar';
+import type { OcorrenciaRecorrente } from '@/src/utils/vinculoRecorrencia';
 import { competenciaAtual } from '@/src/utils/competencia';
 import type { CartaoConta, CasaDashboard, MembroCasa, OrigemReceita } from '@/src/types';
 
@@ -33,14 +35,35 @@ export default function NovaReceitaScreen() {
   const [origens, setOrigens] = useState<OrigemReceita[]>([]);
   const [contas, setContas] = useState<CartaoConta[]>([]);
   const [salvando, setSalvando] = useState(false);
+  const [vinculo, setVinculo] = useState<OcorrenciaRecorrente | null>(null);
+  // Muda a cada foco para remontar o VinculoRecorrencia (switch desligado).
+  const [chaveFormulario, setChaveFormulario] = useState(0);
 
   // A tela fica montada entre navegações — sem o reset, reabrir "+ Nova
   // receita" mostraria o que foi digitado na última vez.
   useFocusEffect(
     useCallback(() => {
       setValues(valoresIniciais());
+      setVinculo(null);
+      setChaveFormulario((k) => k + 1);
     }, [])
   );
+
+  // Ao escolher a receita recorrente, usa a origem dela, completa o valor se
+  // estiver vazio e passa a conta de destino para o padrão do contrato (se
+  // nenhuma foi escolhida). Desvincular volta a conta para "Nenhuma".
+  const aoVincular = useCallback((o: OcorrenciaRecorrente | null) => {
+    setVinculo(o);
+    setValues((v) => {
+      if (!o) return v.contaDestino === 'herdar' ? { ...v, contaDestino: null } : v;
+      return {
+        ...v,
+        origemId: o.categoriaOuOrigemId,
+        valorLiquido: v.valorLiquido ?? o.valorEsperado,
+        contaDestino: v.contaDestino === null ? 'herdar' : v.contaDestino,
+      };
+    });
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -79,8 +102,17 @@ export default function NovaReceitaScreen() {
         valor_liquido: values.valorLiquido,
         data: values.data.trim() || null,
         competencia: values.competencia || null,
-        // receita avulsa não tem contrato para herdar — valor sempre explícito
-        conta_destino_id: values.contaDestino === 'herdar' ? null : values.contaDestino,
+        ...(vinculo
+          ? {
+              receita_fixa_id: vinculo.id,
+              competencia_referencia: vinculo.competencia,
+              // chave omitida = herdar a conta do contrato; null explícito = sem conta
+              ...(values.contaDestino !== 'herdar' ? { conta_destino_id: values.contaDestino } : {}),
+            }
+          : {
+              // receita avulsa não tem contrato para herdar — valor sempre explícito
+              conta_destino_id: values.contaDestino === 'herdar' ? null : values.contaDestino,
+            }),
       });
       router.back();
     } catch (e: unknown) {
@@ -95,7 +127,28 @@ export default function NovaReceitaScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <ReceitaForm values={values} onChange={setValues} casas={casas} membros={membros} origens={origens} contas={contas} />
+        {/* A pergunta vem antes: escolher a receita já preenche origem,
+            valor e conta de destino do formulário abaixo. */}
+        <VinculoRecorrencia
+          key={chaveFormulario}
+          tipo="receita"
+          casaId={values.casaId}
+          pessoaId={values.pessoaId}
+          descricao={values.observacao}
+          valor={values.valorLiquido}
+          selecionada={vinculo}
+          onChange={aoVincular}
+        />
+
+        <ReceitaForm
+          values={values}
+          onChange={setValues}
+          casas={casas}
+          membros={membros}
+          origens={origens}
+          contas={contas}
+          vinculadaAFixa={vinculo != null}
+        />
 
         <Pressable
           style={[styles.botao, !podeSalvar && styles.botaoDesabilitado]}
