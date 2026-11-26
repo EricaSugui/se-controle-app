@@ -1,0 +1,48 @@
+# CI mínimo: tipos e testes a cada PR para develop e main.
+#
+# Plano de ambientes, Fase 0, passo 12 (seção 4.6, item 2). Não usa
+# segredos nem arquivos .env. Versão do Node: .nvmrc.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Tipos e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # O expo-env.d.ts fica fora do git (recomendação do Expo) e é gerado
+      # pelo `expo start`. Sem ele faltam os tipos de expo/types (por
+      # exemplo, `hovered` do Pressable na web).
+      - name: Gerar expo-env.d.ts
+        run: echo '/// <reference types="expo/types" />' > expo-env.d.ts
+
+      - name: Checar tipos
+        run: npx tsc --noEmit
+
+      - name: Testes
+        run: npm test
