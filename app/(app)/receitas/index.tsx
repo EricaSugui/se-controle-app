@@ -2,6 +2,8 @@ import { ReceitaEditor } from '@/src/components/domain/ReceitaEditor';
 import { MonthPicker } from '@/src/components/ui/MonthPicker';
 import { EmptyState } from '@/src/components/ui/EmptyState';
 import { IconeRecorrencia, MarcaRecorrencia } from '@/src/components/ui/MarcaRecorrencia';
+import { CabecalhoDia, DetalhesLancamento, LinhaLancamento } from '@/src/components/ui/LancamentoCompacto';
+import { agruparPorDia } from '@/src/utils/agruparPorDia';
 import { useBreakpoint } from '@/src/hooks/useBreakpoint';
 import { useHover } from '@/src/hooks/useHover';
 import { deleteReceita, getReceitas } from '@/src/services/api/receitas';
@@ -12,7 +14,7 @@ import { confirmar, notificar } from '@/src/utils/confirmar';
 import { formatCurrency, formatDate } from '@/src/utils/formatters';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 
 // Mesmo padrão da lista de Despesas (simetria): cards no celular, tabela com
 // colunas ordenáveis no desktop e edição em painel lateral no desktop largo.
@@ -41,6 +43,19 @@ export default function ReceitasScreen() {
   const mostrandoPainel = painelDuplo && editandoId != null;
 
   const itensOrdenados = useMemo(() => ordenarReceitas(itens, ordenacao), [itens, ordenacao]);
+  // Celular: grupos por dia (a ordenação por coluna é só da tabela).
+  const grupos = useMemo(() => agruparPorDia(itens, (r) => r.data, (r) => r.valor_liquido), [itens]);
+  // Receita aberta na janela de detalhes (celular).
+  const [detalhe, setDetalhe] = useState<Receita | null>(null);
+
+  const vazio = (
+    <EmptyState
+      titulo="Nenhuma receita neste mês"
+      descricao="Registre uma receita para acompanhar o que entra no mês."
+      acaoLabel="Registrar primeira receita"
+      onAcao={() => router.push('/(app)/receitas/novo')}
+    />
+  );
 
   function alternarOrdenacao(campo: CampoOrdenacao) {
     setOrdenacao((atual) => {
@@ -136,36 +151,49 @@ export default function ReceitasScreen() {
       </View>
 
       <View style={styles.corpo}>
-        <FlatList
-          data={itensOrdenados}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={compacto ? styles.lista : styles.tabela}
-          ListHeaderComponent={
-            compacto || itensOrdenados.length === 0 ? null : (
-              <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
-            )
-          }
-          ListEmptyComponent={(
-            <EmptyState
-              titulo="Nenhuma receita neste mês"
-              descricao="Registre uma receita para acompanhar o que entra no mês."
-              acaoLabel="Registrar primeira receita"
-              onAcao={() => router.push('/(app)/receitas/novo')}
-            />
-          )}
-          renderItem={({ item }: { item: Receita }) =>
-            compacto ? (
-              <CardReceita item={item} onEditar={() => editar(item)} onExcluir={() => confirmarExcluir(item)} />
-            ) : (
+        {compacto ? (
+          // Celular: agrupado por dia, linha compacta; toque abre os detalhes.
+          <SectionList
+            sections={grupos}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.lista}
+            stickySectionHeadersEnabled={false}
+            ListEmptyComponent={vazio}
+            renderSectionHeader={({ section }) => (
+              <CabecalhoDia titulo={section.titulo} total={section.total} cor={cores.positivo} />
+            )}
+            renderItem={({ item }) => (
+              <LinhaLancamento
+                titulo={item.observacao || item.origem_nome || 'Sem descrição'}
+                subtitulo={[item.observacao ? item.origem_nome : null, item.pessoa_nome].filter(Boolean).join(' · ')}
+                valor={item.valor_liquido}
+                cor={cores.positivo}
+                recorrente={item.receita_fixa_id != null}
+                onPress={() => setDetalhe(item)}
+              />
+            )}
+          />
+        ) : (
+          <FlatList
+            data={itensOrdenados}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={styles.tabela}
+            ListHeaderComponent={
+              itensOrdenados.length === 0 ? null : (
+                <CabecalhoTabela ordenacao={ordenacao} onOrdenar={alternarOrdenacao} />
+              )
+            }
+            ListEmptyComponent={vazio}
+            renderItem={({ item }: { item: Receita }) => (
               <LinhaTabela
                 item={item}
                 selecionado={item.id === editandoId}
                 onEditar={() => editar(item)}
                 onExcluir={() => confirmarExcluir(item)}
               />
-            )
-          }
-        />
+            )}
+          />
+        )}
 
         {mostrandoPainel && (
           <View style={styles.painel}>
@@ -201,6 +229,34 @@ export default function ReceitasScreen() {
         onSelecionar={irPara}
         onFechar={() => setSeletorVisivel(false)}
       />
+
+      {detalhe && (
+        <DetalhesLancamento
+          visivel
+          titulo={detalhe.observacao || detalhe.origem_nome || 'Receita'}
+          valor={detalhe.valor_liquido}
+          cor={cores.positivo}
+          marca={detalhe.receita_fixa_id != null ? (
+            <MarcaRecorrencia tipo="receita" referencia={detalhe.competencia_referencia} competencia={detalhe.competencia} />
+          ) : undefined}
+          linhas={[
+            { rotulo: 'Data', valor: detalhe.data ? formatDate(detalhe.data) : '—' },
+            { rotulo: 'Origem', valor: detalhe.origem_nome || '—' },
+            { rotulo: 'Pessoa', valor: detalhe.pessoa_nome || '—' },
+            ...(detalhe.valor_bruto != null
+              ? [{ rotulo: 'Valor bruto', valor: formatCurrency(detalhe.valor_bruto) }]
+              : []),
+            ...(detalhe.descontos != null
+              ? [{ rotulo: 'Descontos', valor: formatCurrency(detalhe.descontos) }]
+              : []),
+            { rotulo: 'Competência', valor: detalhe.competencia || '—' },
+          ]}
+          podeEditar={detalhe.pode_editar}
+          onEditar={() => { const item = detalhe; setDetalhe(null); editar(item); }}
+          onExcluir={() => { const item = detalhe; setDetalhe(null); confirmarExcluir(item); }}
+          onFechar={() => setDetalhe(null)}
+        />
+      )}
     </View>
   );
 }
@@ -347,41 +403,6 @@ function LinhaTabela({
   );
 }
 
-function CardReceita({
-  item,
-  onEditar,
-  onExcluir,
-}: {
-  item: Receita;
-  onEditar: () => void;
-  onExcluir: () => void;
-}) {
-  return (
-    <View style={styles.item}>
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemValor}>{formatCurrency(item.valor_liquido)}</Text>
-        {/* Descrição (ou origem) e, abaixo, origem e pessoa. */}
-        <Text style={styles.itemDetalhe}>{item.observacao || item.origem_nome || 'Sem descrição'}</Text>
-        {item.receita_fixa_id != null && (
-          <MarcaRecorrencia tipo="receita" referencia={item.competencia_referencia} competencia={item.competencia} />
-        )}
-        {Boolean((item.observacao && item.origem_nome) || item.pessoa_nome) && (
-          <Text style={styles.itemMeta}>
-            {[item.observacao ? item.origem_nome : null, item.pessoa_nome].filter(Boolean).join(' · ')}
-          </Text>
-        )}
-        {Boolean(item.data) && <Text style={styles.itemData}>{formatDate(item.data!)}</Text>}
-      </View>
-      {item.pode_editar && (
-        <View style={styles.acoes}>
-          <AcaoTexto label="Editar" cor={cores.primaria} onPress={onEditar} />
-          <AcaoTexto label="Excluir" cor={cores.negativo} onPress={onExcluir} />
-        </View>
-      )}
-    </View>
-  );
-}
-
 function AcaoTexto({ label, cor, onPress }: { label: string; cor: string; onPress: () => void }) {
   const { hover, hoverProps } = useHover();
 
@@ -414,7 +435,7 @@ const styles = StyleSheet.create({
   competenciaHint:   { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
   corpo:             { flex: 1, flexDirection: 'row' },
-  lista:             { padding: 16, gap: 8, flexGrow: 1 },
+  lista:             { paddingHorizontal: 16, paddingBottom: 16, flexGrow: 1 },
   tabela:            { padding: 16, flexGrow: 1 },
 
   painel:            { width: 420, borderLeftWidth: 1, borderLeftColor: cores.bordaSuave, backgroundColor: cores.fundo },
@@ -434,14 +455,6 @@ const styles = StyleSheet.create({
   td:                { fontSize: 13, color: cores.textoMedio },
   tdForte:           { color: cores.textoForte, fontWeight: '500' },
   tdValor:           { fontSize: 14, fontWeight: '600', color: cores.positivo },
-
-  // Cards (mobile)
-  item:              { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: cores.fundoSuave, borderRadius: raio.md, padding: 14 },
-  itemInfo:          { flex: 1 },
-  itemValor:         { fontSize: 16, fontWeight: '600', color: cores.positivo },
-  itemDetalhe:       { fontSize: 13, color: cores.textoMedio, marginTop: 2 },
-  itemMeta:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
-  itemData:          { fontSize: 12, color: cores.textoSuave, marginTop: 2 },
 
   acoes:             { flexDirection: 'row', gap: 16 },
   acaoTexto:         { fontSize: 14 },
