@@ -141,7 +141,7 @@ envia e-mail: a aceitação explícita cria `casa_pessoas`.
   `soEspacoPessoal` para esconder "Lançar em"/"Pertence a", `casaInicial`
   para a casa que já vem escolhida). Formulários: rótulo "Lançar em",
   sem "Quem gastou" no espaço pessoal. Especificação no workspace:
-  `docs/planos/casa-pessoal-nucleo.md`.
+  `docs/planos/concluidos/casa-pessoal-nucleo.md`.
 - `mais/casas/nova` só chama `createCasa`. O front não chama mais
   `vincularPessoa` depois de criar a casa: essa chamada quebrava o fluxo de
   usuário novo.
