@@ -42,7 +42,7 @@ dados fictícios sem consentimento.
 
 ```text
 Cadastro/login
-→ criar casa pessoal
+→ espaço pessoal já pronto (criado automaticamente; nunca chamado de "casa")
 → registrar primeiro gasto
 → visualizar o dashboard
 → configurar conta/cartão e demais recursos depois
@@ -92,17 +92,22 @@ Opções sugeridas:
 
 Essa escolha orienta a sequência, mas não deve impedir mudanças posteriores.
 
-### Etapa 2 — Criar ou entrar em uma casa
+### Etapa 2 — Depende do perfil
 
-Para quem cria:
+Toda pessoa com login já tem um **espaço pessoal** ("Pessoal"), criado
+automaticamente. Por isso a etapa 2 muda conforme a escolha da etapa 1
+(implementado em 26/11/2026):
 
-- solicitar o nome da casa;
-- aceitar nomes simples, como "Minha casa" ou "Casa da família".
-
-Para quem recebe convite:
-
-- mostrar a casa e o papel que será assumido;
-- pedir confirmação antes de entrar.
+- **Minha vida financeira** — "Seu espaço": o espaço pessoal já está
+  pronto; nada a criar. A tela lembra que dá para criar uma casa
+  compartilhada depois.
+- **Compartilhar uma casa** — "Configure sua casa": criar a casa
+  compartilhada (nome simples, como "Minha casa" ou "Casa da família");
+  depois convidar pessoas e configurar contas, cartões e custeio.
+- **Convidado** — "Sua casa": a pessoa já entrou na casa ao aceitar o
+  convite (o sino ou o link do e-mail mostram a casa e o papel antes da
+  aceitação); a tela leva ao dashboard e lembra que ela também tem um
+  espaço pessoal.
 
 ### Etapa 3 — Configurar o essencial
 
