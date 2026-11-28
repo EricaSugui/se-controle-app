@@ -4,7 +4,9 @@
 > (inclusive com IAs externas ao repositório). Descreve o que o produto É
 > hoje, em linguagem de negócio — sem detalhes de implementação. Kit
 > recomendado para pensar negócio: este documento + `tenencia.md`
-> (posicionamento) + `backlog-backend.md` (o que existe e o que vem).
+> (posicionamento) + o backlog de produto (`docs/produto/backlog.md` no
+> workspace) e o do backend (`back/docs/backlog.md`) para o que existe e o
+> que vem.
 
 ## A tese em uma frase
 
